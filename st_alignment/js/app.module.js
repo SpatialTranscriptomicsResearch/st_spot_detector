@@ -1,3 +1,4 @@
 angular.module('aligner', [
-    'buttonBar'
+    'buttonBar',
+    'viewer'
 ]);
