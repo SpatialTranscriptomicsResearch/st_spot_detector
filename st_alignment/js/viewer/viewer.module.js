@@ -1,1 +1,5 @@
-angular.module('viewer', []);
+'use strict';
+
+angular.module('viewer', [
+    'core.image'
+]);
