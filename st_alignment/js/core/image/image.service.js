@@ -1,14 +1,15 @@
 'use strict';
 
 angular.module('core.image')
-    .factory('Image', function() {
-        var self = this;
-        self.imageURL = '';
-        self.setImageURL = function(URL) {
-            self.imageURL = URL;
-        };
-        self.getImageURL = function() {
-            return self.imageURL;
+    .factory('Image', [
+        '$rootScope',
+        function($rootScope) {
+            var self = this;
+            self.imageUrl = '';
+            self.setImageUrl = function(Url) {
+                self.imageUrl = Url;
+                $rootScope.$broadcast('imageUrlSet', Url);
+            };
+            return self;
         }
-        return self;
-    });
+    ]);
