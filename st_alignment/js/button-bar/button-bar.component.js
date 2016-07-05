@@ -20,11 +20,13 @@ angular.module('buttonBar')
                 elem.bind('change', function(event) {
                     var img = event.target.files[0];
                     var reader = new FileReader();
+                    console.log('loading...!!!');
                     reader.addEventListener('load', function() {
+                        console.log('finished loading! ^_^');
                         $rootScope.$broadcast('imageUrlSet', reader.result);
                     }, false);
                     if(img) {
-                        reader.readAsDataURL(img);
+                        reader.readAsArrayBuffer(img);
                     }
                 });
             }

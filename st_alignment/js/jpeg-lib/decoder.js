@@ -967,9 +967,10 @@ var JpegImage = (function jpegImage() {
 
   return constructor;
 })();
-module.exports = decode;
 
-function decode(jpegData, useTArray) {
+//module.exports = decode;
+
+function jpegDecode(jpegData, useTArray) {
   var arr = new Uint8Array(jpegData);
   var decoder = new JpegImage();
   decoder.parse(arr);
@@ -979,7 +980,7 @@ function decode(jpegData, useTArray) {
     height: decoder.height,
     data: useTArray ?
       new Uint8Array(decoder.width * decoder.height * 4) :
-      new Buffer(decoder.width * decoder.height * 4)
+      new ArrayBuffer(decoder.width * decoder.height * 4)
   };
 
   decoder.copyToImageData(image);

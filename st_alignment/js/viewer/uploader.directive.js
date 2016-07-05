@@ -1,25 +1,39 @@
+'use strict';
+
 angular.module('viewer')
     .directive('stUploader', [
         '$rootScope',
         function($rootScope){
             var link = function(scope, element) {
-                var ctx = element[0].getContext('2d');
+                var canvas = element[0];
+                var ctx = canvas.getContext('2d');
                 ctx.fillStyle = "green";
                 ctx.fillRect(10, 10, 100, 100);
                 $rootScope.$on('imageUrlSet', function(event, data) {
-                    console.log(data);
                     ctx.fillStyle = "pink";
                     ctx.fillRect(500, 500, 100, 100);
+
+                    /* returns an object with three properties, 'height', 'width' and 'data.
+                     * 'data' is an Uint8Array filled with bytes for each channel, R, G, B and A
+                     * from 0 to 255 */
+                    //var photo = jpegDecode(data, true);
+
                     /*
-                    var image = new Image();
-                    image.src = data;
-                    image.addEventListener('load', function() {
-                        ctx.drawImage(image, 20, 20);
-                    }, false);
+                    var zoomLevel = 1;
+                    //var canvasData = ctx.getImageData(0, 0, photo.width * zoomLevel, photo.height * zoomLevel);
+                    var canvasData = ctx.getImageData(0, 0,  canvas.width,  canvas.height);
+                    var data = canvasData.data;
+                
+                    for(var y = 0; y < canvas.height; y += 1) {
+                        for(var x = 0; x < canvas.width * 4; x += 4) {
+                            data[canvas.width * y * 4 + x]     = photo.data[photo.width * y * 4 + x];
+                            data[canvas.width * y * 4 + x + 1] = photo.data[photo.width * y * 4 + x + 1];
+                            data[canvas.width * y * 4 + x + 2] = photo.data[photo.width * y * 4 + x + 2];
+                            data[canvas.width * y * 4 + x + 3] = photo.data[photo.width * y * 4 + x + 3];
+                        }
+                    }
+                    ctx.putImageData(canvasData, 0, 0)
                     */
-                    var hej = data;
-                    var rawData = jpeg.decode(hej);
-                    console.log(hej.data);
                 });
             };
             return {
