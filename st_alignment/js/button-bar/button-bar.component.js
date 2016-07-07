@@ -26,7 +26,8 @@ angular.module('buttonBar')
                         $rootScope.$broadcast('imageUrlSet', reader.result);
                     }, false);
                     if(img) {
-                        reader.readAsArrayBuffer(img);
+                        //reader.readAsArrayBuffer(img);
+                        reader.readAsDataURL(img);
                     }
                 });
             }
