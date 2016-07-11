@@ -76,7 +76,7 @@ angular.module('viewer')
                 var canvas = element[0];
                 var ctx = canvas.getContext('2d');
                 ctx.fillStyle = "green";
-                ctx.fillRect(10, 10, 100, 100);
+                ctx.fillRect(0, 0, 100, 100);
 
                 var zoomImages1  = getImages(1);
                 var zoomImages2  = getImages(2);
@@ -86,8 +86,29 @@ angular.module('viewer')
                 var zoomImages20 = getImages(20);
 
                 var camera = new Camera(ctx);
-                camera.moveTo(300, 300);
-                camera.zoomTo(10);
+                //camera.moveTo(30, 30);
+                camera.zoomTol
+
+                camera.begin();
+                ctx.fillStyle = "blue";
+                ctx.fillRect(0, 0, 100, 100);
+                camera.end();
+
+                document.onkeydown = function(event) {
+                    event = event || window.event;
+                   if(event.which === 37) { // left
+                        console.log('left');
+                    }
+                    if(event.which === 38) { // up
+                        console.log('up');
+                    }
+                    if(event.which === 39) { // right
+                        console.log('right');
+                    }
+                    if(event.which === 40) { // down
+                        console.log('down');
+                    }
+                }
 
                 $rootScope.$on('imageUrlSet', function(event, data) {
                     ctx.fillStyle = "pink";
@@ -96,13 +117,6 @@ angular.module('viewer')
                     var zoomOutLevel = 1;
                     var posX = 500;
                     var posY = 500;
-
-                    console.log(zoomImages1);
-                    console.log(zoomImages2);
-                    console.log(zoomImages3);
-                    console.log(zoomImages5);
-                    console.log(zoomImages10);
-                    console.log(zoomImages20);
 
                     ctx.drawImage(zoomImages20[0][0], 0, 0);
 
