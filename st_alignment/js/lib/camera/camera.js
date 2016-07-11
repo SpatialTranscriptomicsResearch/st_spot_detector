@@ -7,7 +7,7 @@
       this.distance = 1000.0;
       this.lookat = [0,0];
       this.context = context;
-      this.fieldOfView = settings.fieldOfView || Math.PI / 4.0;
+      //this.fieldOfView = settings.fieldOfView || Math.PI / 2.0;
       this.viewport = {
           left: 0,
           right: 0,
@@ -18,8 +18,6 @@
           scale: [1.0, 1.0]
       };
       this.updateViewport();
-      console.log('construct');
-      console.log(this.viewport);
   };
 
   Camera.prototype = {
@@ -27,8 +25,6 @@
           this.context.save();
           this.applyScale();
           this.applyTranslation();
-          console.log('begin');
-          console.log(this.distance);
       },
       end: function() {
           this.context.restore();
@@ -41,8 +37,8 @@
       },
       updateViewport: function() {
           this.aspectRatio = this.context.canvas.width / this.context.canvas.height;
-          this.viewport.width = this.distance * Math.tan(this.fieldOfView);
-          this.viewport.height = this.viewport.width / this.aspectRatio;
+          //this.viewport.width = this.distance * Math.tan(this.fieldOfView);
+          //this.viewport.height = this.viewport.width / this.aspectRatio;
           this.viewport.left = this.lookat[0] - (this.viewport.width / 2.0);
           this.viewport.top = this.lookat[1] - (this.viewport.height / 2.0);
           this.viewport.right = this.viewport.left + this.viewport.width;

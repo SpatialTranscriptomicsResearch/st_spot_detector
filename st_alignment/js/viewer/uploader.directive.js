@@ -75,8 +75,12 @@ angular.module('viewer')
             var link = function(scope, element) {
                 var canvas = element[0];
                 var ctx = canvas.getContext('2d');
-                ctx.fillStyle = "green";
-                ctx.fillRect(0, 0, 100, 100);
+
+                var camera = new Camera(ctx);
+                camera.begin();
+                    ctx.fillStyle = "green";
+                    ctx.fillRect(300, 300, 100, 100);
+                camera.end();
 
                 var zoomImages1  = getImages(1);
                 var zoomImages2  = getImages(2);
@@ -85,32 +89,37 @@ angular.module('viewer')
                 var zoomImages10 = getImages(10);
                 var zoomImages20 = getImages(20);
 
-                var camera = new Camera(ctx);
-                //camera.moveTo(30, 30);
-                camera.zoomTol
-
-                camera.begin();
-                ctx.fillStyle = "blue";
-                ctx.fillRect(0, 0, 100, 100);
-                camera.end();
-
                 document.onkeydown = function(event) {
-                    event = event || window.event;
-                   if(event.which === 37) { // left
-                        console.log('left');
+                    if(scope.imageLoaded) {
+                        event = event || window.event;
+                       if(event.which === 37) { // left
+                            console.log('left');
+                            scope.cameraPosition[0] -= scope.panFactor;
+                        }
+                        if(event.which === 38) { // up
+                            console.log('up');
+                            scope.cameraPosition[1] -= scope.panFactor;
+                        }
+                        if(event.which === 39) { // right
+                            console.log('right');
+                            scope.cameraPosition[0] += scope.panFactor;
+                        }
+                        if(event.which === 40) { // down
+                            console.log('down');
+                            scope.cameraPosition[1] += scope.panFactor;
+                        }
+
+                        camera.moveTo(scope.cameraPosition[0], scope.cameraPosition[1]);
+                        camera.begin();
+                            ctx.fillStyle = "blue";
+                            ctx.fillRect(300, 300, 100, 100);
+                        camera.end();
                     }
-                    if(event.which === 38) { // up
-                        console.log('up');
-                    }
-                    if(event.which === 39) { // right
-                        console.log('right');
-                    }
-                    if(event.which === 40) { // down
-                        console.log('down');
-                    }
+
                 }
 
-                $rootScope.$on('imageUrlSet', function(event, data) {
+                $rootScope.$on('imageLoaded', function(event, data) {
+                    scope.imageLoaded = true;
                     ctx.fillStyle = "pink";
                     ctx.fillRect(500, 500, 100, 100);
 

@@ -23,7 +23,7 @@ angular.module('buttonBar')
                     console.log('loading...!!!');
                     reader.addEventListener('load', function() {
                         console.log('finished loading! ^_^');
-                        $rootScope.$broadcast('imageUrlSet', reader.result);
+                        $rootScope.$broadcast('imageLoaded', reader.result);
                     }, false);
                     if(img) {
                         //reader.readAsArrayBuffer(img);

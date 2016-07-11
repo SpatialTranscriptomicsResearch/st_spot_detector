@@ -5,7 +5,10 @@ angular.module('viewer')
             '$scope',
             '$rootScope',
             function($scope, $rootScope) {
-                $rootScope.$on('imageUrlSet', function(event, data) {
-                })
+                $scope.imageLoaded = false;
+                $scope.cameraPosition = [0, 0];
+                $scope.cameraScale = [1, 1];
+                $scope.zoomOutLevel = 1;
+                $scope.panFactor = 80;
             }]
     });
