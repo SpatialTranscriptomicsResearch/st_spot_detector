@@ -68,6 +68,55 @@ function getImages(zoomOutLevel) {
     return images;
 }
 
+function renderImages(ctx, camera, zoomOutLevel, position, images) {
+    camera.moveTo(position[0], position[1]);
+    camera.begin();
+        for(var i = 0; i < images.length; ++i) {
+            ctx.drawImage(images[i], images[i].renderPosition[0], images[i].renderPosition[1]);
+        }
+    camera.end();
+}
+
+function grabRenderableImages(tilePosition, tiledImages) {
+    var tilePositions = getSurroundingTilePositions(tilePosition, tiledImages.width, tiledImages.height);
+    var images = [];
+    for(var i = 0; i < tilePositions.length; ++i) {
+        var tileX = tilePositions[i][0];
+        var tileY = tilePositions[i][1];
+        var image = tiledImages[tileX][tileY];
+        image.renderPosition = [tileX * 1024, tileY * 1024];
+        images.push(tiledImages[tilePositions[i][0]][tilePositions[i][1]]);
+    }
+    return images;
+}
+
+function getSurroundingTilePositions(tilePosition, maxWidth, maxHeight) {
+    var surroundingTilePositions = [];
+    for(var x = -1; x < 2; ++x) {
+        for(var y = -1; y < 2; ++y) {
+            var xPos = tilePosition[0] + x;
+            var yPos = tilePosition[1] + y;
+            // make sure it is a valid tile
+            if(!(xPos < 0 || xPos >= maxWidth ||
+                 yPos < 0 || yPos >= maxHeight)) {
+                surroundingTilePositions.push([xPos, yPos]);
+            }
+        }
+    }
+    return surroundingTilePositions;
+}
+
+function updateImagePosition(cameraPosition, zoomOutLevel) {
+    var newImagePosition = [cameraPosition[0] * zoomOutLevel, cameraPosition[1] * zoomOutLevel];
+    return newImagePosition;
+}
+
+function updateTilePosition(cameraPosition, zoomOutLevel) {
+    var x = Math.trunc(cameraPosition[0] / 1024);
+    var y = Math.trunc(cameraPosition[1] / 1024);
+    return [x, y];
+}
+
 angular.module('viewer')
     .directive('stUploader', [
         '$rootScope',
@@ -82,51 +131,42 @@ angular.module('viewer')
                     ctx.fillRect(300, 300, 100, 100);
                 camera.end();
 
-                var zoomImages1  = getImages(1);
-                var zoomImages2  = getImages(2);
-                var zoomImages3  = getImages(3);
-                var zoomImages5  = getImages(5);
-                var zoomImages10 = getImages(10);
-                var zoomImages20 = getImages(20);
+                var zoomImages = [];
+                zoomImages[1]  = getImages(1);
+                zoomImages[2]  = getImages(2);
+                zoomImages[3]  = getImages(3);
+                zoomImages[5]  = getImages(5);
+                zoomImages[10] = getImages(10);
+                zoomImages[20] = getImages(20);
+
+                var imagesToRender = [];
 
                 document.onkeydown = function(event) {
                     if(scope.imageLoaded) {
                         event = event || window.event;
                        if(event.which === 37) { // left
-                            console.log('left');
                             scope.cameraPosition[0] -= scope.panFactor;
                         }
                         if(event.which === 38) { // up
-                            console.log('up');
                             scope.cameraPosition[1] -= scope.panFactor;
                         }
                         if(event.which === 39) { // right
-                            console.log('right');
                             scope.cameraPosition[0] += scope.panFactor;
                         }
                         if(event.which === 40) { // down
-                            console.log('down');
                             scope.cameraPosition[1] += scope.panFactor;
                         }
 
-                        camera.moveTo(scope.cameraPosition[0], scope.cameraPosition[1]);
-                        camera.begin();
-                            ctx.fillStyle = "blue";
-                            ctx.fillRect(300, 300, 100, 100);
-                        camera.end();
+                        scope.imagePosition = updateImagePosition(scope.cameraPosition, scope.zoomOutLevel);
+                        scope.tilePosition = updateTilePosition(scope.cameraPosition, scope.zoomOutLevel);
+                        var imagesForRendering = grabRenderableImages(scope.tilePosition, zoomImages[scope.zoomOutLevel]);
+                        renderImages(ctx, camera, scope.zoomOutLevel, scope.cameraPosition, imagesForRendering);
                     }
 
                 }
 
                 $rootScope.$on('imageLoaded', function(event, data) {
                     scope.imageLoaded = true;
-                    ctx.fillStyle = "pink";
-                    ctx.fillRect(500, 500, 100, 100);
-
-                    var zoomOutLevel = 1;
-                    var posX = 500;
-                    var posY = 500;
-
                     ctx.drawImage(zoomImages20[0][0], 0, 0);
 
                 });
