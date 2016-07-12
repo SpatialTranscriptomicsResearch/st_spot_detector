@@ -1,47 +1,5 @@
 'use strict';
 
-/*
-function crop(data, x, y, w, h)
-{
-    var convert = new Interface('js/convert-worker.js');
-    convert.on_stdout = function(txt) { console.log(txt); };
-    convert.on_stderr = function(txt) { console.log(txt); };
-
-    var stream = new Interface('js/stream-worker.js');
-    stream.on_stdout = function(txt) { console.log(txt); };
-    stream.on_stderr = function(txt) { console.log(txt); };
-
-    //stream.mkdir('usr/local/etc/ImageMagick').then(function()
-    //{ 
-        stream.addUrl('../config/configure.xml',  '/usr/local/etc/ImageMagick/', true);
-        stream.addUrl('../config/magic.xml',   '/usr/local/etc/ImageMagick/');
-        stream.addUrl('../config/mime.xml',   '/usr/local/etc/ImageMagick/');
-        stream.addUrl('../config/coder.xml',   '/usr/local/etc/ImageMagick/');
-        stream.addUrl('../config/policy.xml',  '/usr/local/etc/ImageMagick/');
-        stream.addUrl('../config/english.xml', '/usr/local/etc/ImageMagick/');
-        stream.addUrl('../config/locale.xml',  '/usr/local/etc/ImageMagick/');
-        stream.addUrl('../config/delegates.xml',  '/usr/local/etc/ImageMagick/');
-
-        stream.addData(data, 'kalle.jpeg');
-        stream.allDone().then(function()
-        {   
-            stream.run('-list', 'configure');
-            stream.run('-v');
-            stream.run('-map', 'rgb', '-storage-type', 'char', '-extract', '100x100+150+150', 'kalle.jpeg', 'ralle.dat').then(function()
-            {   
-                stream.getFile('/ralle.dat').then(function(contents)
-                {   
-                    return contents
-                }); 
-            }); 
-        }); 
-    //});
-
-
-    return data;
-}
-*/
-
 function getImages(zoomOutLevel) {
     var images = [];
     var photoWidth  = 20000;
@@ -52,9 +10,9 @@ function getImages(zoomOutLevel) {
     var tileMapWidth  = Math.trunc((photoWidth  / zoomOutLevel) / imageWidth)  + 1;
     var tileMapHeight = Math.trunc((photoHeight / zoomOutLevel) / imageHeight) + 1;
 
-    for(var y = 0; y < tileMapWidth; ++y) {
+    for(var x = 0; x < tileMapWidth; ++x) {
         var imageRow = [];
-        for(var x = 0; x < tileMapHeight; ++x) {
+        for(var y = 0; y < tileMapHeight; ++y) {
             var image = new Image();
             image.src = "img/zoom" + zoomOutLevel + "_x" + x + "_y" + y + ".jpg";
             imageRow.push(image);
@@ -71,7 +29,10 @@ function getImages(zoomOutLevel) {
 function renderImages(ctx, camera, zoomOutLevel, position, images) {
     camera.moveTo(position[0], position[1]);
     camera.begin();
+        ctx.fillStyle = "khaki";
+        ctx.fillRect(-1024, -1024, 21504, 21504);
         for(var i = 0; i < images.length; ++i) {
+            console.log(i + ": " + images[i].renderPosition[0] + ", " + images[i].renderPosition[1]);
             ctx.drawImage(images[i], images[i].renderPosition[0], images[i].renderPosition[1]);
         }
     camera.end();
@@ -85,21 +46,24 @@ function grabRenderableImages(tilePosition, tiledImages) {
         var tileY = tilePositions[i][1];
         var image = tiledImages[tileX][tileY];
         image.renderPosition = [tileX * 1024, tileY * 1024];
-        images.push(tiledImages[tilePositions[i][0]][tilePositions[i][1]]);
+        images.push(image);
     }
     return images;
 }
 
 function getSurroundingTilePositions(tilePosition, maxWidth, maxHeight) {
     var surroundingTilePositions = [];
-    for(var x = -1; x < 2; ++x) {
-        for(var y = -1; y < 2; ++y) {
+    var i = 0;
+    for(var y = -1; y < 2; ++y) {
+        for(var x = -1; x < 2; ++x) {
             var xPos = tilePosition[0] + x;
             var yPos = tilePosition[1] + y;
             // make sure it is a valid tile
             if(!(xPos < 0 || xPos >= maxWidth ||
                  yPos < 0 || yPos >= maxHeight)) {
+                console.log(i + ": adding tile " + xPos + ", " + yPos);
                 surroundingTilePositions.push([xPos, yPos]);
+                ++i;
             }
         }
     }
@@ -114,6 +78,7 @@ function updateImagePosition(cameraPosition, zoomOutLevel) {
 function updateTilePosition(cameraPosition, zoomOutLevel) {
     var x = Math.trunc(cameraPosition[0] / 1024);
     var y = Math.trunc(cameraPosition[1] / 1024);
+    console.log("tile " + x + ", " + y);
     return [x, y];
 }
 
@@ -144,19 +109,24 @@ angular.module('viewer')
                 document.onkeydown = function(event) {
                     if(scope.imageLoaded) {
                         event = event || window.event;
-                       if(event.which === 37) { // left
+                       if(event.which === 37 ||
+                          event.which === 72) { // left
                             scope.cameraPosition[0] -= scope.panFactor;
                         }
-                        if(event.which === 38) { // up
+                        if(event.which === 38 ||
+                          event.which === 75) { // up
                             scope.cameraPosition[1] -= scope.panFactor;
                         }
-                        if(event.which === 39) { // right
+                        if(event.which === 39 ||
+                          event.which === 76) { // right
                             scope.cameraPosition[0] += scope.panFactor;
                         }
-                        if(event.which === 40) { // down
+                        if(event.which === 40 ||
+                          event.which === 74) { // down
                             scope.cameraPosition[1] += scope.panFactor;
                         }
 
+                        console.log("Camera at: " + scope.cameraPosition[0] + ", " + scope.cameraPosition[1]);
                         scope.imagePosition = updateImagePosition(scope.cameraPosition, scope.zoomOutLevel);
                         scope.tilePosition = updateTilePosition(scope.cameraPosition, scope.zoomOutLevel);
                         var imagesForRendering = grabRenderableImages(scope.tilePosition, zoomImages[scope.zoomOutLevel]);
