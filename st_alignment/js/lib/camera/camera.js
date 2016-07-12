@@ -4,7 +4,7 @@
 
   var Camera = function(context, settings) {
       settings = settings || {};
-      //this.zoom = 1000.0;
+      this.zoom = 1.0;
       this.lookat = [0,0];
       this.context = context;
       //this.fieldOfView = settings.fieldOfView || Math.PI / 2.0;
