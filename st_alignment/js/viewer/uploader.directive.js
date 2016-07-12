@@ -26,8 +26,9 @@ function getImages(zoomOutLevel) {
     return images;
 }
 
-function renderImages(ctx, camera, zoomOutLevel, position, images) {
+function renderImages(ctx, camera, scale, position, images) {
     camera.moveTo(position[0], position[1]);
+    camera.zoomTo(scale);
     camera.begin();
         ctx.fillStyle = "khaki";
         ctx.fillRect(-1024, -1024, 21504, 21504);
@@ -106,31 +107,47 @@ angular.module('viewer')
 
                 var imagesToRender = [];
 
+                /* https://css-tricks.com/snippets/javascript/javascript-keycodes/#article-header-id-1 */
+                var keycodes_left  = [37, 72]; // left,  h
+                var keycodes_up    = [38, 75]; // up,    k
+                var keycodes_right = [39, 76]; // right, l
+                var keycodes_down  = [40, 74]; // down,  j
+                var keycodes_in    = [87]    ; // w
+                var keycodes_out   = [83]    ; // s
+
                 document.onkeydown = function(event) {
                     if(scope.imageLoaded) {
                         event = event || window.event;
-                       if(event.which === 37 ||
-                          event.which === 72) { // left
+                        if(keycodes_left.includes(event.which)) {
+                            // left
                             scope.cameraPosition[0] -= scope.panFactor;
                         }
-                        if(event.which === 38 ||
-                          event.which === 75) { // up
+                        else if(keycodes_up.includes(event.which)) {
+                            // up
                             scope.cameraPosition[1] -= scope.panFactor;
                         }
-                        if(event.which === 39 ||
-                          event.which === 76) { // right
+                        else if(keycodes_right.includes(event.which)) {
+                            // right
                             scope.cameraPosition[0] += scope.panFactor;
                         }
-                        if(event.which === 40 ||
-                          event.which === 74) { // down
+                        else if(keycodes_down.includes(event.which)) {
+                            // down
                             scope.cameraPosition[1] += scope.panFactor;
+                        }
+                        else if(keycodes_in.includes(event.which)) {
+                            // in
+                            scope.cameraScale /= scope.scaleFactor;
+                        }
+                        else if(keycodes_out.includes(event.which)) {
+                            // out
+                            scope.cameraScale *= scope.scaleFactor;
                         }
 
                         console.log("Camera at: " + scope.cameraPosition[0] + ", " + scope.cameraPosition[1]);
                         scope.imagePosition = updateImagePosition(scope.cameraPosition, scope.zoomOutLevel);
                         scope.tilePosition = updateTilePosition(scope.cameraPosition, scope.zoomOutLevel);
                         var imagesForRendering = grabRenderableImages(scope.tilePosition, zoomImages[scope.zoomOutLevel]);
-                        renderImages(ctx, camera, scope.zoomOutLevel, scope.cameraPosition, imagesForRendering);
+                        renderImages(ctx, camera, scope.cameraScale, scope.cameraPosition, imagesForRendering);
                     }
 
                 }

@@ -1,10 +1,10 @@
-/* taken from https://github.com/robashton/camera */
+/* taken from https://github.com/robashton/camera and modified slightly */
 
 (function() {
 
   var Camera = function(context, settings) {
       settings = settings || {};
-      this.distance = 1000.0;
+      //this.zoom = 1000.0;
       this.lookat = [0,0];
       this.context = context;
       //this.fieldOfView = settings.fieldOfView || Math.PI / 2.0;
@@ -37,17 +37,19 @@
       },
       updateViewport: function() {
           this.aspectRatio = this.context.canvas.width / this.context.canvas.height;
-          //this.viewport.width = this.distance * Math.tan(this.fieldOfView);
+          //this.viewport.width = this.zoom * Math.tan(this.fieldOfView);
           //this.viewport.height = this.viewport.width / this.aspectRatio;
           this.viewport.left = this.lookat[0] - (this.viewport.width / 2.0);
           this.viewport.top = this.lookat[1] - (this.viewport.height / 2.0);
           this.viewport.right = this.viewport.left + this.viewport.width;
           this.viewport.bottom = this.viewport.top + this.viewport.height;
-          this.viewport.scale[0] = this.context.canvas.width / this.viewport.width;
-          this.viewport.scale[1] = this.context.canvas.height / this.viewport.height;
+          //this.viewport.scale[0] = this.context.canvas.width / this.viewport.width;
+          //this.viewport.scale[1] = this.context.canvas.height / this.viewport.height;
+          this.viewport.scale[0] = this.zoom; // new
+          this.viewport.scale[1] = this.zoom; // new
       },
       zoomTo: function(z) {
-          this.distance = z;
+          this.zoom = z;
           this.updateViewport();
       },
       moveTo: function(x, y) {
