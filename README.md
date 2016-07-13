@@ -1,4 +1,4 @@
-# ST Alignment 
+# ST Aligner
 
 A web tool to do automatic spot detections and positional adjustments for ST Datasets. 
 The arrays used to generate ST Datasets may contain positional variations due to
