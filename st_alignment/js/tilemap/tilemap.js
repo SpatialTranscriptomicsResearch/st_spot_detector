@@ -52,6 +52,7 @@
                 var image = this.tilemaps[tilemapLevel][tileX][tileY];
 
                 image.renderPosition = [(tileX * this.tileWidth) * tilemapLevel, (tileY * this.tileHeight) * tilemapLevel];
+                image.scaledSize = [this.tileWidth * tilemapLevel, this.tileHeight * tilemapLevel];
                 images.push(image);
             }
             return images;
@@ -60,6 +61,7 @@
             /* given a specific tile position, the surrounding valid
                tile positions within a certain radius are returned.
                the radius variable includes the centre tile position */
+            console.log("getting surrounding tiles at level " + tilemapLevel);
             radius = radius || 2;
             var positions = [];
             var negBoundary = 1 - radius;
@@ -83,9 +85,10 @@
         getTilePosition: function(imagePosition, tilemapLevel) {
             /* calculates the tile position from a given image
                position, i.e. converts image to tile coordinates */
+            console.log("imagepos " + imagePosition[0] + ", " + imagePosition[1]);
+            console.log(tilemapLevel);
             var tileSizeInImageCoords = [this.tileWidth * tilemapLevel, this.tileHeight * tilemapLevel];
             console.log(tileSizeInImageCoords);
-            console.log("imagepos " + imagePosition[0] + ", " + imagePosition[1]);
             var x = Math.trunc(imagePosition[0] / tileSizeInImageCoords[0]);
             var y = Math.trunc(imagePosition[1] / tileSizeInImageCoords[1]);
             console.log("tile " + x + ", " + y);

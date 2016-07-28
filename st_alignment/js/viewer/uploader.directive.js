@@ -1,45 +1,60 @@
 'use strict';
 
 // move these functions to the camera or renderer //
-function renderImages(ctx, camera, scale, position, images) {
-    camera.moveTo(position[0], position[1]);
+function renderImages(ctx, camera, scale, position, images, scaleLevel) {
+    camera.moveTo(position);
     camera.zoomTo(scale);
     camera.begin();
         ctx.fillStyle = "khaki";
-        ctx.fillRect(-1024, -1024, 21504, 21504);
+        ctx.fillRect(-4096, -4096, 32768, 32768);
         for(var i = 0; i < images.length; ++i) {
             console.log(i + ": " + images[i].renderPosition[0] + ", " + images[i].renderPosition[1]);
-            ctx.drawImage(images[i], images[i].renderPosition[0], images[i].renderPosition[1]);
+            console.log(i + ": " + images[i].scaledSize[0] + ", " + images[i].scaledSize[1]);
+            ctx.drawImage(images[i], images[i].renderPosition[0], images[i].renderPosition[1], images[i].scaledSize[0], images[i].scaledSize[1]);
         }
     camera.end();
 }
 
-function updateCameraPosition(imagePosition, scaleLevel) {
-    var cameraPosition = [];
-    cameraPosition[0] = imagePosition[0] / scaleLevel;
-    cameraPosition[1] = imagePosition[1] / scaleLevel;
-    return cameraPosition;
+function updateImagePosition(camera) {
+    var imagePosition = [];
+    imagePosition[0] = camera.lookat[0];
+    imagePosition[1] = camera.lookat[1];
+    return imagePosition;
 }
 
 function updateScaleLevel(scaleLevel, cameraScale, scaleLevels) {
-    // assumes no 'skipping' between scale levels
-    var newScaleLevel;
+    /* assumes no 'skipping' between scale levels, so
+       may encounter some problems with fast zooming */
+    var newScaleLevel = scaleLevel;
+    var prevLevel;
+    var nextLevel;
     var index = scaleLevels.indexOf(scaleLevel);
+
     if(index != 0 && index != scaleLevels.length - 1) {
-        var index = scaleLevels.indexOf(scaleLevel);
-        var prevLevel = scaleLevels[index - 1];
-        var nextLevel = scaleLevels[index + 1];
-        if(cameraScale < scaleLevel) {
-            newScaleLevel = previousLevel;
-        }
-        else if(cameraScale >= nextLevel) {
-            newScaleLevel = nextLevel;
-        }
+        prevLevel = scaleLevels[index - 1];
+        nextLevel = scaleLevels[index + 1];
     }
     else if(index == 0) {
+        prevLevel = scaleLevel;
+        nextLevel = scaleLevels[index + 1];
+
     }
     else if(index == scaleLevels.length - 1) {
+        prevLevel = scaleLevels[index - 1];
+        nextLevel = scaleLevel;
     }
+
+    if(cameraScale== scaleLevel ||
+       cameraScale >  nextLevel) {
+        // do nothing
+    }
+    if(cameraScale > scaleLevel) {
+        newScaleLevel = prevLevel;
+    }
+    else if(cameraScale <= nextLevel) {
+        newScaleLevel = nextLevel;
+    }
+
     return newScaleLevel;
 }
 
@@ -54,21 +69,22 @@ function getScaleLevels(tilemapLevels) {
 angular.module('viewer')
     .directive('stUploader', [
         '$rootScope',
-        function($rootScope){
+        function($rootScope) {
             var link = function(scope, element) {
                 var canvas = element[0];
                 var ctx = canvas.getContext('2d');
 
                 var camera = new Camera(ctx);
+                            console.log("Camera at: " + camera.lookat[0] + ", " + camera.lookat[1]);
                 camera.begin();
                     ctx.fillStyle = "green";
                     ctx.fillRect(300, 300, 100, 100);
                 camera.end();
 
-                var imagePosition = [10000, 10000]; // pixel coordinates within the large image
+                var imagePosition = [0, 0]; // pixel coordinates within the large image
 
                 var tilemap = new Tilemap();
-                var tilemapLevel = 1;
+                var tilemapLevel = 20;
                 var tilePosition = tilemap.getTilePosition(imagePosition, tilemapLevel); 
 
                 /* the scale checkpoint level at which everything is rendered and scaled
@@ -82,8 +98,9 @@ angular.module('viewer')
                 var scaleFactor = 0.99; // the camera class, maybe?
 
                 // coordinates on the canvas; varies depending on image position and camera scale
-                var cameraScale = scaleLevel;
-                var cameraPosition = updateCameraPosition(imagePosition, cameraScale);
+                camera.zoomTo(scaleLevel);
+                camera.moveTo([2.5, 3]);
+                            console.log("Camera at: " + camera.lookat[0] + ", " + camera.lookat[1]);
 
                 /* https://css-tricks.com/snippets/javascript/javascript-keycodes/#article-header-id-1 */
                 var keycodes = {
@@ -94,45 +111,68 @@ angular.module('viewer')
                     zin  : [87]    , // w
                     zout : [83]      // s
                 }
+                var tilePositions = tilemap.getSurroundingTilePositions(tilePosition, tilemapLevel);
+                var images = tilemap.getRenderableImages(tilePositions, tilemapLevel);
+                renderImages(ctx, camera, camera.zoom, camera.lookat, images, scaleLevel);
 
                 document.onkeydown = function(event) {
                     if(scope.imageLoaded) {
                         event = event || window.event;
+
+                        var movement = false;
                         if(keycodes.left.includes(event.which)) {
                             // ← left
-                            imagePosition[0] -= panFactor;
+                            camera.lookat[0] -= panFactor;
+                            movement = true;
                         }
                         else if(keycodes.up.includes(event.which)) {
                             // ↑ up
-                            imagePosition[1] -= panFactor;
+                            camera.lookat[1] -= panFactor;
+                            movement = true;
                         }
                         else if(keycodes.right.includes(event.which)) {
                             // → right
-                            imagePosition[0] += panFactor;
+                            camera.lookat[0] += panFactor;
+                            movement = true;
                         }
                         else if(keycodes.down.includes(event.which)) {
                             // ↓ down
-                            imagePosition[1] += panFactor;
+                            camera.lookat[1] += panFactor;
+                            movement = true;
                         }
                         else if(keycodes.zin.includes(event.which)) {
                             // + in
-                            cameraScale /= scaleFactor;
+                            camera.zoom /= scaleFactor;
+                            movement = true;
                         }
                         else if(keycodes.zout.includes(event.which)) {
                             // - out
-                            cameraScale *= scaleFactor;
+                            camera.zoom *= scaleFactor;
+                            movement = true;
                         }
 
-                        // update position and scale
-                        scaleLevel = updateScaleLevel(scaleLevel, cameraScale, scaleLevels);
-                        cameraPosition = updateCameraPosition(imagePosition, scaleLevel); 
-                        console.log("Camera at: " + cameraPosition[0] + ", " + cameraPosition[1]);
-                        tilePosition = tilemap.getTilePosition(imagePosition, tilemapLevel); 
+                        if(movement) {
+                            console.log('////////////////////////////');
 
-                        // render images
-                        var tilePositions = tilemap.getSurroundingTilePositions(tilePosition, tilemapLevel);
-                        var imagesForRendering = tilemap.getRenderableImages(tilePositions, tilemapLevel);
-                        renderImages(ctx, camera, cameraScale, cameraPosition, imagesForRendering);
+                            console.log('hi');
+                            // update position and scale
+                            scaleLevel = updateScaleLevel(scaleLevel, camera.zoom, scaleLevels);
+                            tilemapLevel = 1 / scaleLevel;
+                            imagePosition = updateImagePosition(camera);
+                            console.log("about to call with " + imagePosition[0] + ", " + imagePosition[1] + " at level " + scaleLevel + "/" + tilemapLevel);
+                            tilePosition = tilemap.getTilePosition(imagePosition, tilemapLevel); 
+
+                            // render images
+                            var tilePositions = tilemap.getSurroundingTilePositions(tilePosition, tilemapLevel);
+                            var images = tilemap.getRenderableImages(tilePositions, tilemapLevel);
+                            renderImages(ctx, camera, camera.zoom, camera.lookat, images, scaleLevel);
+
+                            console.log("Camera at: " + camera.lookat[0] + ", " + camera.lookat[1]);
+                            console.log("with zoom: " + camera.zoom);
+                            console.log("in tile: " + tilePosition[0] + ", " + tilePosition[1]);
+                            console.log("image position: " + imagePosition[0] + ", " + imagePosition[1]);
+                            console.log("Scale and tilemap level at: " + scaleLevel + ", " + tilemapLevel);
+                        }
                     }
 
                 }
