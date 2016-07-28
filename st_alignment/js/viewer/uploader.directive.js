@@ -1,31 +1,6 @@
 'use strict';
 
-function getImages(zoomOutLevel) {
-    var images = [];
-    var photoWidth  = 20000;
-    var photoHeight = 20000;
-    var imageWidth  = 1024;
-    var imageHeight = 1024;
-
-    var tileMapWidth  = Math.trunc((photoWidth  / zoomOutLevel) / imageWidth)  + 1;
-    var tileMapHeight = Math.trunc((photoHeight / zoomOutLevel) / imageHeight) + 1;
-
-    for(var x = 0; x < tileMapWidth; ++x) {
-        var imageRow = [];
-        for(var y = 0; y < tileMapHeight; ++y) {
-            var image = new Image();
-            image.src = "img/zoom" + zoomOutLevel + "_x" + x + "_y" + y + ".jpg";
-            imageRow.push(image);
-        }
-        images.push(imageRow);
-    }
-
-    images.width  = tileMapWidth;
-    images.height = tileMapHeight;
-
-    return images;
-}
-
+// move these functions to the camera or renderer //
 function renderImages(ctx, camera, scale, position, images) {
     camera.moveTo(position[0], position[1]);
     camera.zoomTo(scale);
@@ -39,48 +14,41 @@ function renderImages(ctx, camera, scale, position, images) {
     camera.end();
 }
 
-function grabRenderableImages(tilePosition, tiledImages) {
-    var tilePositions = getSurroundingTilePositions(tilePosition, tiledImages.width, tiledImages.height);
-    var images = [];
-    for(var i = 0; i < tilePositions.length; ++i) {
-        var tileX = tilePositions[i][0];
-        var tileY = tilePositions[i][1];
-        var image = tiledImages[tileX][tileY];
-        image.renderPosition = [tileX * 1024, tileY * 1024];
-        images.push(image);
-    }
-    return images;
+function updateCameraPosition(imagePosition, scaleLevel) {
+    var cameraPosition = [];
+    cameraPosition[0] = imagePosition[0] / scaleLevel;
+    cameraPosition[1] = imagePosition[1] / scaleLevel;
+    return cameraPosition;
 }
 
-function getSurroundingTilePositions(tilePosition, maxWidth, maxHeight) {
-    var surroundingTilePositions = [];
-    var i = 0;
-    for(var y = -1; y < 2; ++y) {
-        for(var x = -1; x < 2; ++x) {
-            var xPos = tilePosition[0] + x;
-            var yPos = tilePosition[1] + y;
-            // make sure it is a valid tile
-            if(!(xPos < 0 || xPos >= maxWidth ||
-                 yPos < 0 || yPos >= maxHeight)) {
-                console.log(i + ": adding tile " + xPos + ", " + yPos);
-                surroundingTilePositions.push([xPos, yPos]);
-                ++i;
-            }
+function updateScaleLevel(scaleLevel, cameraScale, scaleLevels) {
+    // assumes no 'skipping' between scale levels
+    var newScaleLevel;
+    var index = scaleLevels.indexOf(scaleLevel);
+    if(index != 0 && index != scaleLevels.length - 1) {
+        var index = scaleLevels.indexOf(scaleLevel);
+        var prevLevel = scaleLevels[index - 1];
+        var nextLevel = scaleLevels[index + 1];
+        if(cameraScale < scaleLevel) {
+            newScaleLevel = previousLevel;
+        }
+        else if(cameraScale >= nextLevel) {
+            newScaleLevel = nextLevel;
         }
     }
-    return surroundingTilePositions;
+    else if(index == 0) {
+    }
+    else if(index == scaleLevels.length - 1) {
+    }
+    return newScaleLevel;
 }
 
-function updateImagePosition(cameraPosition, zoomOutLevel) {
-    var newImagePosition = [cameraPosition[0] * zoomOutLevel, cameraPosition[1] * zoomOutLevel];
-    return newImagePosition;
-}
-
-function updateTilePosition(cameraPosition, zoomOutLevel) {
-    var x = Math.trunc(cameraPosition[0] / 1024);
-    var y = Math.trunc(cameraPosition[1] / 1024);
-    console.log("tile " + x + ", " + y);
-    return [x, y];
+function getScaleLevels(tilemapLevels) {
+    var scaleLevels = [];
+    for(var i = 0; i < tilemapLevels.length; ++i) {
+        scaleLevels.push(1 / tilemapLevels[i]);
+    }
+    return scaleLevels;
 }
 
 angular.module('viewer')
@@ -97,57 +65,74 @@ angular.module('viewer')
                     ctx.fillRect(300, 300, 100, 100);
                 camera.end();
 
-                var zoomImages = [];
-                zoomImages[1]  = getImages(1);
-                zoomImages[2]  = getImages(2);
-                zoomImages[3]  = getImages(3);
-                zoomImages[5]  = getImages(5);
-                zoomImages[10] = getImages(10);
-                zoomImages[20] = getImages(20);
+                var imagePosition = [10000, 10000]; // pixel coordinates within the large image
 
-                var imagesToRender = [];
+                var tilemap = new Tilemap();
+                var tilemapLevel = 1;
+                var tilePosition = tilemap.getTilePosition(imagePosition, tilemapLevel); 
+
+                /* the scale checkpoint level at which everything is rendered and scaled
+                   scaled around but is *not* necessarily the same as the camera scale   */
+                var scaleLevel = 1 / tilemapLevel;
+                /* the possible scale levels based on the tilemap levels; i.e.
+                   the scales at which the various tilemaps should be rendered */
+                var scaleLevels = getScaleLevels(tilemap.tilemapLevels);
+
+                var panFactor = 100;    // move these two to
+                var scaleFactor = 0.99; // the camera class, maybe?
+
+                // coordinates on the canvas; varies depending on image position and camera scale
+                var cameraScale = scaleLevel;
+                var cameraPosition = updateCameraPosition(imagePosition, cameraScale);
 
                 /* https://css-tricks.com/snippets/javascript/javascript-keycodes/#article-header-id-1 */
-                var keycodes_left  = [37, 72]; // left,  h
-                var keycodes_up    = [38, 75]; // up,    k
-                var keycodes_right = [39, 76]; // right, l
-                var keycodes_down  = [40, 74]; // down,  j
-                var keycodes_in    = [87]    ; // w
-                var keycodes_out   = [83]    ; // s
+                var keycodes = {
+                    left : [37, 72], // left,  h
+                    up   : [38, 75], // up,    k
+                    right: [39, 76], // right, l
+                    down : [40, 74], // down,  j
+                    zin  : [87]    , // w
+                    zout : [83]      // s
+                }
 
                 document.onkeydown = function(event) {
                     if(scope.imageLoaded) {
                         event = event || window.event;
-                        if(keycodes_left.includes(event.which)) {
-                            // left
-                            scope.cameraPosition[0] -= scope.panFactor;
+                        if(keycodes.left.includes(event.which)) {
+                            // ← left
+                            imagePosition[0] -= panFactor;
                         }
-                        else if(keycodes_up.includes(event.which)) {
-                            // up
-                            scope.cameraPosition[1] -= scope.panFactor;
+                        else if(keycodes.up.includes(event.which)) {
+                            // ↑ up
+                            imagePosition[1] -= panFactor;
                         }
-                        else if(keycodes_right.includes(event.which)) {
-                            // right
-                            scope.cameraPosition[0] += scope.panFactor;
+                        else if(keycodes.right.includes(event.which)) {
+                            // → right
+                            imagePosition[0] += panFactor;
                         }
-                        else if(keycodes_down.includes(event.which)) {
-                            // down
-                            scope.cameraPosition[1] += scope.panFactor;
+                        else if(keycodes.down.includes(event.which)) {
+                            // ↓ down
+                            imagePosition[1] += panFactor;
                         }
-                        else if(keycodes_in.includes(event.which)) {
-                            // in
-                            scope.cameraScale /= scope.scaleFactor;
+                        else if(keycodes.zin.includes(event.which)) {
+                            // + in
+                            cameraScale /= scaleFactor;
                         }
-                        else if(keycodes_out.includes(event.which)) {
-                            // out
-                            scope.cameraScale *= scope.scaleFactor;
+                        else if(keycodes.zout.includes(event.which)) {
+                            // - out
+                            cameraScale *= scaleFactor;
                         }
 
-                        console.log("Camera at: " + scope.cameraPosition[0] + ", " + scope.cameraPosition[1]);
-                        scope.imagePosition = updateImagePosition(scope.cameraPosition, scope.zoomOutLevel);
-                        scope.tilePosition = updateTilePosition(scope.cameraPosition, scope.zoomOutLevel);
-                        var imagesForRendering = grabRenderableImages(scope.tilePosition, zoomImages[scope.zoomOutLevel]);
-                        renderImages(ctx, camera, scope.cameraScale, scope.cameraPosition, imagesForRendering);
+                        // update position and scale
+                        scaleLevel = updateScaleLevel(scaleLevel, cameraScale, scaleLevels);
+                        cameraPosition = updateCameraPosition(imagePosition, scaleLevel); 
+                        console.log("Camera at: " + cameraPosition[0] + ", " + cameraPosition[1]);
+                        tilePosition = tilemap.getTilePosition(imagePosition, tilemapLevel); 
+
+                        // render images
+                        var tilePositions = tilemap.getSurroundingTilePositions(tilePosition, tilemapLevel);
+                        var imagesForRendering = tilemap.getRenderableImages(tilePositions, tilemapLevel);
+                        renderImages(ctx, camera, cameraScale, cameraPosition, imagesForRendering);
                     }
 
                 }

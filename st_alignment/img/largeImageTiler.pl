@@ -29,8 +29,8 @@ if($zoomOutLevel != 1) {
     $sourceFile = $outputFile;
 }
 
-for my $y (0..$tileMapWidth - 1) {
-    for my $x (0..$tileMapHeight - 1) {
+for my $y (0..$tileMapHeight - 1) {
+    for my $x (0..$tileMapWidth - 1) {
 
         my $widthOffset  = $tileWidth  * $x;
         my $heightOffset = $tileHeight * $y;
