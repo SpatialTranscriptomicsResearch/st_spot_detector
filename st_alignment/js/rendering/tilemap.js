@@ -42,7 +42,13 @@
     };
 
     Tilemap.prototype = {
-        getRenderableImages: function(tilePositions, tilemapLevel) {
+        getRenderableImages: function(tilePosition, tilemapLevel, radius) {
+            radius = radius || 3;
+            var tilePositions = this.getSurroundingTilePositions(tilePosition, tilemapLevel, radius);
+            var images = this.getImagesAtTilePositions(tilePositions, tilemapLevel);
+            return images;
+        },
+        getImagesAtTilePositions: function(tilePositions, tilemapLevel) {
             /* given a set of tile positions and a tile map level,
                the relevant images are returned from the tile map */
             var images = [];
@@ -62,7 +68,8 @@
                tile positions within a certain radius are returned.
                the radius variable includes the centre tile position */
             console.log("getting surrounding tiles at level " + tilemapLevel);
-            radius = radius || 2;
+            radius = radius || 3;
+            console.log('radius is: ' + radius);
             var positions = [];
             var negBoundary = 1 - radius;
             var posBoundary = 0 + radius;
