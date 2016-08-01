@@ -14,21 +14,34 @@ angular.module('buttonBar')
      * This data URL is sent to the Image service for storage */
     .directive('imageUpload', [
         '$rootScope',
+        function($rootScope) {
+            return {
+                scope: true,
+                link: function(scope, elem, attrs) {
+                    elem.bind('change', function(event) {
+                        var img = event.target.files[0];
+                        var reader = new FileReader();
+                        reader.addEventListener('load', function() {
+                            $rootScope.$broadcast('imageLoaded', reader.result);
+                        }, false);
+                        if(img) {
+                            //reader.readAsArrayBuffer(img);
+                            reader.readAsDataURL(img);
+                        }
+                    });
+                }
+            };
+        }
+    ])
+
+    .directive('alignButton', [
+        '$rootScope',
         function($rootScope) { return {
             scope: true,
             link: function(scope, elem, attrs) {
-                elem.bind('change', function(event) {
-                    var img = event.target.files[0];
-                    var reader = new FileReader();
-                    console.log('loading...!!!');
-                    reader.addEventListener('load', function() {
-                        console.log('finished loading! ^_^');
-                        $rootScope.$broadcast('imageLoaded', reader.result);
-                    }, false);
-                    if(img) {
-                        //reader.readAsArrayBuffer(img);
-                        reader.readAsDataURL(img);
-                    }
+                elem.bind('click', function(event) {
+                    $rootScope.$broadcast('spotsCalculated');
                 });
             }
-        };}]);
+        };}
+    ]);

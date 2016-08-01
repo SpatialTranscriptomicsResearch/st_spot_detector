@@ -102,6 +102,15 @@ angular.module('viewer')
                     }
                 }
 
+                $rootScope.$on('imageLoaded', function(event, data) {
+                    scope.imageLoaded = true;
+                    updateCanvas();
+                });
+                $rootScope.$on('spotsCalculated', function(event, data) {
+                    spotsOn = !spotsOn;
+                    updateCanvas();
+                });
+
                 function updateCanvas() {
                     // update position and scale
                     scaleManager.updateScaleLevel(camera.scale);
@@ -126,10 +135,6 @@ angular.module('viewer')
                     console.log("image position: " + imagePosition[0] + ", " + imagePosition[1]);
                     console.log("Scale and tilemap level at: " + scaleManager.currentScaleLevel + ", " + tilemapLevel);
                 }
-
-                $rootScope.$on('imageLoaded', function(event, data) {
-                    scope.imageLoaded = true;
-                });
             };
             return {
                 restrict: 'A',
