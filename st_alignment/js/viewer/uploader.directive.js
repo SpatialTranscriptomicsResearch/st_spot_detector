@@ -15,6 +15,7 @@ angular.module('viewer')
                 var scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
                 var camera = new Camera(ctx, imagePosition, scaleManager.currentScaleLevel);
                 var renderer = new Renderer(ctx, camera);
+                var spots = new SpotManager();
 
                 /* https://css-tricks.com/snippets/javascript/javascript-keycodes/#article-header-id-1 */
                 var keycodes = {
@@ -64,6 +65,7 @@ angular.module('viewer')
                     updateCanvas();
                 }
 
+                var spotsOn = true;
                 document.onkeydown = function(event) {
                     if(scope.imageLoaded) {
                         event = event || window.event;
@@ -92,6 +94,9 @@ angular.module('viewer')
                             // - out
                             camera.zoom(camera.dir.zout);
                         }
+                        else if(event.which == 32) {
+                            spotsOn = !spotsOn;
+                        }
 
                         updateCanvas();
                     }
@@ -109,6 +114,12 @@ angular.module('viewer')
                     renderer.clearCanvas();
                     renderer.renderImages(images);
 
+                    // render spots
+                    if(spotsOn) renderer.renderSpots(spots.spots);
+
+                    //debugPrints();
+                }
+                function debugPrints() {
                     console.log("Camera at: " + camera.position[0] + ", " + camera.position[1]);
                     console.log("with zoom: " + camera.scale);
                     console.log("in tile: " + tilePosition[0] + ", " + tilePosition[1]);
