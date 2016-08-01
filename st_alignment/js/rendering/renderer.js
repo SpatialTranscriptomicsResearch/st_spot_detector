@@ -19,8 +19,6 @@
         renderImages: function(images) {
             this.camera.begin();
                 for(var i = 0; i < images.length; ++i) {
-                    console.log(i + " pos: " + images[i].renderPosition[0] + ", " + images[i].renderPosition[1]);
-                    console.log(i + " size: " + images[i].scaledSize[0] + ", " + images[i].scaledSize[1]);
                     this.ctx.drawImage(images[i], images[i].renderPosition[0], images[i].renderPosition[1], images[i].scaledSize[0], images[i].scaledSize[1]);
                 }
             this.camera.end();
