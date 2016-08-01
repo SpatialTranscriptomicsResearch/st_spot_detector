@@ -18,12 +18,12 @@ angular.module('viewer')
 
                 /* https://css-tricks.com/snippets/javascript/javascript-keycodes/#article-header-id-1 */
                 var keycodes = {
-                    left : [37, 72], // left,  h
-                    up   : [38, 75], // up,    k
-                    right: [39, 76], // right, l
-                    down : [40, 74], // down,  j
-                    zin  : [87]    , // w
-                    zout : [83]      // s
+                    left : [ 37, 65], // left,  a
+                    up   : [ 38, 87], // up,    w
+                    right: [ 39, 68], // right, d
+                    down : [ 40, 83], // down,  s
+                    zin  : [107, 69], // +,     e
+                    zout : [109, 81]  // -,     q
                 }
 
                 var tilePosition = tilemap.getTilePosition(imagePosition, tilemapLevel);
@@ -33,8 +33,6 @@ angular.module('viewer')
 
                 var mousePos = [];
                 var mouseDown = false;
-
-                document.body.style.cursor = "cursor-url";
 
                 canvas.onmousedown = function(e){
                     mousePos = [e.pageX, e.pageY];

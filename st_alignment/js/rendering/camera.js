@@ -19,9 +19,11 @@
         this.navFactor = 300;
         this.panFactor = 5;
         this.scaleFactor = 0.95; 
-
-        this.updateViewport();
+        this.minScale = 0.03;
+        this.maxScale = 1.00;
+        this.positionBoundaries = {"minX": 0, "maxX": 20480, "minY": 0, "maxY": 20480};
         this.dir = Object.freeze({"left": 1, "up": 2, "right": 3, "down": 4, "zin": 5, "zout": 6});
+        this.updateViewport();
     };
   
     Camera.prototype = {
@@ -41,6 +43,7 @@
             this.context.translate(-this.viewport.l + this.positionOffset[0], -this.viewport.t + this.positionOffset[1]);
         },
         updateViewport: function() {
+            this.clampValues();
             this.positionOffset = this.calculateOffset();
             this.aspectRatio = this.context.canvas.width / this.context.canvas.height;
             this.viewport.l = this.position[0] - (this.viewport.width / 2.0);
@@ -90,6 +93,15 @@
         },
         calculateOffset: function() {
             return [(this.context.canvas.width / 2) / this.scale, (this.context.canvas.height / 2) / this.scale];
+        },
+        clampValues: function() {
+            // keep the scale and position values within reasonable limits
+            this.position[0] = Math.max(this.position[0], this.positionBoundaries.minX);
+            this.position[0] = Math.min(this.position[0], this.positionBoundaries.maxX);
+            this.position[1] = Math.max(this.position[1], this.positionBoundaries.minY);
+            this.position[1] = Math.min(this.position[1], this.positionBoundaries.maxY);
+            this.scale = Math.max(this.scale, this.minScale);
+            this.scale = Math.min(this.scale, this.maxScale);
         }
     };
   
