@@ -1,3 +1,3 @@
 angular.module('buttonBar', [
-    'core.image'
+//    'core.image'
 ]);

@@ -1,5 +1,5 @@
 'use strict';
 
 angular.module('core', [
-    'core.image'
+    //'core.image'
 ]);

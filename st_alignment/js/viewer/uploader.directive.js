@@ -95,6 +95,7 @@ angular.module('viewer')
                             camera.zoom(camera.dir.zout);
                         }
                         else if(event.which == 32) {
+                            // temporary debug on spacebar press
                             spotsOn = !spotsOn;
                         }
 
