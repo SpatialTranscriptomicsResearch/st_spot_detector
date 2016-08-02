@@ -10,8 +10,17 @@ body {
 canvas {
     cursor: -webkit-grab;
     cursor:-moz-grab;
+    background-color: lightBlue;
+    border: 1px dotted black;
 }
 canvas:active {
     cursor: -webkit-grabbing;
     cursor:-moz-grabbing;
+}
+
+.spotExample {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    background-color: red;
 }

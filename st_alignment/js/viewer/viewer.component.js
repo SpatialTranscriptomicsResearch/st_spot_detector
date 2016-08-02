@@ -5,6 +5,6 @@ angular.module('viewer')
             '$scope',
             '$rootScope',
             function($scope, $rootScope) {
-                $scope.imageLoaded = true; // should only be 'true' for debugging purposes
+                $scope.imageLoaded = false; 
             }]
     });

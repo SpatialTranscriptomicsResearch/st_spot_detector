@@ -111,6 +111,10 @@ angular.module('viewer')
                     spotsOn = !spotsOn;
                     updateCanvas();
                 });
+                $rootScope.$on('colourUpdate', function(event, data) {
+                    renderer.spotColour = data['background-color'];
+                    updateCanvas();
+                });
 
                 function updateCanvas() {
                     // update position and scale
