@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('viewer')
-    .directive('stUploader', [
+    .directive('viewerCanvas', [
         '$rootScope',
         function($rootScope) {
             var link = function(scope, element) {
@@ -131,9 +131,9 @@ angular.module('viewer')
                     // render spots
                     if(spotsOn) renderer.renderSpots(spots.spots);
 
-                    //debugPrints();
+                    //tileDebugPrints();
                 }
-                function debugPrints() {
+                function tileDebugPrints() {
                     console.log("Camera at: " + camera.position[0] + ", " + camera.position[1]);
                     console.log("with zoom: " + camera.scale);
                     console.log("in tile: " + tilePosition[0] + ", " + tilePosition[1]);
