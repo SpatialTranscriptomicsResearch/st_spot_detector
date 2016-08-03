@@ -19,8 +19,15 @@ canvas:active {
 }
 
 .spotExample {
-    width: 100px;
-    height: 100px;
-    border-radius: 50px;
-    background-color: red;
+    margin: 10px;
+    width: 70px;
+    height: 70px;
+    border-radius: 35px;
+}
+
+spot-manipulator {
+    position: fixed;
+    width: 400px;
+    bottom: 30px;
+    right: 30px;
 }

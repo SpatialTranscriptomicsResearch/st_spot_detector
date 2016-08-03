@@ -65,7 +65,7 @@ angular.module('viewer')
                     updateCanvas();
                 }
 
-                var spotsOn = true;
+                var spotsOn = false;
                 document.onkeydown = function(event) {
                     if(scope.imageLoaded) {
                         event = event || window.event;
