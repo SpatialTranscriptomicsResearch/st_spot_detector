@@ -16,7 +16,7 @@
             height: 0,
             scale: [1.0, 1.0]
         };
-        this.navFactor = 300;
+        this.navFactor = 60;
         this.panFactor = 5;
         this.scaleFactor = 0.95; 
         this.minScale = 0.03;
@@ -62,19 +62,28 @@
             this.updateViewport();
         },
         navigate: function(dir) {
+            var movement = [0, 0];
+            var scaleFactor = 1;
             if(dir === this.dir.left) {
-                this.position[0] -= this.navFactor;
+                movement[0] -= this.navFactor;
             }
             else if(dir === this.dir.up) {
-                this.position[1] -= this.navFactor;
+                movement[1] -= this.navFactor;
             }
             else if(dir === this.dir.right) {
-                this.position[0] += this.navFactor;
+                movement[0] += this.navFactor;
             }
             else if(dir === this.dir.down) {
-                this.position[1] += this.navFactor;
+                movement[1] += this.navFactor;
             }
-            this.updateViewport();
+            else if(dir === this.dir.zin) {
+                scaleFactor = 1 / this.scaleFactor;
+            }
+            else if(dir === this.dir.zout) {
+                scaleFactor = this.scaleFactor;
+            }
+            this.pan(movement);
+            this.zoom(scaleFactor);
         },
         pan: function(direction) {
             // takes an array [x, y] and moves the camera with that distance //
@@ -82,13 +91,8 @@
             this.position[1] += (direction[1] * this.panFactor);
             this.updateViewport();
         },
-        zoom: function(dir) {
-            if(dir === this.dir.zin) {
-                this.scale /= this.scaleFactor;
-            }
-            else if(dir === this.dir.zout) {
-                this.scale *= this.scaleFactor;
-            }
+        zoom: function(scaleFactor) {
+            this.scale *= scaleFactor;
             this.updateViewport();
         },
         calculateOffset: function() {
