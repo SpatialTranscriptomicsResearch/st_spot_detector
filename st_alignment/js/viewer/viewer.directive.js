@@ -9,14 +9,16 @@ angular.module('viewer')
                 var ctx = canvas.getContext('2d');
 
                 var tilemapLevel = 20;
-                var imagePosition = [(ctx.canvas.width / 2) * tilemapLevel, (ctx.canvas.height / 2) * tilemapLevel];
+                var imagePosition = {x: (ctx.canvas.width  / 2) * tilemapLevel,
+                                     y: (ctx.canvas.height / 2) * tilemapLevel};
 
                 var tilemap = new Tilemap();
                 var spots = new SpotManager();
+                var spotSelector = new SpotSelector(ctx, camera, spots);
                 var scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
                 var camera = new Camera(ctx, imagePosition, scaleManager.currentScaleLevel);
                 var renderer = new Renderer(ctx, camera);
-                var logicHandler = new LogicHandler(canvas, camera, updateCanvas);
+                var logicHandler = new LogicHandler(canvas, camera, spotSelector, updateCanvas);
                 var eventHandler = new EventHandler(canvas, camera, logicHandler);
 
                 var tilePosition = tilemap.getTilePosition(imagePosition, tilemapLevel);
@@ -24,7 +26,8 @@ angular.module('viewer')
                 renderer.clearCanvas();
                 renderer.renderImages(images);
 
-                var spotsOn = false;
+                var imageLoaded = true;
+                var spotsOn = true;
 
                 $rootScope.$on('imageLoaded', function(event, data) {
                     scope.imageLoaded = true;
@@ -38,21 +41,34 @@ angular.module('viewer')
                     renderer.spotColour = data['background-color'];
                     updateCanvas();
                 });
+                $rootScope.$on('onMove', function(event, data) {
+                    logicHandler.currentState = logicHandler.state.move_camera;
+                    updateCanvas();
+                });
+                $rootScope.$on('onSelect', function(event, data) {
+                    logicHandler.currentState = logicHandler.state.select_spots;
+                    updateCanvas();
+                });
 
                 function updateCanvas() {
-                    // update position and scale
-                    scaleManager.updateScaleLevel(camera.scale);
-                    tilemapLevel = 1 / scaleManager.currentScaleLevel;
-                    imagePosition = camera.position;
-                    tilePosition = tilemap.getTilePosition(imagePosition, tilemapLevel); 
+                    renderer.clearCanvas();
 
                     // render images
-                    images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                    renderer.clearCanvas();
-                    renderer.renderImages(images);
+                    if(imageLoaded)  {
+                        scaleManager.updateScaleLevel(camera.scale);
+                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
+                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
+                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+                        renderer.renderImages(images);
+                    }
 
                     // render spots
-                    if(spotsOn) renderer.renderSpots(spots.spots);
+                    if(spotsOn) {
+                        renderer.renderSpots(spots.spots);
+                        if(spotSelector.selecting) {
+                            renderer.renderSpotSelection(spotSelector.selectionRect);
+                        }
+                    }
 
                     //tileDebugPrints();
                 }
@@ -60,7 +76,7 @@ angular.module('viewer')
                     console.log("Camera at: " + camera.position[0] + ", " + camera.position[1]);
                     console.log("with zoom: " + camera.scale);
                     console.log("in tile: " + tilePosition[0] + ", " + tilePosition[1]);
-                    console.log("image position: " + imagePosition[0] + ", " + imagePosition[1]);
+                    console.log("image position: " + camera.position[0] + ", " + camera.position[1]);
                     console.log("Scale and tilemap level at: " + scaleManager.currentScaleLevel + ", " + tilemapLevel);
                 }
             };

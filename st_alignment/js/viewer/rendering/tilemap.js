@@ -53,12 +53,14 @@
                the relevant images are returned from the tile map */
             var images = [];
             for(var i = 0; i < tilePositions.length; ++i) {
-                var tileX = tilePositions[i][0];
-                var tileY = tilePositions[i][1];
+                var tileX = tilePositions[i].x;
+                var tileY = tilePositions[i].y;
                 var image = this.tilemaps[tilemapLevel][tileX][tileY];
 
-                image.renderPosition = [(tileX * this.tileWidth) * tilemapLevel, (tileY * this.tileHeight) * tilemapLevel];
-                image.scaledSize = [this.tileWidth * tilemapLevel, this.tileHeight * tilemapLevel];
+                image.renderPosition = {x: (tileX * this.tileWidth)  * tilemapLevel,
+                                        y: (tileY * this.tileHeight) * tilemapLevel};
+                image.scaledSize = {x: this.tileWidth  * tilemapLevel,
+                                    y: this.tileHeight * tilemapLevel};
                 images.push(image);
             }
             return images;
@@ -74,12 +76,12 @@
             var i = 0;
             for(var y = negBoundary; y < posBoundary; ++y) {
                 for(var x = negBoundary; x < posBoundary; ++x) {
-                    var xPos = tilePosition[0] + x;
-                    var yPos = tilePosition[1] + y;
+                    var xPos = tilePosition.x + x;
+                    var yPos = tilePosition.y + y;
                     // make sure it is a valid tile
                     if(!(xPos < 0 || xPos >= this.tilemaps[tilemapLevel].width ||
                          yPos < 0 || yPos >= this.tilemaps[tilemapLevel].height)) {
-                        positions.push([xPos, yPos]);
+                        positions.push({x: xPos, y: yPos});
                         ++i;
                     }
                 }
@@ -89,10 +91,11 @@
         getTilePosition: function(imagePosition, tilemapLevel) {
             /* calculates the tile position from a given image
                position, i.e. converts image to tile coordinates */
-            var tileSizeInImageCoords = [this.tileWidth * tilemapLevel, this.tileHeight * tilemapLevel];
-            var x = Math.trunc(imagePosition[0] / tileSizeInImageCoords[0]);
-            var y = Math.trunc(imagePosition[1] / tileSizeInImageCoords[1]);
-            return [x, y];
+            var tileSizeInImageCoords = {x: this.tileWidth * tilemapLevel,
+                                         y: this.tileHeight * tilemapLevel};
+            var tileX = Math.trunc(imagePosition.x / tileSizeInImageCoords.x);
+            var tileY = Math.trunc(imagePosition.y / tileSizeInImageCoords.y);
+            return {x: tileX, y: tileY};
         }
     };
 
