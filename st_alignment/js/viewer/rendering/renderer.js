@@ -50,11 +50,10 @@
                 }
             this.camera.end();
         },
-        renderSpotSelection: function(spotSelection) {
-            var w = spotSelection.BR.x - spotSelection.TL.x;
-            var h = spotSelection.BR.y - spotSelection.TL.y;
-            this.ctx.fillColour = 'blue';
-            this.ctx.fillRect(spotSelection.TL.x, spotSelection.TL.y, w, h);
+        renderSpotSelection: function(rectCoords) {
+            this.ctx.strokeStyle = "rgba(30, 30, 30, 0.9)";
+            this.ctx.setLineDash([4, 3]);
+            this.ctx.strokeRect(rectCoords.TL.x, rectCoords.TL.y, rectCoords.WH.x, rectCoords.WH.y);
         }
   };
 

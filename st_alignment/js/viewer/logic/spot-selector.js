@@ -10,37 +10,73 @@
         self.spotManager = spotManager;
         self.selecting = false;
         self.selected = false;
+        self.renderingRect = {TL: {x: 0, y: 0},
+                              WH: {x: 0, y: 0}};
         self.selectionRect = {TL: {x: 0, y: 0},
                               BR: {x: 0, y: 0}};
     };
   
     SpotSelector.prototype = {
-        selectSpots: function() {
+        selectSpots: function(up) {
             // takes two points, the top left and bottom right of a rect, and returns the spots contained within it
             var selectedSpots;
             var spots = self.spotManager.spots;
-            for(var i = 0; i < spots.length; ++i) {
-                var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
-                if(pos.x > self.selectionRect.TL.x && pos.x < self.selectionRect.BR.x &&
-                   pos.y > self.selectionRect.TL.y && pos.y < self.selectionRect.BR.y) {
-                    spots[i].selected = true;
-                }
-                else {
-                    spots[i].selected = false;
+
+            // first we need to check if the user is only clicking on a single spot
+            if(self.renderingRect.WH.x < 3 && self.renderingRect.WH.y < 3) // arbitrary 3 values here for a "click"
+            {
+                console.log('hi');
+                for(var i = 0; i < spots.length; ++i) {
+                    var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
+                    if(Math.abs(pos.x - self.selectionRect.TL.x) < 90 &&
+                       Math.abs(pos.y - self.selectionRect.TL.y) < 90) {
+                        spots[i].selected = true;
+                    }
+                    else {
+                        spots[i].selected = false;
+                    }
                 }
             }
+            // otherwise, we treat the selection as a rectangle
+            else {
+                for(var i = 0; i < spots.length; ++i) {
+                    var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
+                    if(pos.x > self.selectionRect.TL.x && pos.x < self.selectionRect.BR.x &&
+                       pos.y > self.selectionRect.TL.y && pos.y < self.selectionRect.BR.y) {
+                        spots[i].selected = true;
+                    }
+                    else {
+                        spots[i].selected = false;
+                    }
+                }
+            }
+            //console.log("rect is: " + self.selectionRect.TL.x + ", " + self.selectionRect.TL.y + ", " + self.selectionRect.BR.x + ", " + self.selectionRect.BR.y);
         },
         beginSelection: function(topLeft) {
-            self.selectionRect.TL = topLeft;
+            self.renderingRect.TL = topLeft;
+            self.renderingRect.WH = {x: 0, y: 0};
+            var cam = {x: self.camera.position.x - self.camera.positionOffset.x,
+                       y: self.camera.position.y - self.camera.positionOffset.y};
+            var mouse = {x: topLeft.x / self.camera.scale,
+                         y: topLeft.y / self.camera.scale};
+            self.selectionRect.TL = {x: cam.x + mouse.x, y: cam.y + mouse.y};
+            self.selectionRect.BR = {x: cam.x + mouse.x, y: cam.y + mouse.y};
         },
         updateSelection: function(bottomRight) {
+            self.renderingRect.WH = {x: bottomRight.x - self.renderingRect.TL.x,
+                                     y: bottomRight.y - self.renderingRect.TL.y};
+            var cam = {x: self.camera.position.x - self.camera.positionOffset.x,
+                       y: self.camera.position.y - self.camera.positionOffset.y};
+            var mouse = {x: bottomRight.x / self.camera.scale,
+                         y: bottomRight.y / self.camera.scale};
+            self.selectionRect.BR = {x: cam.x + mouse.x, y: cam.y + mouse.y};
             self.selecting = true;
-            self.selectionRect.BR = bottomRight;
+            self.selectSpots();
         },
         endSelection: function() {
-            self.selectSpots();
             self.selecting = false;
-            self.selected = true;
+            self.selected  = true;
+            self.selectSpots();
         }
   };
 

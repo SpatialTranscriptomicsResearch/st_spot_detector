@@ -4,7 +4,7 @@
   
     var Camera = function(context, initialPosition, initialScale) {
         this.context = context;
-        this.position = initialPosition || {x: 0,y: 0};
+        this.position = initialPosition || {x: 0, y: 0};
         this.scale = initialScale || 1.0;
         this.positionOffset = this.calculateOffset();
         this.viewport = {

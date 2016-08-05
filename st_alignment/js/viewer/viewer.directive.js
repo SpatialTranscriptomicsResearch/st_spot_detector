@@ -9,19 +9,20 @@ angular.module('viewer')
                 var ctx = canvas.getContext('2d');
 
                 var tilemapLevel = 20;
-                var imagePosition = {x: (ctx.canvas.width  / 2) * tilemapLevel,
-                                     y: (ctx.canvas.height / 2) * tilemapLevel};
+                var cameraPosition = {x: (ctx.canvas.width  / 2) * tilemapLevel,
+                                      y: (ctx.canvas.height / 2) * tilemapLevel};
 
                 var tilemap = new Tilemap();
+                var scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
+                var camera = new Camera(ctx, cameraPosition, scaleManager.currentScaleLevel);
+                var renderer = new Renderer(ctx, camera);
+
                 var spots = new SpotManager();
                 var spotSelector = new SpotSelector(ctx, camera, spots);
-                var scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
-                var camera = new Camera(ctx, imagePosition, scaleManager.currentScaleLevel);
-                var renderer = new Renderer(ctx, camera);
                 var logicHandler = new LogicHandler(canvas, camera, spotSelector, updateCanvas);
                 var eventHandler = new EventHandler(canvas, camera, logicHandler);
 
-                var tilePosition = tilemap.getTilePosition(imagePosition, tilemapLevel);
+                var tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
                 var images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
                 renderer.clearCanvas();
                 renderer.renderImages(images);
@@ -67,7 +68,7 @@ angular.module('viewer')
                     if(spotsOn) {
                         renderer.renderSpots(spots.spots);
                         if(spotSelector.selecting) {
-                            renderer.renderSpotSelection(spotSelector.selectionRect);
+                            renderer.renderSpotSelection(spotSelector.renderingRect);
                         }
                     }
 
