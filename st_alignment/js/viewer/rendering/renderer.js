@@ -51,8 +51,8 @@
             this.camera.end();
         },
         renderSpotSelection: function(spotSelection) {
-            var w = spotSelection.TL.x - spotSelection.BR.x;
-            var h = spotSelection.TL.y - spotSelection.BR.y;
+            var w = spotSelection.BR.x - spotSelection.TL.x;
+            var h = spotSelection.BR.y - spotSelection.TL.y;
             this.ctx.fillColour = 'blue';
             this.ctx.fillRect(spotSelection.TL.x, spotSelection.TL.y, w, h);
         }

@@ -26,25 +26,25 @@
     EventHandler.prototype = {
         setUpMouseEvents: function(canvas, camera) {
             canvas.onmousedown = function(e) {
-                self.mousePos = {x: e.pageX, y: e.pageY};
+                self.mousePos = {x: e.layerX, y: e.layerY};
                 self.mouseDown = true;
                 self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.down, {position: self.mousePos});
             }
             canvas.onmouseup = function(e) {
-                self.mousePos = {x: e.pageX, y: e.pageY};
+                self.mousePos = {x: e.layerX, y: e.layerY};
                 self.mouseDown = false;
                 self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.up, {position: self.mousePos});
             }
 
             canvas.onmouseout = function(e) {
-                self.mousePos = {x: e.pageX, y: e.pageY};
+                self.mousePos = {x: e.layerX, y: e.layerY};
                 self.mouseDown = false;
                 self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.out, {position: self.mousePos});
             }
 
             canvas.onmousemove = function(e) {
-                var difference = {x: self.mousePos[0] - e.pageX, y: self.mousePos[1] - e.pageY};
-                self.mousePos = {x: e.pageX, y: e.pageY};
+                var difference = {x: self.mousePos[0] - e.layerX, y: self.mousePos[1] - e.layerY};
+                self.mousePos = {x: e.layerX, y: e.layerY};
                 self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.move, {position: self.mousePos, difference: difference});
                 if(self.mouseDown) {
                     self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.drag, {position: self.mousePos, difference: difference});

@@ -31,10 +31,10 @@
             }
         },
         beginSelection: function(topLeft) {
-            self.selecting = true;
             self.selectionRect.TL = topLeft;
         },
         updateSelection: function(bottomRight) {
+            self.selecting = true;
             self.selectionRect.BR = bottomRight;
         },
         endSelection: function() {
