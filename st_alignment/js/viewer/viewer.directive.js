@@ -31,6 +31,7 @@ angular.module('viewer')
 
                 $rootScope.$on('imageLoaded', function(event, data) {
                     scope.imageLoaded = true;
+                    logicHandler.currentState = logicHandler.state.move_camera;
                     updateCanvas();
                 });
                 $rootScope.$on('spotsCalculated', function(event, data) {
@@ -41,11 +42,11 @@ angular.module('viewer')
                     renderer.spotColour = data['background-color'];
                     updateCanvas();
                 });
-                $rootScope.$on('onMove', function(event, data) {
+                $rootScope.$on('moveState', function(event, data) {
                     logicHandler.currentState = logicHandler.state.move_camera;
                     updateCanvas();
                 });
-                $rootScope.$on('onSelect', function(event, data) {
+                $rootScope.$on('selectState', function(event, data) {
                     logicHandler.currentState = logicHandler.state.select_spots;
                     updateCanvas();
                 });

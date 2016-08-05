@@ -43,11 +43,11 @@
             }
 
             canvas.onmousemove = function(e) {
-                var difference = {x: self.mousePos[0] - e.layerX, y: self.mousePos[1] - e.layerY};
+                var distanceMoved = {x: self.mousePos.x - e.layerX, y: self.mousePos.y - e.layerY};
                 self.mousePos = {x: e.layerX, y: e.layerY};
-                self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.move, {position: self.mousePos, difference: difference});
+                self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.move, {position: self.mousePos, difference: distanceMoved});
                 if(self.mouseDown) {
-                    self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.drag, {position: self.mousePos, difference: difference});
+                    self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.drag, {position: self.mousePos, difference: distanceMoved});
                 }
             }
             canvas.onmousewheel = function(e) {

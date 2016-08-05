@@ -13,8 +13,8 @@
     </div>
     <div class='spotExample' ng-style='updateElementStyle(spotColour, spotOpacity)'></div>
     <div class='btn-group' role='group' aria-label='move or select'>
-        <button toggle-button type='button' class='btn btn-default active'>Move</button>
-        <button toggle-button type='button' class='btn btn-default'>Select</button>
+        <button toggle-button ng-click='stateChange("moveState")' type='button' class='btn btn-default active'>Move</button>
+        <button toggle-button ng-click='stateChange("selectState")' type='button' class='btn btn-default'>Select</button>
     </div>
 </div>
 </div>

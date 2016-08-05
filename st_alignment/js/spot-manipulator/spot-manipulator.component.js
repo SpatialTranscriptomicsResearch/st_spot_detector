@@ -15,7 +15,10 @@ angular.module('spotManipulator')
                     }
                     $rootScope.$broadcast('colourUpdate', style);
                     return style;
-                }
+                };
+                $scope.stateChange = function(state) {
+                    $rootScope.$broadcast(state);
+                };
             }
         ]
     })
