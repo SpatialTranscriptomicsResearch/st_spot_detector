@@ -30,7 +30,13 @@
                     var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
                     if(Math.abs(pos.x - self.selectionRect.TL.x) < spots[i].size &&
                        Math.abs(pos.y - self.selectionRect.TL.y) < spots[i].size) {
-                        spots[i].selected = true;
+                        if(self.shiftPressed && spots[i].selected) {
+                            // deselect spots that are already selected
+                            spots[i].selected = false;
+                        }
+                        else {
+                            spots[i].selected = true;
+                        }
                     }
                     else {
                         if(!self.shiftPressed) {

@@ -1,15 +1,16 @@
 (function() {
     var self;
-    var LogicHandler = function(canvas, camera, spotSelector, updateCanvasFunction) {
+    var LogicHandler = function(canvas, camera, spotSelector, spotAdjuster, updateCanvasFunction) {
         self = this;
         self.canvas = canvas;
         self.camera = camera;
         self.spotSelector = spotSelector;
+        self.spotAdjuster = spotAdjuster;
         self.updateCanvasFunction = updateCanvasFunction;
 
         self.mouseEvent = Object.freeze({"down": 1, "up": 2, "move": 3, "drag": 4, "wheel": 5});
         self.keyEvent = camera.dir;
-        self.state = Object.freeze({"upload_ready": 1, "loading": 2, "move_camera": 3, "select_spots": 4, "manipulate_spots": 5});
+        self.state = Object.freeze({"upload_ready": 1, "loading": 2, "move_camera": 3, "select_spots": 4, "adjust_spots": 5});
 
         //self.currentState = self.state.upload_ready;
         self.currentState = self.state.move_camera;
@@ -22,6 +23,9 @@
             }
             else if(self.currentState == self.state.select_spots) {
                 self.spotSelector.toggleShift(true);
+            }
+            else if(self.currentState == self.state.adjust_spots) {
+                self.spotAdjuster.adjust(keyEvent);
             }
             self.updateCanvasFunction();
         },
