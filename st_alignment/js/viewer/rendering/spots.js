@@ -11,7 +11,8 @@
                 this.spots.push({
                     'renderPosition': {x: this.spacer.x * j + this.offset.x,
                                        y: this.spacer.y * i + this.offset.y},
-                    'selected': false
+                    'selected': false,
+                    'size': 90
                 });
             }
         }

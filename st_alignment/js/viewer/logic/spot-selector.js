@@ -10,6 +10,7 @@
         self.spotManager = spotManager;
         self.selecting = false;
         self.selected = false;
+        self.shiftPressed = false;
         self.renderingRect = {TL: {x: 0, y: 0},
                               WH: {x: 0, y: 0}};
         self.selectionRect = {TL: {x: 0, y: 0},
@@ -17,7 +18,7 @@
     };
   
     SpotSelector.prototype = {
-        selectSpots: function(up) {
+        selectSpots: function() {
             // takes two points, the top left and bottom right of a rect, and returns the spots contained within it
             var selectedSpots;
             var spots = self.spotManager.spots;
@@ -25,15 +26,16 @@
             // first we need to check if the user is only clicking on a single spot
             if(self.renderingRect.WH.x < 3 && self.renderingRect.WH.y < 3) // arbitrary 3 values here for a "click"
             {
-                console.log('hi');
                 for(var i = 0; i < spots.length; ++i) {
                     var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
-                    if(Math.abs(pos.x - self.selectionRect.TL.x) < 90 &&
-                       Math.abs(pos.y - self.selectionRect.TL.y) < 90) {
+                    if(Math.abs(pos.x - self.selectionRect.TL.x) < spots[i].size &&
+                       Math.abs(pos.y - self.selectionRect.TL.y) < spots[i].size) {
                         spots[i].selected = true;
                     }
                     else {
-                        spots[i].selected = false;
+                        if(!self.shiftPressed) {
+                            spots[i].selected = false;
+                        }
                     }
                 }
             }
@@ -46,11 +48,12 @@
                         spots[i].selected = true;
                     }
                     else {
-                        spots[i].selected = false;
+                        if(!self.shiftPressed) {
+                            spots[i].selected = false;
+                        }
                     }
                 }
             }
-            //console.log("rect is: " + self.selectionRect.TL.x + ", " + self.selectionRect.TL.y + ", " + self.selectionRect.BR.x + ", " + self.selectionRect.BR.y);
         },
         beginSelection: function(topLeft) {
             self.renderingRect.TL = topLeft;
@@ -77,6 +80,9 @@
             self.selecting = false;
             self.selected  = true;
             self.selectSpots();
+        },
+        toggleShift: function(bool) {
+            self.shiftPressed = bool;
         }
   };
 

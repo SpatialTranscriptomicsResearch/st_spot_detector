@@ -16,7 +16,8 @@
             right: [ 39, 68], // right, d
             down : [ 40, 83], // down,  s
             zin  : [107, 69], // +,     e
-            zout : [109, 81]  // -,     q
+            zout : [109, 81], // -,     q
+            shift: [     16]  // shift
         };
 
         self.setUpMouseEvents(self.canvas, self.camera);
@@ -64,27 +65,37 @@
                 event = event || window.event;
                 if(self.keycodes.left.includes(event.which)) {
                     // ← left
-                    self.logicHandler.processKeyEvent(self.logicHandler.keyEvent.left);
+                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.left);
                 }
                 else if(self.keycodes.up.includes(event.which)) {
                     // ↑ up
-                    self.logicHandler.processKeyEvent(self.logicHandler.keyEvent.up);
+                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.up);
                 }
                 else if(self.keycodes.right.includes(event.which)) {
                     // → right
-                    self.logicHandler.processKeyEvent(self.logicHandler.keyEvent.right);
+                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.right);
                 }
                 else if(self.keycodes.down.includes(event.which)) {
                     // ↓ down
-                    self.logicHandler.processKeyEvent(self.logicHandler.keyEvent.down);
+                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.down);
                 }
                 else if(self.keycodes.zin.includes(event.which)) {
                     // + in
-                    self.logicHandler.processKeyEvent(self.logicHandler.keyEvent.zin);
+                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.zin);
                 }
                 else if(self.keycodes.zout.includes(event.which)) {
                     // - out
-                    self.logicHandler.processKeyEvent(self.logicHandler.keyEvent.zout);
+                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.zout);
+                }
+                else if(self.keycodes.shift.includes(event.which)) {
+                    // ⇧ shift
+                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.shift);
+                }
+            };
+            document.onkeyup = function(event) {
+                event = event || window.event;
+                if(self.keycodes.shift.includes(event.which)) {
+                    self.logicHandler.processKeyupEvent(self.logicHandler.keyEvent.shift);
                 }
             }
         }

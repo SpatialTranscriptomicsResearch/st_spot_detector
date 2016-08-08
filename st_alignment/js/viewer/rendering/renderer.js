@@ -38,7 +38,7 @@
                     else {
                         this.ctx.fillStyle = this.spotColour;
                     }
-                    this.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, 90, 0, Math.PI * 2);
+                    this.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, spot.size, 0, Math.PI * 2);
                     this.ctx.closePath();
                     this.ctx.fill();
 

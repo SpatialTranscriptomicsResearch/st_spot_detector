@@ -16,9 +16,18 @@
     };
   
     LogicHandler.prototype = {
-        processKeyEvent: function(keyEvent, eventData) {
+        processKeydownEvent: function(keyEvent, eventData) {
             if(self.currentState == self.state.move_camera) {
                 self.camera.navigate(keyEvent);
+            }
+            else if(self.currentState == self.state.select_spots) {
+                self.spotSelector.toggleShift(true);
+            }
+            self.updateCanvasFunction();
+        },
+        processKeyupEvent: function(keyEvent, eventData) {
+            if(self.currentState == self.state.select_spots) {
+                self.spotSelector.toggleShift(false);
             }
             self.updateCanvasFunction();
         },
@@ -41,9 +50,6 @@
                     self.spotSelector.beginSelection(eventData.position);
                 }
                 else if(mouseEvent == self.mouseEvent.up) {
-                    self.spotSelector.endSelection();
-                }
-                else if(mouseEvent == self.mouseEvent.out) {
                     self.spotSelector.endSelection();
                 }
                 else if(mouseEvent == self.mouseEvent.drag) {
