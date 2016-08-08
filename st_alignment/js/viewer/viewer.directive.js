@@ -57,6 +57,9 @@ angular.module('viewer')
                     logicHandler.currentState = logicHandler.state.adjust_spots;
                     updateCanvas();
                 });
+                $rootScope.$on('exportSpotData', function(event, data) {
+                    spots.exportSpots('tsv');
+                });
 
                 function updateCanvas() {
                     renderer.clearCanvas();

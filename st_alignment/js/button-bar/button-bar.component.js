@@ -33,7 +33,6 @@ angular.module('buttonBar')
             };
         }
     ])
-
     .directive('alignButton', [
         '$rootScope',
         function($rootScope) { return {
@@ -41,6 +40,17 @@ angular.module('buttonBar')
             link: function(scope, elem, attrs) {
                 elem.bind('click', function(event) {
                     $rootScope.$broadcast('spotsCalculated');
+                });
+            }
+        };}
+    ])
+    .directive('exportSpots', [
+        '$rootScope',
+        function($rootScope) { return {
+            scope: true,
+            link: function(scope, elem, attrs) {
+                elem.bind('click', function(event) {
+                    $rootScope.$broadcast('exportSpotData');
                 });
             }
         };}
