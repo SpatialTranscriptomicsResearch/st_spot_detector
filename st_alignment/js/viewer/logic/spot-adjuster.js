@@ -24,11 +24,8 @@
             }
             for(var i = 0; i < self.spots.length; ++i) {
                 if(self.spots[i].selected) {
-                    console.log('before');
-                    console.log(self.spots[i].renderPosition.x + ", " + self.spots[i].renderPosition.y);
                     self.spots[i].renderPosition.x += movement.x;
                     self.spots[i].renderPosition.y += movement.y;
-                    console.log(self.spots[i].renderPosition.x + ", " + self.spots[i].renderPosition.y);
                 }
             }
         }
