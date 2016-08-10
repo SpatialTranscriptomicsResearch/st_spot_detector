@@ -2,3 +2,4 @@ bower_components/
 *.swp
 *.jpg
 imgtest/
+__pycache__/
