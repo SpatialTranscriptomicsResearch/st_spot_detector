@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 
-from bottle import route, run, post, static_file, error
+from bottle import error, post, request, route, run, static_file
 
 @route('/<filepath:path>')
 def serve_site(filepath):
     return static_file(filepath, root='./st_alignment')
+
+@post('/<filepath:path>')
+def receiveImage(filepath):
+    print(request.body.read())
+    return ''
 
 @error(404)
 def error404(error):
