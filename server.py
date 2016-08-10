@@ -8,8 +8,9 @@ def serve_site(filepath):
 
 @post('/<filepath:path>')
 def receiveImage(filepath):
-    print(request.body.read())
-    return ''
+    data = request.body.read()
+    processed_data = data + b'hej'
+    return processed_data
 
 @error(404)
 def error404(error):

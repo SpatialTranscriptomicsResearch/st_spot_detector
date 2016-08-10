@@ -16,8 +16,8 @@ angular.module('buttonBar')
                         img = {test: "testing"};
                         var config = {};
                         var postUrl = '../server.py';
-                        var successCallback = function() {
-                            console.log('success!');
+                        var successCallback = function(response) {
+                            console.log(response.data);
                         };
                         var errorCallback = function() {
                             console.log('error');
