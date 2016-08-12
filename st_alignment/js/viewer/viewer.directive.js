@@ -3,7 +3,8 @@
 angular.module('viewer')
     .directive('viewerCanvas', [
         '$rootScope',
-        function($rootScope) {
+        '$http',
+        function($rootScope, $http) {
             var link = function(scope, element) {
                 var canvas = element[0];
                 var ctx = canvas.getContext('2d');
@@ -18,7 +19,6 @@ angular.module('viewer')
                 var renderer = new Renderer(ctx, camera);
 
                 var spots = new SpotManager();
-                spots.createSpots();
                 var spotSelector = new SpotSelector(ctx, camera, spots);
                 var spotAdjuster = new SpotAdjuster(camera, spots);
                 var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, updateCanvas);
@@ -32,18 +32,24 @@ angular.module('viewer')
                 */
 
                 var imageLoaded = false;
-                var spotsOn = true;
-
-                var myImage = new Image();
+                var spotsOn = false;
 
                 $rootScope.$on('imageLoaded', function(event, data) {
-                    imageLoaded = true;
+                    var getSpotData = function() {
+                        var successCallback = function(response) {
+                            spots.loadSpots(response.data);
+                        };
+                        var errorCallback = function(response) {
+                            console.error(response.data);
+                        };
+                        $http.get('../spots')
+                            .then(successCallback, errorCallback);
+                    };
+
                     logicHandler.currentState = logicHandler.state.move_camera;
-                    myImage.src = data;
-                    updateCanvas();
-                });
-                $rootScope.$on('spotsCalculated', function(event, data) {
-                    spotsOn = !spotsOn;
+                    imageLoaded = true;
+                    spotsOn = true;
+                    getSpotData();
                     updateCanvas();
                 });
                 $rootScope.$on('colourUpdate', function(event, data) {
@@ -68,25 +74,19 @@ angular.module('viewer')
 
                 function updateCanvas() {
                     //renderer.clearCanvas();
-                    // render images
                     if(imageLoaded)  {
-                        ctx.drawImage(myImage, 0, 0, 1024, 1024);
-                        /*
                         scaleManager.updateScaleLevel(camera.scale);
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
                         images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        renderer.renderImages(images);
-                        */
+                        //renderer.renderImages(images);
                     }
                     // render spots
                     if(spotsOn) {
-                        /*
                         renderer.renderSpots(spots.spots);
                         if(spotSelector.selecting) {
                             renderer.renderSpotSelection(spotSelector.renderingRect);
                         }
-                        */
                     }
                 }
             };

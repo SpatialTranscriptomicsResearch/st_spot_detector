@@ -26,7 +26,7 @@
             }
         },
         loadSpots: function(spotData) {
-            self.spots = spotData;
+            self.spots = spotData.spots;
         },
         exportSpots: function(format) {
             var filename = "spot_data-" + new Date().toISOString().slice(0, 10) + "." + format;

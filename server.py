@@ -4,16 +4,30 @@ import base64
 import io
 import json
 import time
-from bottle import error, get, post, request, route, run, static_file
+from bottle import error, get, post, response, request, route, run, static_file
 from PIL import Image
 
 class Spots:
     """Holds the spot data"""
-    spots = {
-        'kalle': 123,
-        'nalle': 234,
-        'falle': 345
-    }
+    spots = []
+
+    def create_spots(self):
+        """temporary function manually creates some 'arbitrary' spots"""
+        arrayWidth = 33;
+        arrayHeight = 35;
+        spacer = {'x': 330, 'y': 333};
+        offset = {'x': 5100, 'y': 4730};
+        for i in range(0, arrayHeight):
+            for j in range(0, arrayWidth):
+                self.spots.append({
+                    'arrayPosition': {'x': j + 1, 'y': i + 1},
+                    'renderPosition': {'x': spacer['x'] * j + offset['x'],
+                                       'y': spacer['y'] * i + offset['y']},
+                    'selected': False,
+                    'size': 90
+                });
+        spot_dictionary = {'spots': self.spots}
+        return spot_dictionary
 
 class Tiles:
     """Holds the tile data"""
@@ -52,6 +66,12 @@ class Tiles:
 
 class ImageProcessor:
     """Takes the jpeg image and performs various methods on it"""
+    URI_header = b'data:image/jpeg;base64,'
+
+    def validate_jpeg_URI(self, jpeg_URI):
+        """Checks that it is a valid base64-encoded jpeg URI"""
+        valid = (jpeg_URI.find(self.URI_header) == 0)
+        return valid
 
     def process_image(self, jpeg_data):
         """Process the jpeg data and return the processed data"""
@@ -69,7 +89,7 @@ class ImageProcessor:
     def jpeg_bytes_to_URI(self, jpeg_data):
         """Take jpeg data and return it as a base64-encoded URI"""
         jpeg_string = base64.b64encode(jpeg_data)
-        jpeg_string = b'data:image/jpeg;base64,' + jpeg_string
+        jpeg_string = self.URI_header + jpeg_string
         jpeg_string = str(jpeg_string, 'utf-8')
         return jpeg_string
 
@@ -89,9 +109,9 @@ image_processor = ImageProcessor()
 
 @get('/spots')
 def get_spots():
-    return spots.spots
+    return spots.create_spots()
     
-@get('/tiles/')
+@get('/tiles')
 def get_tiles():
     return tiles.tiles
 
@@ -107,10 +127,15 @@ def serve_site(filepath):
 @post('/<filepath:path>') # the argument should possibly be different
 def receive_image(filepath):
     image_string = request.body.read()
-    image_bytes = image_processor.URI_to_jpeg_bytes(image_string)
-    processed_image = image_processor.process_image(io.BytesIO(image_bytes))
-    processed_image = image_processor.jpeg_bytes_to_URI(processed_image)
-    return processed_image
+    valid = image_processor.validate_jpeg_URI(image_string)
+    if(valid):
+        image_bytes = image_processor.URI_to_jpeg_bytes(image_string)
+        processed_image = image_processor.process_image(io.BytesIO(image_bytes))
+        processed_image = image_processor.jpeg_bytes_to_URI(processed_image)
+        return processed_image
+    else:
+        response.status = 400
+        return 'Invalid image. Please upload a jpeg image.'
 
 @error(404)
 def error404(error):

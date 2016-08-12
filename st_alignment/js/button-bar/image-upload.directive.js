@@ -12,22 +12,15 @@ angular.module('buttonBar')
                 elem.bind('change', function(event) {
                     var img = event.target.files[0];
                     var reader = new FileReader();
+
                     reader.addEventListener('load', function() {
                         var postUrl = '../server.py';
                         var imageData = reader.result;
                         var successCallback = function(response) {
                             $rootScope.$broadcast('imageLoaded', response.data);
-                            console.log('success!');
-                            $http.get('../tiles/')
-                            //$http.get('../spots')
-                                .then(function(response) {
-                                    console.log(response.data);
-                                }, function() {
-                                    console.log('error');
-                                });
                         };
-                        var errorCallback = function() {
-                            console.log('error');
+                        var errorCallback = function(response) {
+                            console.error(response.data);
                         };
                         $http.post(postUrl, imageData)
                             .then(successCallback, errorCallback);
