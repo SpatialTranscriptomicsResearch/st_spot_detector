@@ -9,25 +9,27 @@ angular.module('buttonBar')
         '$http',
         function($rootScope, $http) {
             var link = function(scope, elem, attrs) {
+                var timer;
                 elem.bind('change', function(event) {
+                    timer = performance.now();
                     var img = event.target.files[0];
                     var reader = new FileReader();
                     reader.addEventListener('load', function() {
-                        img = {test: "testing"};
-                        var config = {};
                         var postUrl = '../server.py';
+                        var imageData = reader.result;
                         var successCallback = function(response) {
-                            console.log(response.data);
+                            $rootScope.$broadcast('imageLoaded', response.data);
+                            console.log('success!');
+                            console.log(performance.now() - timer);
                         };
                         var errorCallback = function() {
                             console.log('error');
                         };
-                        $http.post(postUrl, img, config)
+                        $http.post(postUrl, imageData)
                             .then(successCallback, errorCallback);
 
                     }, false);
                     if(img) {
-                        //reader.readAsArrayBuffer(img);
                         reader.readAsDataURL(img);
                     }
                 });

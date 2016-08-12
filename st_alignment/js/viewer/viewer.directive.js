@@ -26,15 +26,20 @@ angular.module('viewer')
 
                 var tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
                 var images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
+                /*
                 renderer.clearCanvas();
                 renderer.renderImages(images);
+                */
 
-                var imageLoaded = true;
+                var imageLoaded = false;
                 var spotsOn = true;
 
+                var myImage = new Image();
+
                 $rootScope.$on('imageLoaded', function(event, data) {
-                    scope.imageLoaded = true;
+                    imageLoaded = true;
                     logicHandler.currentState = logicHandler.state.move_camera;
+                    myImage.src = data;
                     updateCanvas();
                 });
                 $rootScope.$on('spotsCalculated', function(event, data) {
@@ -62,21 +67,26 @@ angular.module('viewer')
                 });
 
                 function updateCanvas() {
-                    renderer.clearCanvas();
+                    //renderer.clearCanvas();
                     // render images
                     if(imageLoaded)  {
+                        ctx.drawImage(myImage, 0, 0, 1024, 1024);
+                        /*
                         scaleManager.updateScaleLevel(camera.scale);
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
                         images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         renderer.renderImages(images);
+                        */
                     }
                     // render spots
                     if(spotsOn) {
+                        /*
                         renderer.renderSpots(spots.spots);
                         if(spotSelector.selecting) {
                             renderer.renderSpotSelection(spotSelector.renderingRect);
                         }
+                        */
                     }
                 }
             };
