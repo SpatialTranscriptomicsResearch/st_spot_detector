@@ -18,9 +18,36 @@ class Spots:
 class Tiles:
     """Holds the tile data"""
     tiles = {
-        'kex': 567,
-        'mex': 678,
-        'tex': 789
+        'level_1': {
+            'kex': 1567,
+            'mex': 1678,
+            'tex': 1789
+        },
+        'level_2': {
+            'kex': 2567,
+            'mex': 2678,
+            'tex': 2789
+        },
+        'level_3': {
+            'kex': 3567,
+            'mex': 3678,
+            'tex': 3789
+        },
+        'level_5': {
+            'kex': 5567,
+            'mex': 5678,
+            'tex': 5789
+        },
+        'level_10': {
+            'kex': 10567,
+            'mex': 10678,
+            'tex': 10789
+        },
+        'level_20': {
+            'kex': 20567,
+            'mex': 20678,
+            'tex': 20789
+        },
     }
 
 class ImageProcessor:
@@ -31,11 +58,8 @@ class ImageProcessor:
         # import
         my_image = Image.open(jpeg_data)
 
-        timer = time.clock()
         # processing
         my_image = my_image.resize((1024, 1024))
-
-        print(time.clock() - timer) # time elapsed for processing
 
         # export
         export_bytes = io.BytesIO()
@@ -63,6 +87,19 @@ image_processor = ImageProcessor()
 ### ↓ server code ↓ ###
 #######################
 
+@get('/spots')
+def get_spots():
+    return spots.spots
+    
+@get('/tiles/')
+def get_tiles():
+    return tiles.tiles
+
+@get('/tiles/<level:int>')
+def get_tiles_at(level=1):
+    level_string = "level_" + str(level)
+    return tiles.tiles[level_string]
+    
 @route('/<filepath:path>')
 def serve_site(filepath):
     return static_file(filepath, root='./st_alignment')
@@ -74,15 +111,6 @@ def receive_image(filepath):
     processed_image = image_processor.process_image(io.BytesIO(image_bytes))
     processed_image = image_processor.jpeg_bytes_to_URI(processed_image)
     return processed_image
-
-@get('/spots')
-def get_spots():
-    return spots.spots
-    
-@get('/tiles')
-def get_tiles():
-    return tiles.tiles
-    
 
 @error(404)
 def error404(error):

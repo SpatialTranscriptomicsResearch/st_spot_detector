@@ -9,9 +9,7 @@ angular.module('buttonBar')
         '$http',
         function($rootScope, $http) {
             var link = function(scope, elem, attrs) {
-                var timer;
                 elem.bind('change', function(event) {
-                    timer = performance.now();
                     var img = event.target.files[0];
                     var reader = new FileReader();
                     reader.addEventListener('load', function() {
@@ -20,7 +18,13 @@ angular.module('buttonBar')
                         var successCallback = function(response) {
                             $rootScope.$broadcast('imageLoaded', response.data);
                             console.log('success!');
-                            console.log(performance.now() - timer);
+                            $http.get('../tiles/')
+                            //$http.get('../spots')
+                                .then(function(response) {
+                                    console.log(response.data);
+                                }, function() {
+                                    console.log('error');
+                                });
                         };
                         var errorCallback = function() {
                             console.log('error');
