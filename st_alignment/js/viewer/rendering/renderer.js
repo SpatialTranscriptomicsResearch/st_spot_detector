@@ -2,55 +2,62 @@
 
 (function() {
   
+    var self;
     var Renderer = function(context, camera) {
-        this.ctx = context;
-        this.camera = camera;
-        this.bgColour = 'khaki';
-        this.spotColour = 'red';
-        this.selectedSpotColour = 'green';
-        this.spotMiddleColour = 'black';
+        self = this;
+        self.ctx = context;
+        self.camera = camera;
+        self.bgColour = 'khaki';
+        self.spotColour = 'red';
+        self.selectedSpotColour = 'green';
+        self.spotMiddleColour = 'black';
     };
   
     Renderer.prototype = {
         clearCanvas: function() {
-            this.ctx.fillStyle = this.bgColour;
-            this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+            self.ctx.fillStyle = self.bgColour;
+            self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
+        },
+        renderStartScreen: function() {
+            self.ctx.font = "48px serif";
+            self.ctx.fillStyle = 'black';
+            self.ctx.fillText("Click on Upload to upload and process an image", 10, 50);
         },
         renderImages: function(images) {
-            this.camera.begin();
+            self.camera.begin();
                 for(var i = 0; i < images.length; ++i) {
-                    this.ctx.drawImage(images[i], images[i].renderPosition.x, images[i].renderPosition.y, images[i].scaledSize.x, images[i].scaledSize.y);
+                    self.ctx.drawImage(images[i], images[i].renderPosition.x, images[i].renderPosition.y, images[i].scaledSize.x, images[i].scaledSize.y);
                 }
-            this.camera.end();
+            self.camera.end();
         },
         renderSpots: function(spots) {
-            this.camera.begin();
+            self.camera.begin();
                 for(var i = 0; i < spots.length; ++i) {
                     var spot = spots[i];
 
-                    this.ctx.beginPath();
+                    self.ctx.beginPath();
                     if(spot.selected) {
-                        this.ctx.fillStyle = this.selectedSpotColour;
+                        self.ctx.fillStyle = self.selectedSpotColour;
                     }
                     else {
-                        this.ctx.fillStyle = this.spotColour;
+                        self.ctx.fillStyle = self.spotColour;
                     }
-                    this.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, spot.size, 0, Math.PI * 2);
-                    this.ctx.closePath();
-                    this.ctx.fill();
+                    self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, spot.size, 0, Math.PI * 2);
+                    self.ctx.closePath();
+                    self.ctx.fill();
 
-                    this.ctx.beginPath();
-                    this.ctx.fillStyle = this.spotMiddleColour;
-                    this.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, 4, 0, Math.PI * 2);
-                    this.ctx.closePath();
-                    this.ctx.fill();
+                    self.ctx.beginPath();
+                    self.ctx.fillStyle = self.spotMiddleColour;
+                    self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, 4, 0, Math.PI * 2);
+                    self.ctx.closePath();
+                    self.ctx.fill();
                 }
-            this.camera.end();
+            self.camera.end();
         },
         renderSpotSelection: function(rectCoords) {
-            this.ctx.strokeStyle = "rgba(30, 30, 30, 0.9)";
-            this.ctx.setLineDash([4, 3]);
-            this.ctx.strokeRect(rectCoords.TL.x, rectCoords.TL.y, rectCoords.WH.x, rectCoords.WH.y);
+            self.ctx.strokeStyle = "rgba(30, 30, 30, 0.9)";
+            self.ctx.setLineDash([4, 3]);
+            self.ctx.strokeRect(rectCoords.TL.x, rectCoords.TL.y, rectCoords.WH.x, rectCoords.WH.y);
         }
   };
 

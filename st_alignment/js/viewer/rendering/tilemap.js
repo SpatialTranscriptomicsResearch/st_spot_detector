@@ -1,51 +1,22 @@
 'use strict';
 
 (function() {
+    var self;
     var Tilemap = function(tilemapLevels) {
-        this.tilemapLevels = tilemapLevels || [1, 2, 3, 5, 10, 20]; /*  1 is most zoomed in,  1:1  pixel ratio 
-                                                                       20 is most zoomed out, 1:20 pixel ratio */
-        this.tileWidth  = 1024;
-        this.tileHeight = 1024;
-        this.tilemaps = []; // array holding the tilemaps at each zoom level
-        this.constructAllTilemaps = function() {
-            for(var i = 0; i < this.tilemapLevels.length; ++i) {
-                var level = this.tilemapLevels[i];
-                this.tilemaps[level] = this.constructTilemap(level);
-            }
+        self = this;
+        self.loadTilemap = function(tilemap) {
+            self.tilemapLevels = tilemap.tilemapLevels;
+            self.tileWidth  = tilemap.tileWidth;
+            self.tileHeight = tilemap.tileHeight;
+            self.tilemaps = tilemap.tilemaps;
         }
-        this.constructTilemap = function(tilemapLevel) {
-            /* this constructs a tilemap out of already existing
-               images created by the largeImageTiler.pl script */
-            var tilemap = [];
-            var photoWidth  = 20000;
-            var photoHeight = 20000;
-
-            var tileMapWidth  = Math.trunc((photoWidth  / tilemapLevel) / this.tileWidth)  + 1;
-            var tileMapHeight = Math.trunc((photoHeight / tilemapLevel) / this.tileHeight) + 1;
-
-            for(var x = 0; x < tileMapWidth; ++x) {
-                var imageRow = [];
-                for(var y = 0; y < tileMapHeight; ++y) {
-                    var image = new Image();
-                    //image.src = "img/zoom" + tilemapLevel + "_x" + x + "_y" + y + ".jpg";
-                    imageRow.push(image);
-                }
-                tilemap.push(imageRow);
-            }
-
-            tilemap.width  = tileMapWidth;
-            tilemap.height = tileMapHeight;
-
-            return tilemap;
-        }
-        this.constructAllTilemaps();
     };
 
     Tilemap.prototype = {
         getRenderableImages: function(tilePosition, tilemapLevel, radius) {
             radius = radius || 3;
-            var tilePositions = this.getSurroundingTilePositions(tilePosition, tilemapLevel, radius);
-            var images = this.getImagesAtTilePositions(tilePositions, tilemapLevel);
+            var tilePositions = self.getSurroundingTilePositions(tilePosition, tilemapLevel, radius);
+            var images = self.getImagesAtTilePositions(tilePositions, tilemapLevel);
             return images;
         },
         getImagesAtTilePositions: function(tilePositions, tilemapLevel) {
@@ -55,12 +26,13 @@
             for(var i = 0; i < tilePositions.length; ++i) {
                 var tileX = tilePositions[i].x;
                 var tileY = tilePositions[i].y;
-                var image = this.tilemaps[tilemapLevel][tileX][tileY];
+                var image = new Image();
+                image.src = self.tilemaps[tilemapLevel][tileX][tileY];
 
-                image.renderPosition = {x: (tileX * this.tileWidth)  * tilemapLevel,
-                                        y: (tileY * this.tileHeight) * tilemapLevel};
-                image.scaledSize = {x: this.tileWidth  * tilemapLevel,
-                                    y: this.tileHeight * tilemapLevel};
+                image.renderPosition = {x: (tileX * self.tileWidth)  * tilemapLevel,
+                                        y: (tileY * self.tileHeight) * tilemapLevel};
+                image.scaledSize = {x: self.tileWidth  * tilemapLevel,
+                                    y: self.tileHeight * tilemapLevel};
                 images.push(image);
             }
             return images;
@@ -79,8 +51,10 @@
                     var xPos = tilePosition.x + x;
                     var yPos = tilePosition.y + y;
                     // make sure it is a valid tile
-                    if(!(xPos < 0 || xPos >= this.tilemaps[tilemapLevel].width ||
-                         yPos < 0 || yPos >= this.tilemaps[tilemapLevel].height)) {
+                    var tilemapHeight = self.tilemaps[tilemapLevel][0].length;
+                    var tilemapWidth  = self.tilemaps[tilemapLevel].length;
+                    if(!(xPos < 0 || xPos >= tilemapWidth ||
+                         yPos < 0 || yPos >= tilemapHeight)) {
                         positions.push({x: xPos, y: yPos});
                         ++i;
                     }
@@ -91,8 +65,8 @@
         getTilePosition: function(imagePosition, tilemapLevel) {
             /* calculates the tile position from a given image
                position, i.e. converts image to tile coordinates */
-            var tileSizeInImageCoords = {x: this.tileWidth * tilemapLevel,
-                                         y: this.tileHeight * tilemapLevel};
+            var tileSizeInImageCoords = {x: self.tileWidth * tilemapLevel,
+                                         y: self.tileHeight * tilemapLevel};
             var tileX = Math.trunc(imagePosition.x / tileSizeInImageCoords.x);
             var tileY = Math.trunc(imagePosition.y / tileSizeInImageCoords.y);
             return {x: tileX, y: tileY};

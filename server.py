@@ -31,14 +31,21 @@ class Spots:
 
 class Tilemap:
     """Holds the tile data"""
-    tilemap = {
+    # everything is wrapped in a dict to make it easier to return from a GET
+    # request in a JSON data format
+    dict_wrapper = {
+        'tilemapLevels': [1, 2, 3, 5, 10, 20],
+        'tileWidth': 1024,
+        'tileHeight': 1024,
+        'tilemaps': {}
     }
 
     def put_tiles_at(self, tilemap_level, tiles):
         """This takes a 2D array of tiles and inserts it into
-        the tilemap with the tilemap level as a key."""
+        the tilemaps object with the tilemap level as a key.
+        """
         tilemap_level = int(tilemap_level)
-        self.tilemap[tilemap_level] = tiles
+        self.dict_wrapper['tilemaps'][tilemap_level] = tiles
 
 class ImageProcessor:
     """Takes the jpeg image and performs various methods on it."""
@@ -92,7 +99,7 @@ class ImageProcessor:
         for x in range(0, 10):
             new_row = []
             for y in range(0, 10):
-                new_row.append(self.Image_to_jpeg_URI(self.dummy_image))
+                new_row.append(self.Image_to_jpeg_URI(image))
             tiles.append(new_row)
 
         return tiles
@@ -111,12 +118,12 @@ def get_spots():
     
 @get('/tiles')
 def get_tiles():
-    return tiles.tilemap
+    return tiles.dict_wrapper
 
 @get('/tiles/<level:int>')
 def get_tiles_at(level=1):
     level_string = "level_" + str(level)
-    return tiles.tiles[level_string]
+    return tiles.dict_wrapper['tilemaps'][level_string]
     
 @route('/<filepath:path>')
 def serve_site(filepath):
@@ -128,6 +135,7 @@ def receive_image(filepath):
     valid = image_processor.validate_jpeg_URI(image_string)
     if(valid):
         my_image = image_processor.jpeg_URI_to_Image(image_string)
+        my_image = image_processor.process_image(my_image)
         for x in [1, 2, 3, 5, 10, 20]:
             tiles.put_tiles_at(x, image_processor.tile_image(my_image, x))
 

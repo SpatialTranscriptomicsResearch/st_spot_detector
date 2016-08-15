@@ -14,8 +14,9 @@ angular.module('viewer')
                                       y: (ctx.canvas.height / 2) * tilemapLevel};
 
                 var tilemap = new Tilemap();
-                var scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
-                var camera = new Camera(ctx, cameraPosition, scaleManager.currentScaleLevel);
+                var scaleManager;
+
+                var camera = new Camera(ctx, cameraPosition, 1 / tilemapLevel);
                 var renderer = new Renderer(ctx, camera);
 
                 var spots = new SpotManager();
@@ -24,38 +25,45 @@ angular.module('viewer')
                 var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, updateCanvas);
                 var eventHandler = new EventHandler(canvas, camera, logicHandler);
 
-                var tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
-                var images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
-                /*
-                renderer.clearCanvas();
-                renderer.renderImages(images);
-                */
+                var tilePosition;
+                var images;
 
                 var imageLoaded = false;
                 var spotsOn = false;
+
+                updateCanvas();
 
                 $rootScope.$on('imageLoaded', function(event, data) {
                     var getSpotData = function() {
                         var successCallback = function(response) {
                             spots.loadSpots(response.data);
-                        };
-                        var successCallback2 = function(response) {
-                            console.log(response.data);
+                            spotsOn = true;
                         };
                         var errorCallback = function(response) {
                             console.error(response.data);
                         };
                         $http.get('../spots')
                             .then(successCallback, errorCallback);
-
+                    };
+                    var getTileData = function() {
+                        var successCallback = function(response) {
+                            tilemap.loadTilemap(response.data);
+                            scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
+                            tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
+                            images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
+                            imageLoaded = true;
+                            console.log('tile data');
+                        };
+                        var errorCallback = function(response) {
+                            console.error(response.data);
+                        };
                         $http.get('../tiles')
-                            .then(successCallback2, errorCallback);
+                            .then(successCallback, errorCallback);
                     };
 
                     logicHandler.currentState = logicHandler.state.move_camera;
-                    imageLoaded = true;
-                    spotsOn = true;
                     getSpotData();
+                    getTileData();
                     updateCanvas();
                 });
                 $rootScope.$on('colourUpdate', function(event, data) {
@@ -80,16 +88,16 @@ angular.module('viewer')
 
                 function updateCanvas() {
                     renderer.clearCanvas();
+
                     if(imageLoaded)  {
-                        /*
                         scaleManager.updateScaleLevel(camera.scale);
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
                         images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        //renderer.renderImages(images);
-                        */
+                        renderer.renderImages(images);
                     }
-                    // render spots
+                    renderer.renderStartScreen();
+
                     if(spotsOn) {
                         renderer.renderSpots(spots.spots);
                         if(spotSelector.selecting) {
