@@ -27,7 +27,7 @@
                 var imageRow = [];
                 for(var y = 0; y < tileMapHeight; ++y) {
                     var image = new Image();
-                    image.src = "img/zoom" + tilemapLevel + "_x" + x + "_y" + y + ".jpg";
+                    //image.src = "img/zoom" + tilemapLevel + "_x" + x + "_y" + y + ".jpg";
                     imageRow.push(image);
                 }
                 tilemap.push(imageRow);

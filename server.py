@@ -29,78 +29,76 @@ class Spots:
         spot_dictionary = {'spots': self.spots}
         return spot_dictionary
 
-class Tiles:
+class Tilemap:
     """Holds the tile data"""
-    tiles = {
-        'level_1': {
-            'kex': 1567,
-            'mex': 1678,
-            'tex': 1789
-        },
-        'level_2': {
-            'kex': 2567,
-            'mex': 2678,
-            'tex': 2789
-        },
-        'level_3': {
-            'kex': 3567,
-            'mex': 3678,
-            'tex': 3789
-        },
-        'level_5': {
-            'kex': 5567,
-            'mex': 5678,
-            'tex': 5789
-        },
-        'level_10': {
-            'kex': 10567,
-            'mex': 10678,
-            'tex': 10789
-        },
-        'level_20': {
-            'kex': 20567,
-            'mex': 20678,
-            'tex': 20789
-        },
+    tilemap = {
     }
 
+    def put_tiles_at(self, tilemap_level, tiles):
+        """This takes a 2D array of tiles and inserts it into
+        the tilemap with the tilemap level as a key."""
+        tilemap_level = int(tilemap_level)
+        self.tilemap[tilemap_level] = tiles
+
 class ImageProcessor:
-    """Takes the jpeg image and performs various methods on it"""
+    """Takes the jpeg image and performs various methods on it."""
     URI_header = b'data:image/jpeg;base64,'
+    dummy_image = Image.open('./st_alignment/img/hej.jpg')
 
     def validate_jpeg_URI(self, jpeg_URI):
-        """Checks that it is a valid base64-encoded jpeg URI"""
+        """Checks that it is a valid base64-encoded jpeg URI."""
         valid = (jpeg_URI.find(self.URI_header) == 0)
         return valid
 
-    def process_image(self, jpeg_data):
-        """Process the jpeg data and return the processed data"""
-        # import
-        my_image = Image.open(jpeg_data)
+    def process_image(self, image):
+        """Process and return the image."""
+        image = image.resize((1024, 1024))
+        return image
 
-        # processing
-        my_image = my_image.resize((1024, 1024))
+    def jpeg_URI_to_Image(self, jpeg_URI):
+        """Take a jpeg base64-encoded URI and return a PIL Image object."""
+        # remove 'data:image/jpeg;base64,' and decode the string
+        jpeg_data = base64.b64decode(jpeg_URI[23:])
+        # stream the data as a bytes object and open as an image
+        image = Image.open(io.BytesIO(jpeg_data))
+        return image
 
-        # export
-        export_bytes = io.BytesIO()
-        my_image.save(export_bytes, 'JPEG')
-        return export_bytes.getbuffer()
+    def Image_to_jpeg_URI(self, image):
+        """Take a PIL Imag eobject and return a jpeg base64-encoded URI."""
+        # save the image to a byte stream encoded as jpeg
+        jpeg_data = io.BytesIO()
+        image.save(jpeg_data, 'JPEG')
 
-    def jpeg_bytes_to_URI(self, jpeg_data):
-        """Take jpeg data and return it as a base64-encoded URI"""
-        jpeg_string = base64.b64encode(jpeg_data)
+        # encode the data into a URI with the header added
+        jpeg_string = base64.b64encode(jpeg_data.getbuffer())
         jpeg_string = self.URI_header + jpeg_string
+
+        # convert the string from a raw literal to utf-8 encoding
         jpeg_string = str(jpeg_string, 'utf-8')
         return jpeg_string
 
-    def URI_to_jpeg_bytes(self, jpeg_URI):
-        """Take a jpeg base64-encoded URI and return it as byte data"""
-        # remove 'data:image/jpeg;base64,'
-        image_bytes = base64.b64decode(jpeg_URI[23:])
-        return image_bytes
+
+    def tile_image(self, image, tilemap_level):
+        """Takes a jpeg image, scales its size down and splits it up 
+        into tiles, the amount depends on the "level" of tile splitting.
+
+        A 2D array of tiles is returned.
+        """
+        # see largeImageTiler.pl to implement this well
+        # save the tile data to memory (change to file later, perhaps), and then delete it afterwards
+
+        tiles = []
+
+        for x in range(0, 10):
+            new_row = []
+            for y in range(0, 10):
+                new_row.append(self.Image_to_jpeg_URI(self.dummy_image))
+            tiles.append(new_row)
+
+        return tiles
 
 spots = Spots()
-tiles = Tiles()
+tiles = Tilemap()
 image_processor = ImageProcessor()
 
 #######################
@@ -113,7 +111,7 @@ def get_spots():
     
 @get('/tiles')
 def get_tiles():
-    return tiles.tiles
+    return tiles.tilemap
 
 @get('/tiles/<level:int>')
 def get_tiles_at(level=1):
@@ -129,10 +127,11 @@ def receive_image(filepath):
     image_string = request.body.read()
     valid = image_processor.validate_jpeg_URI(image_string)
     if(valid):
-        image_bytes = image_processor.URI_to_jpeg_bytes(image_string)
-        processed_image = image_processor.process_image(io.BytesIO(image_bytes))
-        processed_image = image_processor.jpeg_bytes_to_URI(processed_image)
-        return processed_image
+        my_image = image_processor.jpeg_URI_to_Image(image_string)
+        for x in [1, 2, 3, 5, 10, 20]:
+            tiles.put_tiles_at(x, image_processor.tile_image(my_image, x))
+
+        return
     else:
         response.status = 400
         return 'Invalid image. Please upload a jpeg image.'

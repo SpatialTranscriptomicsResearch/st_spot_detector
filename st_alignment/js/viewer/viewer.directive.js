@@ -39,11 +39,17 @@ angular.module('viewer')
                         var successCallback = function(response) {
                             spots.loadSpots(response.data);
                         };
+                        var successCallback2 = function(response) {
+                            console.log(response.data);
+                        };
                         var errorCallback = function(response) {
                             console.error(response.data);
                         };
                         $http.get('../spots')
                             .then(successCallback, errorCallback);
+
+                        $http.get('../tiles')
+                            .then(successCallback2, errorCallback);
                     };
 
                     logicHandler.currentState = logicHandler.state.move_camera;
@@ -73,13 +79,15 @@ angular.module('viewer')
                 });
 
                 function updateCanvas() {
-                    //renderer.clearCanvas();
+                    renderer.clearCanvas();
                     if(imageLoaded)  {
+                        /*
                         scaleManager.updateScaleLevel(camera.scale);
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
                         images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         //renderer.renderImages(images);
+                        */
                     }
                     // render spots
                     if(spotsOn) {

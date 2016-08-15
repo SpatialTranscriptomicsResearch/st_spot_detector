@@ -9,15 +9,12 @@
         this.spotColour = 'red';
         this.selectedSpotColour = 'green';
         this.spotMiddleColour = 'black';
-        this.bgSize = {x: -4096, y: -4096, w: 32768, h: 32768};
     };
   
     Renderer.prototype = {
         clearCanvas: function() {
-            this.camera.begin();
-                this.ctx.fillStyle = this.bgColour;
-                this.ctx.fillRect(this.bgSize.x, this.bgSize.y, this.bgSize.w, this.bgSize.h);
-            this.camera.end();
+            this.ctx.fillStyle = this.bgColour;
+            this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
         },
         renderImages: function(images) {
             this.camera.begin();
