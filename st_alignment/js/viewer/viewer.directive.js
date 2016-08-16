@@ -96,7 +96,9 @@ angular.module('viewer')
                         images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         renderer.renderImages(images);
                     }
-                    renderer.renderStartScreen();
+                    else {
+                        renderer.renderStartScreen();
+                    }
 
                     if(spotsOn) {
                         renderer.renderSpots(spots.spots);
