@@ -12,7 +12,6 @@
         self.keyEvent = camera.dir;
         self.state = Object.freeze({"upload_ready": 1, "loading": 2, "move_camera": 3, "select_spots": 4, "adjust_spots": 5});
 
-        //self.currentState = self.state.upload_ready;
         self.currentState = self.state.move_camera;
     };
   

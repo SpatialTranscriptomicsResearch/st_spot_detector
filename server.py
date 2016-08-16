@@ -31,8 +31,8 @@ class Spots:
 
 class Tilemap:
     """Holds the tile data"""
-    # everything is wrapped in a dict to make it easier to return from a GET
-    # request in a JSON data format
+    # everything is wrapped in a dict to make it easier
+    # to return from a GET request in a JSON data format
     dict_wrapper = {
         'tilemapLevels': [1, 2, 3, 5, 10, 20],
         'tileWidth': 1024,
@@ -59,7 +59,7 @@ class ImageProcessor:
 
     def process_image(self, image):
         """Process and return the image."""
-        image = image.resize((1024, 1024))
+        #image = image.resize((1024, 1024))
         return image
 
     def jpeg_URI_to_Image(self, jpeg_URI):
@@ -91,15 +91,46 @@ class ImageProcessor:
 
         A 2D array of tiles is returned.
         """
-        # see largeImageTiler.pl to implement this well
-        # save the tile data to memory (change to file later, perhaps), and then delete it afterwards
-
         tiles = []
 
-        for x in range(0, 10):
+        photoWidth = image.size[0]
+        photoHeight = image.size[1]
+        tileWidth = 1024;
+        tileHeight = 1024;
+
+        tilemapWidth = int((photoWidth / tilemap_level) / tileWidth) + 1
+        tilemapHeight = int((photoHeight / tilemap_level) / tileHeight) + 1
+
+        print("Working on zoom out level %s, with a tilemap size of %s, %s."
+            % (tilemap_level, tilemapWidth, tilemapHeight)
+        )
+
+        if(tilemap_level != 1):
+            newPhotoWidth = int(photoWidth / tilemap_level)
+            newPhotoHeight = int(photoHeight / tilemap_level)
+            print("Resizing the large image file to a size of %s, %s"
+                % (newPhotoWidth, newPhotoHeight)
+            )
+            image = image.resize((newPhotoWidth, newPhotoHeight))
+
+        for x in range(0, tilemapHeight):
             new_row = []
-            for y in range(0, 10):
-                new_row.append(self.Image_to_jpeg_URI(image))
+            for y in range(0, tilemapWidth):
+                widthOffset = tileWidth * x
+                heightOffset = tileHeight * y
+
+                print("--")
+                print("Processing tile %d, %d" % (x, y))
+
+                image_tile = image.crop((
+                    widthOffset, 
+                    heightOffset, 
+                    widthOffset + tileWidth, 
+                    heightOffset + tileHeight
+                ))
+
+                new_row.append(self.Image_to_jpeg_URI(image_tile))
+            print("Appending row %d to the tiles array" % x)
             tiles.append(new_row)
 
         return tiles
@@ -134,11 +165,12 @@ def receive_image(filepath):
     image_string = request.body.read()
     valid = image_processor.validate_jpeg_URI(image_string)
     if(valid):
+        timer_start = time.time()
         my_image = image_processor.jpeg_URI_to_Image(image_string)
-        my_image = image_processor.process_image(my_image)
-        for x in [1, 2, 3, 5, 10, 20]:
+        for x in tiles.dict_wrapper['tilemapLevels']:
             tiles.put_tiles_at(x, image_processor.tile_image(my_image, x))
 
+        print(time.time() - timer_start)
         return
     else:
         response.status = 400
