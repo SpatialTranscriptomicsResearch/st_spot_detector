@@ -8,7 +8,23 @@
             self.tilemapLevels = tilemap.tilemapLevels;
             self.tileWidth  = tilemap.tileWidth;
             self.tileHeight = tilemap.tileHeight;
-            self.tilemaps = tilemap.tilemaps;
+            self.tilemaps = {};
+            for(var tilemapLevel in tilemap.tilemaps) {
+                if(tilemap.tilemaps.hasOwnProperty(tilemapLevel)) {
+                    var newTilemap = [];
+                    for(var i = 0; i < tilemap.tilemaps[tilemapLevel].length; ++i) {
+                        var imageRow = [];
+                        for(var j = 0; j < tilemap.tilemaps[tilemapLevel][i].length; ++j) {
+                            var image = new Image();
+                            image.src = tilemap.tilemaps[tilemapLevel][i][j]; 
+                            imageRow.push(image);
+                        }
+                        newTilemap.push(imageRow);
+                    }
+                    self.tilemaps[tilemapLevel] = newTilemap;
+                } 
+            }
+
         }
     };
 
@@ -26,8 +42,7 @@
             for(var i = 0; i < tilePositions.length; ++i) {
                 var tileX = tilePositions[i].x;
                 var tileY = tilePositions[i].y;
-                var image = new Image();
-                image.src = self.tilemaps[tilemapLevel][tileX][tileY];
+                var image = self.tilemaps[tilemapLevel][tileX][tileY]; 
 
                 image.renderPosition = {x: (tileX * self.tileWidth)  * tilemapLevel,
                                         y: (tileY * self.tileHeight) * tilemapLevel};

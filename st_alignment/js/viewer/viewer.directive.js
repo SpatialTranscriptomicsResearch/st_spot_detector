@@ -134,13 +134,11 @@ angular.module('viewer')
                         renderer.renderSpots(spots.spots);
                     }
                     else if(logicHandler.currentState == logicHandler.state.select_spots) {
-                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         renderer.renderImages(images);
                         renderer.renderSpots(spots.spots);
                         renderer.renderSpotSelection(spotSelector.renderingRect);
                     }
                     else if(logicHandler.currentState == logicHandler.state.adjust_spots) {
-                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         renderer.renderImages(images);
                         renderer.renderSpots(spots.spots);
                     }

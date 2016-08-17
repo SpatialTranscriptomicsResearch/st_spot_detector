@@ -8,7 +8,6 @@
         self.ctx = context;
         self.camera = camera;
         self.spotManager = spotManager;
-        self.selecting = false;
         self.selected = false;
         self.shiftPressed = false;
         self.renderingRect = {TL: {x: 0, y: 0},
@@ -79,13 +78,13 @@
             var mouse = {x: bottomRight.x / self.camera.scale,
                          y: bottomRight.y / self.camera.scale};
             self.selectionRect.BR = {x: cam.x + mouse.x, y: cam.y + mouse.y};
-            self.selecting = true;
             self.selectSpots();
         },
         endSelection: function() {
-            self.selecting = false;
             self.selected  = true;
             self.selectSpots();
+            self.renderingRect = {TL: {x: 0, y: 0},
+                                  WH: {x: 0, y: 0}};
         },
         toggleShift: function(bool) {
             self.shiftPressed = bool;
