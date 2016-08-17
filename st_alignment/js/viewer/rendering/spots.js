@@ -29,7 +29,6 @@
             self.spots = spotData.spots;
         },
         exportSpots: function(format) {
-            var filename = "spot_data-" + new Date().toISOString().slice(0, 10) + "." + format;
             var dataString = "";
             var dataType = "";
 
@@ -50,20 +49,7 @@
                 }
                 dataType = "text/tsv";
             }
-
-            // the next 12 lines are adapted from https://github.com/mholt/PapaParse/issues/175
-            var blob = new Blob([dataString]);
-            if (window.navigator.msSaveOrOpenBlob)  // IE hack; see http://msdn.microsoft.com/en-us/library/ie/hh779016.aspx
-                window.navigator.msSaveBlob(blob, filename);
-            else
-            {
-                var a = window.document.createElement("a");
-                a.href = window.URL.createObjectURL(blob, {type: dataType});
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();  // IE: "Access is denied"; see: https://connect.microsoft.com/IE/feedback/details/797361/ie-10-treats-blob-url-as-cross-origin-and-denies-access
-                document.body.removeChild(a);
-            }
+            return dataString;
         }
     };
 

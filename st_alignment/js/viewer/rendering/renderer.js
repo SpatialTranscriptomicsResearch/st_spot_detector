@@ -11,6 +11,8 @@
         self.spotColour = 'red';
         self.selectedSpotColour = 'green';
         self.spotMiddleColour = 'black';
+        self.ctx.textAlign = "center";
+        self.ctx.font = "48px serif";
     };
   
     Renderer.prototype = {
@@ -19,9 +21,16 @@
             self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
         },
         renderStartScreen: function() {
-            self.ctx.font = "48px serif";
             self.ctx.fillStyle = 'black';
-            self.ctx.fillText("Click on Upload to upload and process an image", 10, 50);
+            self.ctx.fillText("Click on Upload to upload and process an image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+        },
+        renderLoadingScreen: function() {
+            self.ctx.fillStyle = 'black';
+            self.ctx.fillText("Loading...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+        },
+        renderErrorScreen: function() {
+            self.ctx.fillStyle = 'black';
+            self.ctx.fillText("Error! Please select and upload a valid jpeg image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
         renderImages: function(images) {
             self.camera.begin();

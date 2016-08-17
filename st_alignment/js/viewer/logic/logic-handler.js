@@ -10,9 +10,9 @@
 
         self.mouseEvent = Object.freeze({"down": 1, "up": 2, "move": 3, "drag": 4, "wheel": 5});
         self.keyEvent = camera.dir;
-        self.state = Object.freeze({"upload_ready": 1, "loading": 2, "move_camera": 3, "select_spots": 4, "adjust_spots": 5});
+        self.state = Object.freeze({"upload_ready": 1, "loading": 2, "error": 3, "move_camera": 4, "select_spots": 5, "adjust_spots": 6});
 
-        self.currentState = self.state.move_camera;
+        self.currentState = self.state.upload_ready;
     };
   
     LogicHandler.prototype = {

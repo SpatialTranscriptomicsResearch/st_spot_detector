@@ -35,8 +35,8 @@ class Tilemap:
     # to return from a GET request in a JSON data format
     dict_wrapper = {
         'tilemapLevels': [1, 2, 3, 5, 10, 20],
-        'tileWidth': 1024,
-        'tileHeight': 1024,
+        'tileWidth': 1000,
+        'tileHeight': 1000,
         'tilemaps': {}
     }
 
@@ -50,17 +50,11 @@ class Tilemap:
 class ImageProcessor:
     """Takes the jpeg image and performs various methods on it."""
     URI_header = b'data:image/jpeg;base64,'
-    dummy_image = Image.open('./st_alignment/img/hej.jpg')
 
     def validate_jpeg_URI(self, jpeg_URI):
         """Checks that it is a valid base64-encoded jpeg URI."""
         valid = (jpeg_URI.find(self.URI_header) == 0)
         return valid
-
-    def process_image(self, image):
-        """Process and return the image."""
-        #image = image.resize((1024, 1024))
-        return image
 
     def jpeg_URI_to_Image(self, jpeg_URI):
         """Take a jpeg base64-encoded URI and return a PIL Image object."""
@@ -135,13 +129,13 @@ class ImageProcessor:
 
         return tiles
 
-spots = Spots()
-tiles = Tilemap()
-image_processor = ImageProcessor()
-
 #######################
 ### ↓ server code ↓ ###
 #######################
+
+spots = Spots()
+tiles = Tilemap()
+image_processor = ImageProcessor()
 
 @get('/spots')
 def get_spots():

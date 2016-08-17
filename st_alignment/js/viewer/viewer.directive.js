@@ -28,11 +28,18 @@ angular.module('viewer')
                 var tilePosition;
                 var images;
 
+                // may not actually need these two! console
                 var imageLoaded = false;
                 var spotsOn = false;
 
                 updateCanvas();
 
+                $rootScope.$on('imageLoading', function(event, data) {
+                    logicHandler.currentState = logicHandler.state.loading;
+                });
+                $rootScope.$on('imageLoadingError', function(event, data) {
+                    logicHandler.currentState = logicHandler.state.error;
+                });
                 $rootScope.$on('imageLoaded', function(event, data) {
                     var getSpotData = function() {
                         var successCallback = function(response) {
@@ -52,7 +59,7 @@ angular.module('viewer')
                             tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
                             images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
                             imageLoaded = true;
-                            console.log('tile data');
+                            updateCanvas();
                         };
                         var errorCallback = function(response) {
                             console.error(response.data);
@@ -64,11 +71,6 @@ angular.module('viewer')
                     logicHandler.currentState = logicHandler.state.move_camera;
                     getSpotData();
                     getTileData();
-                    updateCanvas();
-                });
-                $rootScope.$on('colourUpdate', function(event, data) {
-                    renderer.spotColour = data['background-color'];
-                    updateCanvas();
                 });
                 $rootScope.$on('moveState', function(event, data) {
                     logicHandler.currentState = logicHandler.state.move_camera;
@@ -82,29 +84,65 @@ angular.module('viewer')
                     logicHandler.currentState = logicHandler.state.adjust_spots;
                     updateCanvas();
                 });
+                $rootScope.$on('colourUpdate', function(event, data) {
+                    renderer.spotColour = data['background-color'];
+                    if(logicHandler.currentState != logicHandler.state.upload_ready &&
+                       logicHandler.currentState != logicHandler.state.loading &&
+                       logicHandler.currentState != logicHandler.state.error ) {
+                        updateCanvas();
+                    }
+
+                });
                 $rootScope.$on('exportSpotData', function(event, data) {
-                    spots.exportSpots('tsv');
+                    var spotDataString = spots.getSpots('tsv');
+
+                    var blob = new Blob([spotDataString]);
+                    var filename = "spot_data-" + new Date().toISOString().slice(0, 10) + "." + format;
+
+                    // the next 11 lines are adapted from https://github.com/mholt/PapaParse/issues/175
+                    if (window.navigator.msSaveOrOpenBlob)  // IE hack; see http://msdn.microsoft.com/en-us/library/ie/hh779016.aspx
+                        window.navigator.msSaveBlob(blob, filename);
+                    else
+                    {
+                        var a = window.document.createElement("a");
+                        a.href = window.URL.createObjectURL(blob, {type: dataType});
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();  // IE: "Access is denied"; see: https://connect.microsoft.com/IE/feedback/details/797361/ie-10-treats-blob-url-as-cross-origin-and-denies-access
+                        document.body.removeChild(a);
+                    }
                 });
 
                 function updateCanvas() {
                     renderer.clearCanvas();
 
-                    if(imageLoaded)  {
+                    if(logicHandler.currentState == logicHandler.state.upload_ready) {
+                        renderer.renderStartScreen();
+                    }
+                    else if(logicHandler.currentState == logicHandler.state.loading) {
+                        renderer.renderLoadingScreen();
+                    }
+                    else if(logicHandler.currentState == logicHandler.state.error) {
+                        renderer.renderErrorScreen();
+                    }
+                    else if(logicHandler.currentState == logicHandler.state.move_camera) {
                         scaleManager.updateScaleLevel(camera.scale);
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
                         images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         renderer.renderImages(images);
-                    }
-                    else {
-                        renderer.renderStartScreen();
-                    }
-
-                    if(spotsOn) {
                         renderer.renderSpots(spots.spots);
-                        if(spotSelector.selecting) {
-                            renderer.renderSpotSelection(spotSelector.renderingRect);
-                        }
+                    }
+                    else if(logicHandler.currentState == logicHandler.state.select_spots) {
+                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+                        renderer.renderImages(images);
+                        renderer.renderSpots(spots.spots);
+                        renderer.renderSpotSelection(spotSelector.renderingRect);
+                    }
+                    else if(logicHandler.currentState == logicHandler.state.adjust_spots) {
+                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+                        renderer.renderImages(images);
+                        renderer.renderSpots(spots.spots);
                     }
                 }
             };

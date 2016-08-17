@@ -12,6 +12,7 @@ angular.module('buttonBar')
                 elem.bind('change', function(event) {
                     var img = event.target.files[0];
                     var reader = new FileReader();
+                    $rootScope.$broadcast('imageLoading');
 
                     reader.addEventListener('load', function() {
                         var postUrl = '../server.py';
@@ -21,6 +22,7 @@ angular.module('buttonBar')
                         };
                         var errorCallback = function(response) {
                             console.error(response.data);
+                            $rootScope.$broadcast('imageLoadingError', response.data);
                         };
                         $http.post(postUrl, imageData)
                             .then(successCallback, errorCallback);
