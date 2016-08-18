@@ -79,6 +79,29 @@ class ImageProcessor:
         return jpeg_string
 
 
+    def tile_image_dummy(self, image, tilemap_level):
+        """Function included for debugging purposes to avoid waiting times"""
+        tiles = []
+
+        photoWidth = image.size[0]
+        photoHeight = image.size[1]
+        tileWidth = 1024;
+        tileHeight = 1024;
+
+        tilemapWidth = int((photoWidth / tilemap_level) / tileWidth) + 1
+        tilemapHeight = int((photoHeight / tilemap_level) / tileHeight) + 1
+
+        print("hej");
+        image = image.resize((tileWidth, tileHeight))
+
+        for x in range(0, tilemapHeight):
+            new_row = []
+            for y in range(0, tilemapWidth):
+                new_row.append(self.Image_to_jpeg_URI(image))
+            tiles.append(new_row)
+
+        return tiles
+
     def tile_image(self, image, tilemap_level):
         """Takes a jpeg image, scales its size down and splits it up 
         into tiles, the amount depends on the "level" of tile splitting.
@@ -113,7 +136,6 @@ class ImageProcessor:
                 widthOffset = tileWidth * x
                 heightOffset = tileHeight * y
 
-                print("--")
                 print("Processing tile %d, %d" % (x, y))
 
                 image_tile = image.crop((
@@ -162,7 +184,8 @@ def receive_image(filepath):
         timer_start = time.time()
         my_image = image_processor.jpeg_URI_to_Image(image_string)
         for x in tiles.dict_wrapper['tilemapLevels']:
-            tiles.put_tiles_at(x, image_processor.tile_image(my_image, x))
+            #tiles.put_tiles_at(x, image_processor.tile_image(my_image, x))
+            tiles.put_tiles_at(x, image_processor.tile_image_dummy(my_image, 20))
 
         print(time.time() - timer_start)
         return

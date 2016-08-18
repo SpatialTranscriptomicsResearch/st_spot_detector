@@ -1,7 +1,7 @@
 (function() {
 
     var self;
-    var SpotManager = function() {
+    var SpotManager = function(camera) {
         self = this;
         self.spots = [];
     };

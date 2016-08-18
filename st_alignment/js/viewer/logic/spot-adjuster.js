@@ -3,7 +3,7 @@
     var SpotAdjuster = function(camera, spots) {
         self = this;
         self.camera = camera;
-        self.spots = spots.spots;
+        self.spots = spots;
         self.adjustFactor = 10;
     };
 
@@ -22,10 +22,10 @@
             else if(direction === self.camera.dir.down) {
                 movement.y += this.adjustFactor;
             }
-            for(var i = 0; i < self.spots.length; ++i) {
-                if(self.spots[i].selected) {
-                    self.spots[i].renderPosition.x += movement.x;
-                    self.spots[i].renderPosition.y += movement.y;
+            for(var i = 0; i < self.spots.spots.length; ++i) {
+                if(self.spots.spots[i].selected) {
+                    self.spots.spots[i].renderPosition.x += movement.x;
+                    self.spots.spots[i].renderPosition.y += movement.y;
                 }
             }
         }

@@ -19,7 +19,6 @@
     SpotSelector.prototype = {
         selectSpots: function() {
             // takes two points, the top left and bottom right of a rect, and returns the spots contained within it
-            var selectedSpots;
             var spots = self.spotManager.spots;
 
             // first we need to check if the user is only clicking on a single spot

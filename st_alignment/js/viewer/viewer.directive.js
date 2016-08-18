@@ -28,10 +28,6 @@ angular.module('viewer')
                 var tilePosition;
                 var images;
 
-                // may not actually need these two! console
-                var imageLoaded = false;
-                var spotsOn = false;
-
                 updateCanvas();
 
                 $rootScope.$on('imageLoading', function(event, data) {
@@ -44,7 +40,6 @@ angular.module('viewer')
                     var getSpotData = function() {
                         var successCallback = function(response) {
                             spots.loadSpots(response.data);
-                            spotsOn = true;
                         };
                         var errorCallback = function(response) {
                             console.error(response.data);
@@ -58,7 +53,6 @@ angular.module('viewer')
                             scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
                             tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
                             images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
-                            imageLoaded = true;
                             updateCanvas();
                         };
                         var errorCallback = function(response) {
