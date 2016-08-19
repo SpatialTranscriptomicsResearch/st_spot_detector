@@ -33,7 +33,6 @@ angular.module('viewer')
 
                 $rootScope.$on('imageLoading', function(event, data) {
                     logicHandler.currentState = logicHandler.state.loading;
-                    //$rootScope.$broadcast('test');
                 });
                 $rootScope.$on('imageLoadingError', function(event, data) {
                     logicHandler.currentState = logicHandler.state.error;
@@ -56,7 +55,7 @@ angular.module('viewer')
                             tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
                             images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
                             updateCanvas();
-                            $rootScope.$broadcast('test');
+                            $rootScope.$broadcast('imageRendered');
                         };
                         var errorCallback = function(response) {
                             console.error(response.data);

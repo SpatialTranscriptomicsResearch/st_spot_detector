@@ -11,15 +11,15 @@ angular.module('buttonBar')
             var link = function(scope, elem, attrs) {
                 elem.bind('change', function(event) {
                     if(event.target.files.length != 0) {
+                        $rootScope.$broadcast('imageLoading');
                         var img = event.target.files[0];
                         var reader = new FileReader();
-                        $rootScope.$broadcast('test');
 
                         reader.addEventListener('load', function() {
                             var postUrl = '../server.py';
                             var imageData = reader.result;
                             var successCallback = function(response) {
-                                //$rootScope.$broadcast('imageLoaded', response.data);
+                                $rootScope.$broadcast('imageLoaded', response.data);
                             };
                             var errorCallback = function(response) {
                                 console.error(response.data);

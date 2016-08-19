@@ -7,7 +7,7 @@ angular.module('spotManipulator')
             '$scope',
             '$rootScope',
             function($scope, $rootScope) {
-                $scope.hej = true;
+                $scope.visible = false;
                 $scope.spotOpacity = 0.5;
                 $scope.spotColour = 0;
                 $scope.previousOpacity = $scope.spotOpacity;
@@ -29,8 +29,11 @@ angular.module('spotManipulator')
                 $scope.stateChange = function(state) {
                     $rootScope.$broadcast(state);
                 };
-                $rootScope.$on('test', function(event) {
-                    $scope.hej = true;
+                $rootScope.$on('imageLoading', function(event) {
+                    $scope.visible = false;
+                });
+                $rootScope.$on('imageRendered', function(event) {
+                    $scope.visible = true;
                 });
             }
         ]
