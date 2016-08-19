@@ -4,7 +4,8 @@ angular.module('viewer')
     .directive('viewerCanvas', [
         '$rootScope',
         '$http',
-        function($rootScope, $http) {
+        '$compile',
+        function($rootScope, $http, $compile) {
             var link = function(scope, element) {
                 var canvas = element[0];
                 var ctx = canvas.getContext('2d');
@@ -32,6 +33,7 @@ angular.module('viewer')
 
                 $rootScope.$on('imageLoading', function(event, data) {
                     logicHandler.currentState = logicHandler.state.loading;
+                    //$rootScope.$broadcast('test');
                 });
                 $rootScope.$on('imageLoadingError', function(event, data) {
                     logicHandler.currentState = logicHandler.state.error;
@@ -54,6 +56,7 @@ angular.module('viewer')
                             tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
                             images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
                             updateCanvas();
+                            $rootScope.$broadcast('test');
                         };
                         var errorCallback = function(response) {
                             console.error(response.data);

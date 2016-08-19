@@ -39,10 +39,10 @@
 </head>
 
 <body ng-app='aligner' ng-strict-di='true'>
-    <div class='container-fluid'>
+    <div id='main-container' class='container-fluid'>
         <button-bar></button-bar>
         <viewer></viewer>
-        <spot-manipulator></spot-manipulator>
+        <spot-manipulator ng-show='hej'></spot-manipulator>
     </div>
 </body>
     <script>

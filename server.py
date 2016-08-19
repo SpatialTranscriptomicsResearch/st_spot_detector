@@ -91,7 +91,6 @@ class ImageProcessor:
         tilemapWidth = int((photoWidth / tilemap_level) / tileWidth) + 1
         tilemapHeight = int((photoHeight / tilemap_level) / tileHeight) + 1
 
-        print("hej");
         image = image.resize((tileWidth, tileHeight))
 
         for x in range(0, tilemapHeight):

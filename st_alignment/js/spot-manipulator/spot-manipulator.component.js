@@ -7,13 +7,15 @@ angular.module('spotManipulator')
             '$scope',
             '$rootScope',
             function($scope, $rootScope) {
+                $scope.hej = true;
                 $scope.spotOpacity = 0.5;
                 $scope.spotColour = 0;
+                $scope.previousOpacity = $scope.spotOpacity;
+                $scope.previousColour = $scope.spotColour;
                 $scope.style = {
                     'background-color': 'hsla(' + $scope.spotColour + ', 100%, 50%, ' + $scope.spotOpacity + ')'
                 };
-                $scope.previousOpacity = $scope.spotOpacity;
-                $scope.previousColour = $scope.spotColour;
+
                 $scope.updateElementStyle = function() {
                     if($scope.spotOpacity != $scope.previousOpacity ||
                        $scope.spotColour != $scope.previousColour) {
@@ -27,6 +29,9 @@ angular.module('spotManipulator')
                 $scope.stateChange = function(state) {
                     $rootScope.$broadcast(state);
                 };
+                $rootScope.$on('test', function(event) {
+                    $scope.hej = true;
+                });
             }
         ]
     })

@@ -10,26 +10,27 @@ angular.module('buttonBar')
         function($rootScope, $http) {
             var link = function(scope, elem, attrs) {
                 elem.bind('change', function(event) {
-                    var img = event.target.files[0];
-                    var reader = new FileReader();
-                    $rootScope.$broadcast('imageLoading');
+                    if(event.target.files.length != 0) {
+                        var img = event.target.files[0];
+                        var reader = new FileReader();
+                        $rootScope.$broadcast('test');
 
-                    reader.addEventListener('load', function() {
-                        var postUrl = '../server.py';
-                        var imageData = reader.result;
-                        var successCallback = function(response) {
-                            $rootScope.$broadcast('imageLoaded', response.data);
-                        };
-                        var errorCallback = function(response) {
-                            console.error(response.data);
-                            $rootScope.$broadcast('imageLoadingError', response.data);
-                        };
-                        $http.post(postUrl, imageData)
-                            .then(successCallback, errorCallback);
-
-                    }, false);
-                    if(img) {
-                        reader.readAsDataURL(img);
+                        reader.addEventListener('load', function() {
+                            var postUrl = '../server.py';
+                            var imageData = reader.result;
+                            var successCallback = function(response) {
+                                //$rootScope.$broadcast('imageLoaded', response.data);
+                            };
+                            var errorCallback = function(response) {
+                                console.error(response.data);
+                                $rootScope.$broadcast('imageLoadingError', response.data);
+                            };
+                            $http.post(postUrl, imageData)
+                                .then(successCallback, errorCallback);
+                        }, false);
+                        if(img) {
+                            reader.readAsDataURL(img);
+                        }
                     }
                 });
             };
