@@ -30,11 +30,9 @@
         },
         exportSpots: function(format) {
             var dataString = "";
-            var dataType = "";
 
             if(format == 'json') {
                 dataString = JSON.stringify(self.spots, null, '\t');
-                dataType = "text/json";
             }
             else if(format == 'tsv') {
                 dataString += "original_position\tnew_position\tpixel_position\n";
@@ -47,7 +45,6 @@
                         dataString += "\n"
                     }
                 }
-                dataType = "text/tsv";
             }
             return dataString;
         }

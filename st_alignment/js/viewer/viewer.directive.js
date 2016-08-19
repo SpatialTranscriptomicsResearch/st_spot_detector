@@ -90,7 +90,8 @@ angular.module('viewer')
 
                 });
                 $rootScope.$on('exportSpotData', function(event, data) {
-                    var spotDataString = spots.getSpots('tsv');
+                    var format = 'tsv';
+                    var spotDataString = spots.exportSpots(format);
 
                     var blob = new Blob([spotDataString]);
                     var filename = "spot_data-" + new Date().toISOString().slice(0, 10) + "." + format;
@@ -101,7 +102,7 @@ angular.module('viewer')
                     else
                     {
                         var a = window.document.createElement("a");
-                        a.href = window.URL.createObjectURL(blob, {type: dataType});
+                        a.href = window.URL.createObjectURL(blob, {type: 'text/' + format});
                         a.download = filename;
                         document.body.appendChild(a);
                         a.click();  // IE: "Access is denied"; see: https://connect.microsoft.com/IE/feedback/details/797361/ie-10-treats-blob-url-as-cross-origin-and-denies-access
