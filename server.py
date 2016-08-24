@@ -6,8 +6,11 @@ import io
 import json
 import math
 import time
+
 from bottle import error, get, post, response, request, route, run, static_file
-from PIL import Image
+import cv2
+import numpy
+from PIL import Image, ImageOps
 
 def distance_between(a, b):
     w = a['x'] - b['x']
@@ -20,11 +23,11 @@ class Spots:
     spots = []
 
     array_size = {'x': 33, 'y': 35}
-    TL_coords = {
+    TL_coords = { # the position of the centre of the top left spot
         'x': 1251,
         'y': 676
     }
-    BR_coords = {
+    BR_coords = { # the position of the centre of the bottom right spot
         'x': 11780, 
         'y': 11982
     }
@@ -213,6 +216,28 @@ class ImageProcessor:
 
         return tiles
 
+    def keypoints_from_image(self, image):
+        PIL_image = ImageOps.invert(image)
+        PIL_image.save("out.jpg", 'JPEG')
+
+        cv2_image = cv2.imread("out.jpg", cv2.IMREAD_GRAYSCALE)
+        params = cv2.SimpleBlobDetector_Params()
+
+        # these values seem good "for now"
+        params.thresholdStep = 5.0
+        params.minThreshold = 170.0
+        params.maxThreshold = params.minThreshold + 50.0;
+
+        params.filterByArea = True
+        params.minArea = 15000
+        params.maxArea = 35000
+
+        detector = cv2.SimpleBlobDetector_create(params)
+        keypoints = detector.detect(cv2_image)
+        print("number of keypoints detected: " + str(len(keypoints)))
+
+        return keypoints
+
 #######################
 ### ↓ server code ↓ ###
 #######################
@@ -248,7 +273,10 @@ def receive_image(filepath):
         for x in tiles.dict_wrapper['tilemapLevels']:
             tiles.put_tiles_at(x, image_processor.tile_image(my_image, x))
             #tiles.put_tiles_at(x, image_processor.tile_image_dummy(my_image, 20))
-
+        
+        kp = image_processor.keypoints_from_image(my_image)
+        spot_data = spots.create_spots_from_keypoints(kp)
+        spots.spots = spot_data['spots']
         print(time.time() - timer_start)
         return
     else:
