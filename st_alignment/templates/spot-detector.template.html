@@ -1,0 +1,27 @@
+<div ng-show='visible' class='panel panel-default'>
+<div class='panel-heading'>
+    <h1 class='panel-title'>Spot Detector</h1>
+</div>
+<div class='panel-body'>
+    <form name='spotDetectorForm' ng-submit='detectSpots()'>
+    <div class='input-group'>
+        <span class='input-group-addon'>Top left spot centre</span>
+        <input ng-model='formData.TL.x' type='number'/>
+        <input ng-model='formData.TL.y' type='number'/>
+    </div>
+    <div class='input-group'>
+        <span class='input-group-addon'>Bottom right spot centre</span>
+        <input ng-model='formData.BR.x' type='number'/>
+        <input ng-model='formData.BR.y' type='number'/>
+    </div>
+    <div class='input-group'>
+        <span class='input-group-addon'>Array size</span>
+        <input ng-model='formData.arraySize.x' type='number'/>
+        <input ng-model='formData.arraySize.y' type='number'/>
+    </div>
+    <button>Submit and detect</button>
+    </form>
+<!--
+-->
+</div>
+</div>

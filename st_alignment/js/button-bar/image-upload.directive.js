@@ -10,6 +10,8 @@ angular.module('buttonBar')
         function($rootScope, $http) {
             var link = function(scope, elem, attrs) {
                 elem.bind('change', function(event) {
+                    $rootScope.$broadcast('imageLoaded');
+                    /*
                     if(event.target.files.length != 0) {
                         $rootScope.$broadcast('imageLoading');
                         var img = event.target.files[0];
@@ -32,6 +34,7 @@ angular.module('buttonBar')
                             reader.readAsDataURL(img);
                         }
                     }
+                    */
                 });
             };
             return {
