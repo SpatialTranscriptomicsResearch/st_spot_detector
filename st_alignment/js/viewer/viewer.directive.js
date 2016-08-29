@@ -65,7 +65,7 @@ angular.module('viewer')
                             .then(successCallback, errorCallback);
                     };
 
-                    logicHandler.currentState = logicHandler.state.move_camera;
+                    logicHandler.currentState = logicHandler.state.calibrate;
                     getSpotData();
                     getTileData();
                 });
@@ -137,7 +137,7 @@ angular.module('viewer')
                     }
                     else if(logicHandler.currentState == logicHandler.state.calibrate) {
                         renderer.renderImages(images);
-                        renderer.renderCalibrationPoints(calibrationData);
+                        renderer.renderCalibrationPoints(calibrator.calibrationData);
                     }
                     else if(logicHandler.currentState == logicHandler.state.select_spots) {
                         renderer.renderImages(images);

@@ -8,6 +8,7 @@
         self.camera = camera;
         self.spotSelector = spotSelector;
         self.spotAdjuster = spotAdjuster;
+        self.calibrator = calibrator;
         self.updateCanvasFunction = updateCanvasFunction;
 
         self.mouseEvent = Object.freeze({"down": 1, "up": 2, "move": 3, "drag": 4, "wheel": 5});

@@ -19,8 +19,7 @@
                         'arrayPosition': {x: j + 1, y: i + 1},
                         'renderPosition': {x: spacer.x * j + offset.x,
                                            y: spacer.y * i + offset.y},
-                        'selected': false,
-                        'size': 90
+                        'selected': false
                     });
                 }
             }

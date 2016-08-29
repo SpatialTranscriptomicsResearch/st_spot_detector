@@ -1,5 +1,8 @@
 bower_components/
 *.swp
 *.jpg
+*.pyc
+cv2
+blobdetection.py
 imgtest/
 __pycache__/

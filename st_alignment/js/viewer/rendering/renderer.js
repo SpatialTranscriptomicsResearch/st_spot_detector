@@ -14,6 +14,8 @@
         self.ctx.textAlign = "center";
         self.ctx.font = "48px serif";
         self.calibrationColour = 'cyan';
+        self.spotSize = 90;
+        self.spotCentreSize = 4;
     };
   
     Renderer.prototype = {
@@ -52,27 +54,27 @@
                     else {
                         self.ctx.fillStyle = self.spotColour;
                     }
-                    self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, spot.size, 0, Math.PI * 2);
+                    self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotSize, 0, Math.PI * 2);
                     self.ctx.closePath();
                     self.ctx.fill();
 
                     self.ctx.beginPath();
                     self.ctx.fillStyle = self.spotMiddleColour;
-                    self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, 4, 0, Math.PI * 2);
+                    self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotCentreSize, 0, Math.PI * 2);
                     self.ctx.closePath();
                     self.ctx.fill();
                 }
             self.camera.end();
         },
-        renderCalibrationPoint: function(position) {
-            self.camera.begin()
+        renderCalibrationPoints: function(data) {
+            self.camera.begin();
                 self.ctx.fillStyle = self.calibrationColour;
                 self.ctx.beginPath();
-                self.ctx.arc(data.TL.x, data.TL.y, spot.size, 0, Math.PI * 2);
+                self.ctx.arc(data.TL.x, data.TL.y, self.spotSize, 0, Math.PI * 2);
                 self.ctx.closePath();
                 self.ctx.fill();
                 self.ctx.beginPath();
-                self.ctx.arc(data.BR.x, data.BR.y, spot.size, 0, Math.PI * 2);
+                self.ctx.arc(data.BR.x, data.BR.y, self.spotSize, 0, Math.PI * 2);
                 self.ctx.closePath();
                 self.ctx.fill();
             self.camera.end();

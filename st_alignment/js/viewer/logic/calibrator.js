@@ -15,25 +15,30 @@
   
     Calibrator.prototype = {
         distanceBetween: function(a, b) {
-            w = a.x - b.x;
-            h = a.y - b.y;
+            var w = a.x - b.x;
+            var h = a.y - b.y;
             return Math.sqrt(w * w + h * h);
         },
         detectSelection: function(position) {
-            position = camera.mouseToCameraPosition(position);
+            position = self.camera.mouseToCameraPosition(position);
             if(self.distanceBetween(position, self.calibrationData.TL) < 100) {
-                self.selected = self.calibrationData.TL;
+                self.selected = 'TL';
             }
             else if(self.distanceBetween(position, self.calibrationData.BR) < 100) {
-                self.selected = self.calibrationData.BR;
+                self.selected = 'BR';
             }
         },
         endSelection: function() {
             self.selected = false;
         },
         moveSpot: function(position) {
-            position = camera.mouseToCameraPosition(eventData.position);
-            self.selected = position;
+            position = self.camera.mouseToCameraPosition(position);
+            if(self.selected == 'TL') {
+                self.calibrationData.TL = position;
+            }
+            else if(self.selected == 'BR') {
+                self.calibrationData.BR = position;
+            }
         }
     };
   
