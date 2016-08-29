@@ -29,27 +29,6 @@ angular.module('spotDetector')
                     $http.get(getUrl, config)
                         .then(successCallback, errorCallback);
                 };
-                /*
-                $scope.previousOpacity = $scope.spotOpacity;
-                $scope.previousColour = $scope.spotColour;
-                $scope.style = {
-                    'background-color': 'hsla(' + $scope.spotColour + ', 100%, 50%, ' + $scope.spotOpacity + ')'
-                };
-
-                $scope.updateElementStyle = function() {
-                    if($scope.spotOpacity != $scope.previousOpacity ||
-                       $scope.spotColour != $scope.previousColour) {
-                        $scope.style = {
-                            'background-color': 'hsla(' + $scope.spotColour + ', 100%, 50%, ' + $scope.spotOpacity + ')'
-                        };
-                        $rootScope.$broadcast('colourUpdate', $scope.style);
-                    }
-                    return $scope.style;
-                };
-                $scope.stateChange = function(state) {
-                    $rootScope.$broadcast(state);
-                };
-                */
                 $rootScope.$on('imageLoading', function(event) {
                     $scope.visible = false;
                 });

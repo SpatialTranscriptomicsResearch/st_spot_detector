@@ -1,6 +1,8 @@
+'use strict';
+
 (function() {
     var self;
-    var LogicHandler = function(canvas, camera, spotSelector, spotAdjuster, updateCanvasFunction) {
+    var LogicHandler = function(canvas, camera, spotSelector, spotAdjuster, calibrator, updateCanvasFunction) {
         self = this;
         self.canvas = canvas;
         self.camera = camera;
@@ -10,7 +12,15 @@
 
         self.mouseEvent = Object.freeze({"down": 1, "up": 2, "move": 3, "drag": 4, "wheel": 5});
         self.keyEvent = camera.dir;
-        self.state = Object.freeze({"upload_ready": 1, "loading": 2, "error": 3, "move_camera": 4, "select_spots": 5, "adjust_spots": 6});
+        self.state = Object.freeze({
+            "upload_ready": 1,
+            "loading": 2,
+            "error": 3,
+            "move_camera": 4,
+            "calibrate": 5,
+            "select_spots": 6,
+            "adjust_spots": 7
+        });
 
         self.currentState = self.state.upload_ready;
     };
@@ -46,6 +56,28 @@
                 }
                 else if(mouseEvent == self.mouseEvent.wheel) {
                     self.camera.navigate(eventData);
+                }
+            }
+            else if(self.currentState == self.state.calibrate) {
+                if(self.calibrator.selected) {
+                    if(mouseEvent == self.mouseEvent.drag) {
+                        self.calibrator.moveSpot(eventData.position);
+                    }
+                }
+                else {
+                    // moving the canvas normally
+                    if(mouseEvent == self.mouseEvent.drag) {
+                        self.camera.pan(eventData.difference);
+                    }
+                    else if(mouseEvent == self.mouseEvent.wheel) {
+                        self.camera.navigate(eventData);
+                    }
+                }
+                if(mouseEvent == self.mouseEvent.down) {
+                    self.calibrator.detectSelection(eventData.position);
+                }
+                else if(mouseEvent == self.mouseEvent.up) {
+                    self.calibrator.endSelection();
                 }
             }
             else if(self.currentState == self.state.select_spots) {

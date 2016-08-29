@@ -10,10 +10,8 @@
         self.scale = initialScale || 1.0;
         self.positionOffset = self.calculateOffset();
         self.viewport = {
-            l: 0,
-            r: 0,
-            t: 0,
-            b: 0,
+            l: 0, r: 0,
+            t: 0, b: 0,
             width: 0,
             height: 0,
             scale: {x: 1.0, y: 1.0}
@@ -109,6 +107,13 @@
             self.position.y = Math.min(self.position.y, self.positionBoundaries.maxY);
             self.scale = Math.max(self.scale, self.minScale);
             self.scale = Math.min(self.scale, self.maxScale);
+        },
+        mouseToCameraPosition: function(position) {
+            var cam = {x: self.position.x - self.positionOffset.x,
+                       y: self.position.y - self.positionOffset.y};
+            var mouse = {x: position.x / self.scale,
+                         y: position.y / self.scale};
+            return {x: cam.x + mouse.x, y: cam.y + mouse.y};
         }
     };
   

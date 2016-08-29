@@ -13,6 +13,7 @@
         self.spotMiddleColour = 'black';
         self.ctx.textAlign = "center";
         self.ctx.font = "48px serif";
+        self.calibrationColour = 'cyan';
     };
   
     Renderer.prototype = {
@@ -61,6 +62,19 @@
                     self.ctx.closePath();
                     self.ctx.fill();
                 }
+            self.camera.end();
+        },
+        renderCalibrationPoint: function(position) {
+            self.camera.begin()
+                self.ctx.fillStyle = self.calibrationColour;
+                self.ctx.beginPath();
+                self.ctx.arc(data.TL.x, data.TL.y, spot.size, 0, Math.PI * 2);
+                self.ctx.closePath();
+                self.ctx.fill();
+                self.ctx.beginPath();
+                self.ctx.arc(data.BR.x, data.BR.y, spot.size, 0, Math.PI * 2);
+                self.ctx.closePath();
+                self.ctx.fill();
             self.camera.end();
         },
         renderSpotSelection: function(rectCoords) {

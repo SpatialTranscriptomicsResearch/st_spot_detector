@@ -21,9 +21,10 @@ angular.module('viewer')
                 var renderer = new Renderer(ctx, camera);
 
                 var spots = new SpotManager();
-                var spotSelector = new SpotSelector(ctx, camera, spots);
+                var calibrator = new Calibrator(camera);
+                var spotSelector = new SpotSelector(camera, spots);
                 var spotAdjuster = new SpotAdjuster(camera, spots);
-                var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, updateCanvas);
+                var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, calibrator, updateCanvas);
                 var eventHandler = new EventHandler(canvas, camera, logicHandler);
 
                 var tilePosition;
@@ -80,6 +81,10 @@ angular.module('viewer')
                     logicHandler.currentState = logicHandler.state.adjust_spots;
                     updateCanvas();
                 });
+                $rootScope.$on('calibratorAdjusted', function(event, data) {
+                    calibrator.calibrationData = data;
+                    updateCanvas();
+                });
                 $rootScope.$on('colourUpdate', function(event, data) {
                     renderer.spotColour = data['background-color'];
                     if(logicHandler.currentState != logicHandler.state.upload_ready &&
@@ -129,6 +134,10 @@ angular.module('viewer')
                         images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         renderer.renderImages(images);
                         renderer.renderSpots(spots.spots);
+                    }
+                    else if(logicHandler.currentState == logicHandler.state.calibrate) {
+                        renderer.renderImages(images);
+                        renderer.renderCalibrationPoints(calibrationData);
                     }
                     else if(logicHandler.currentState == logicHandler.state.select_spots) {
                         renderer.renderImages(images);

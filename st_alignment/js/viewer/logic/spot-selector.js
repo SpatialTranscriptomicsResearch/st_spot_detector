@@ -3,9 +3,8 @@
 (function() {
     var self;
   
-    var SpotSelector = function(context, camera, spotManager) {
+    var SpotSelector = function(camera, spotManager) {
         self = this;
-        self.ctx = context;
         self.camera = camera;
         self.spotManager = spotManager;
         self.selected = false;
@@ -62,21 +61,15 @@
         beginSelection: function(topLeft) {
             self.renderingRect.TL = topLeft;
             self.renderingRect.WH = {x: 0, y: 0};
-            var cam = {x: self.camera.position.x - self.camera.positionOffset.x,
-                       y: self.camera.position.y - self.camera.positionOffset.y};
-            var mouse = {x: topLeft.x / self.camera.scale,
-                         y: topLeft.y / self.camera.scale};
-            self.selectionRect.TL = {x: cam.x + mouse.x, y: cam.y + mouse.y};
-            self.selectionRect.BR = {x: cam.x + mouse.x, y: cam.y + mouse.y};
+            topLeft = camera.mouseToCameraPosition(topLeft);
+            self.selectionRect.TL = topLeft;
+            self.selectionRect.BR = topLeft;
         },
         updateSelection: function(bottomRight) {
             self.renderingRect.WH = {x: bottomRight.x - self.renderingRect.TL.x,
                                      y: bottomRight.y - self.renderingRect.TL.y};
-            var cam = {x: self.camera.position.x - self.camera.positionOffset.x,
-                       y: self.camera.position.y - self.camera.positionOffset.y};
-            var mouse = {x: bottomRight.x / self.camera.scale,
-                         y: bottomRight.y / self.camera.scale};
-            self.selectionRect.BR = {x: cam.x + mouse.x, y: cam.y + mouse.y};
+            bottomRight = camera.mouseToCameraPosition(bottomRight);
+            self.selectionRect.BR = bottomRight;
             self.selectSpots();
         },
         endSelection: function() {
