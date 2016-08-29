@@ -61,14 +61,14 @@
         beginSelection: function(topLeft) {
             self.renderingRect.TL = topLeft;
             self.renderingRect.WH = {x: 0, y: 0};
-            topLeft = camera.mouseToCameraPosition(topLeft);
+            topLeft = self.camera.mouseToCameraPosition(topLeft);
             self.selectionRect.TL = topLeft;
             self.selectionRect.BR = topLeft;
         },
         updateSelection: function(bottomRight) {
             self.renderingRect.WH = {x: bottomRight.x - self.renderingRect.TL.x,
                                      y: bottomRight.y - self.renderingRect.TL.y};
-            bottomRight = camera.mouseToCameraPosition(bottomRight);
+            bottomRight = self.camera.mouseToCameraPosition(bottomRight);
             self.selectionRect.BR = bottomRight;
             self.selectSpots();
         },

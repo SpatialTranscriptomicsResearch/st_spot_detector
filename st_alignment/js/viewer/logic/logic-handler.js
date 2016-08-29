@@ -17,10 +17,11 @@
             "upload_ready": 1,
             "loading": 2,
             "error": 3,
-            "move_camera": 4,
-            "calibrate": 5,
-            "select_spots": 6,
-            "adjust_spots": 7
+            "spot_detecting": 4,
+            "move_camera": 5,
+            "calibrate": 6,
+            "select_spots": 7,
+            "adjust_spots": 8
         });
 
         self.currentState = self.state.upload_ready;

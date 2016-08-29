@@ -19,20 +19,14 @@ tiles = Tilemap()
 image_processor = ImageProcessor()
 
 @get('/detect_spots')
-def set_spot_coordinates():
+def get_spots():
     # ast converts the query strings into python dictionaries
+    print('yay!')
     TL_coords = ast.literal_eval(request.query['TL'])
     BR_coords = ast.literal_eval(request.query['BR'])
     array_size = ast.literal_eval(request.query['arraySize'])
     spots.set_array_size(array_size)
     spots.set_coords(TL_coords, BR_coords)
-    print("Received GET request")
-    print(TL_coords)
-    print(BR_coords)
-    print(array_size)
-
-@get('/spots')
-def get_spots():
     spots.create_spots_from_keypoints()
     return spots.get_spots()
     

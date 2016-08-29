@@ -35,6 +35,10 @@
             self.ctx.fillStyle = 'black';
             self.ctx.fillText("Error! Please select and upload a valid jpeg image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
+        renderDetectingScreen: function() {
+            self.ctx.fillStyle = 'black';
+            self.ctx.fillText("Detecting...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+        },
         renderImages: function(images) {
             self.camera.begin();
                 for(var i = 0; i < images.length; ++i) {

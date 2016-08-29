@@ -39,16 +39,6 @@ angular.module('viewer')
                     logicHandler.currentState = logicHandler.state.error;
                 });
                 $rootScope.$on('imageLoaded', function(event, data) {
-                    var getSpotData = function() {
-                        var successCallback = function(response) {
-                            spots.loadSpots(response.data);
-                        };
-                        var errorCallback = function(response) {
-                            console.error(response.data);
-                        };
-                        $http.get('../spots')
-                            .then(successCallback, errorCallback);
-                    };
                     var getTileData = function() {
                         var successCallback = function(response) {
                             tilemap.loadTilemap(response.data);
@@ -66,8 +56,28 @@ angular.module('viewer')
                     };
 
                     logicHandler.currentState = logicHandler.state.calibrate;
-                    getSpotData();
                     getTileData();
+                });
+                $rootScope.$on('spotDetecting', function(event, data) {
+                    var getSpotData = function() {
+                        var successCallback = function(response) {
+                            spots.loadSpots(response.data);
+                            $rootScope.$broadcast('finishedDetecting');
+                            logicHandler.currentState = logicHandler.state.move_camera;
+                        };
+                        var errorCallback = function(response) {
+                            console.error(response.data);
+                            // should it change to some other state on error?
+                        };
+                        var config = {
+                            params: calibrator.calibrationData
+                        };
+                        $http.get('../detect_spots', config)
+                            .then(successCallback, errorCallback);
+                    };
+                    logicHandler.currentState = logicHandler.state.spot_detecting;
+                    getSpotData();
+                    updateCanvas();
                 });
                 $rootScope.$on('moveState', function(event, data) {
                     logicHandler.currentState = logicHandler.state.move_camera;
@@ -81,7 +91,7 @@ angular.module('viewer')
                     logicHandler.currentState = logicHandler.state.adjust_spots;
                     updateCanvas();
                 });
-                $rootScope.$on('calibratorAdjusted', function(event, data) {
+                $rootScope.$on('spotDetectorAdjusted', function(event, data) {
                     calibrator.calibrationData = data;
                     updateCanvas();
                 });
@@ -127,6 +137,11 @@ angular.module('viewer')
                     else if(logicHandler.currentState == logicHandler.state.error) {
                         renderer.renderErrorScreen();
                     }
+                    else if(logicHandler.currentState == logicHandler.state.spot_detecting) {
+                        renderer.renderImages(images);
+                        renderer.renderCalibrationPoints(calibrator.calibrationData);
+                        renderer.renderDetectingScreen();
+                    }
                     else if(logicHandler.currentState == logicHandler.state.move_camera) {
                         scaleManager.updateScaleLevel(camera.scale);
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
@@ -138,6 +153,7 @@ angular.module('viewer')
                     else if(logicHandler.currentState == logicHandler.state.calibrate) {
                         renderer.renderImages(images);
                         renderer.renderCalibrationPoints(calibrator.calibrationData);
+                        $rootScope.$broadcast('calibratorAdjusted', calibrator.calibrationData);
                     }
                     else if(logicHandler.currentState == logicHandler.state.select_spots) {
                         renderer.renderImages(images);
