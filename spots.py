@@ -25,25 +25,12 @@ class Spots:
     spacer = {'x': 330, 'y': 333}
 
     def get_spots(self):
-        spot_dictionary = {'spots': self.spots}
+        spot_dictionary = {
+            'spots': self.spots,
+            'spacer': self.spacer,
+        }
         return spot_dictionary
         
-    def create_spots(self):
-        """Temporary function manually creates some 'arbitrary' spots"""
-        self.spacer = {'x': 330, 'y': 333};
-        self.TL_coords = {'x': 5100, 'y': 4730};
-        for i in range(0, array_size['x']):
-            for j in range(0, array_size['y']):
-                self.spots.append({
-                    'arrayPosition': {'x': j + 1, 'y': i + 1},
-                    'renderPosition': {'x': self.spacer['x'] * j + self.TL_coords['x'],
-                                       'y': self.spacer['y'] * i + self.TL_coords['y']},
-                    'selected': False,
-                    'size': 90
-                })
-        spot_dictionary = {'spots': self.spots}
-        return spot_dictionary
-
     def set_array_size(self, size):
         self.array_size = size
 
@@ -76,6 +63,7 @@ class Spots:
                     if(distance_between(kp_position, predicted_position) < threshold_distance):
                         self.spots.append({
                             'arrayPosition': {'x': j + 1, 'y': i + 1},
+                            'newArrayPosition': {'x': j + 1, 'y': i + 1},
                             'renderPosition': {'x': kp_position['x'],
                                                'y': kp_position['y']
                             },

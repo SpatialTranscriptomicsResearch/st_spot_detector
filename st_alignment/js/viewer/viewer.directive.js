@@ -112,10 +112,10 @@ angular.module('viewer')
                     var filename = "spot_data-" + new Date().toISOString().slice(0, 10) + "." + format;
 
                     // the next 11 lines are adapted from https://github.com/mholt/PapaParse/issues/175
-                    if (window.navigator.msSaveOrOpenBlob)  // IE hack; see http://msdn.microsoft.com/en-us/library/ie/hh779016.aspx
+                    if(window.navigator.msSaveOrOpenBlob) { // IE hack; see http://msdn.microsoft.com/en-us/library/ie/hh779016.aspx
                         window.navigator.msSaveBlob(blob, filename);
-                    else
-                    {
+                    }
+                    else {
                         var a = window.document.createElement("a");
                         a.href = window.URL.createObjectURL(blob, {type: 'text/' + format});
                         a.download = filename;

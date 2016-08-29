@@ -24,6 +24,10 @@
             }
             for(var i = 0; i < self.spots.spots.length; ++i) {
                 if(self.spots.spots[i].selected) {
+                    var arrayPosOffsetX = movement.x / self.spots.spacer.x;
+                    var arrayPosOffsetY = movement.y / self.spots.spacer.y;
+                    self.spots.spots[i].newArrayPosition.x += arrayPosOffsetX;
+                    self.spots.spots[i].newArrayPosition.y += arrayPosOffsetY;
                     self.spots.spots[i].renderPosition.x += movement.x;
                     self.spots.spots[i].renderPosition.y += movement.y;
                 }
