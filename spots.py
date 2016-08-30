@@ -67,8 +67,7 @@ class Spots:
                             'renderPosition': {'x': kp_position['x'],
                                                'y': kp_position['y']
                             },
-                            'selected': False,
-                            'size': 90
+                            'selected': False
                         })
                         if(kp_position['x'] > 11790):
                             print("This exceeds the x limit")

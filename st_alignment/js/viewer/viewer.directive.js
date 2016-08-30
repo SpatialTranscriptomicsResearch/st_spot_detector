@@ -23,7 +23,7 @@ angular.module('viewer')
                 var spots = new SpotManager();
                 var calibrator = new Calibrator(camera);
                 var spotSelector = new SpotSelector(camera, spots);
-                var spotAdjuster = new SpotAdjuster(camera, spots);
+                var spotAdjuster = new SpotAdjuster(camera, spots, calibrator.calibrationData);
                 var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, calibrator, updateCanvas);
                 var eventHandler = new EventHandler(canvas, camera, logicHandler);
 
@@ -93,9 +93,11 @@ angular.module('viewer')
                 });
 
                 $rootScope.$on('addSpots', function(event, data) {
+                    logicHandler.currentState = logicHandler.state.add_spots;
                     updateCanvas();
                 });
                 $rootScope.$on('deleteSpots', function(event, data) {
+                    spotAdjuster.deleteSpots();
                     updateCanvas();
                 });
                 $rootScope.$on('editSpots', function(event, data) {
@@ -171,6 +173,10 @@ angular.module('viewer')
                         renderer.renderSpotSelection(spotSelector.renderingRect);
                     }
                     else if(logicHandler.currentState == logicHandler.state.adjust_spots) {
+                        renderer.renderImages(images);
+                        renderer.renderSpots(spots.spots);
+                    }
+                    else if(logicHandler.currentState == logicHandler.state.add_spots) {
                         renderer.renderImages(images);
                         renderer.renderSpots(spots.spots);
                     }

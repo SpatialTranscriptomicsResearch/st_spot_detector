@@ -21,7 +21,8 @@
             "move_camera": 5,
             "calibrate": 6,
             "select_spots": 7,
-            "adjust_spots": 8
+            "adjust_spots": 8,
+            "add_spots": 9
         });
 
         self.currentState = self.state.upload_ready;
@@ -47,11 +48,13 @@
             self.updateCanvasFunction();
         },
         processMouseEvent: function(mouseEvent, eventData) {
+            // upload ready state
             if(self.currentState == self.state.upload_ready) {
                 if(mouseEvent == self.mouseEvent.up) {
                     // load image
                 }
             }
+            // move camera state
             else if(self.currentState == self.state.move_camera) {
                 if(mouseEvent == self.mouseEvent.drag) {
                     self.camera.pan(eventData.difference);
@@ -60,6 +63,7 @@
                     self.camera.navigate(eventData);
                 }
             }
+            // calibrate state
             else if(self.currentState == self.state.calibrate) {
                 if(self.calibrator.selected) {
                     if(mouseEvent == self.mouseEvent.drag) {
@@ -82,6 +86,7 @@
                     self.calibrator.endSelection();
                 }
             }
+            // select spots state
             else if(self.currentState == self.state.select_spots) {
                 if(mouseEvent == self.mouseEvent.down) {
                     self.spotSelector.beginSelection(eventData.position);
@@ -91,6 +96,12 @@
                 }
                 else if(mouseEvent == self.mouseEvent.drag) {
                     self.spotSelector.updateSelection(eventData.position);
+                }
+            }
+            // add spots state
+            else if(self.currentState == self.state.add_spots) {
+                if(mouseEvent == self.mouseEvent.up) {
+                    self.spotAdjuster.addSpot(eventData.position);
                 }
             }
             self.updateCanvasFunction();
