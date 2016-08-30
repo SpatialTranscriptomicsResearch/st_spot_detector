@@ -91,6 +91,16 @@ angular.module('viewer')
                     logicHandler.currentState = logicHandler.state.adjust_spots;
                     updateCanvas();
                 });
+
+                $rootScope.$on('addSpots', function(event, data) {
+                    updateCanvas();
+                });
+                $rootScope.$on('deleteSpots', function(event, data) {
+                    updateCanvas();
+                });
+                $rootScope.$on('editSpots', function(event, data) {
+                    updateCanvas();
+                });
                 $rootScope.$on('spotDetectorAdjusted', function(event, data) {
                     calibrator.calibrationData = data;
                     updateCanvas();
