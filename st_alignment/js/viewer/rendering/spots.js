@@ -5,7 +5,6 @@
         self = this;
         self.spots = [];
         self.spacer = {};
-        self.TL = {};
     };
 
     SpotManager.prototype = {

@@ -57,8 +57,9 @@
             // this array positioning is very naive! it should take
             // into account the array positions of the spots around it
             var newArrayPosition = {
-                x: adjustedPosition.x / self.spots.spacer.x,
-                y: adjustedPosition.y / self.spots.spacer.y
+                // array positions start on (1, 1), not (0, 0)
+                x: (adjustedPosition.x / self.spots.spacer.x) + 1,
+                y: (adjustedPosition.y / self.spots.spacer.y) + 1
             };
             var arrayPosition = {
                 x: Math.round(newArrayPosition.x),
@@ -70,7 +71,25 @@
                 'renderPosition': renderPosition,
                 'selected': false
             };
-            self.spots.spots.push(newSpot);
+
+            // inserting the spot in order in the array
+            var newSpotOrder = arrayPosition.y * self.calibrationData.arraySize.x + arrayPosition.x;
+            for(var i = 0; i < self.spots.spots.length; ++i) {
+                var spotPos = self.spots.spots[i].arrayPosition;
+                var spotOrder = spotPos.y * self.calibrationData.arraySize.x + spotPos.x;
+                if(newSpotOrder <= spotOrder) {
+                    self.spots.spots.splice(i, 0, newSpot);
+                    break;
+                }
+                else if(newSpotOrder > spotOrder) {
+                    // if it is bigger than the last spot, append it to the array
+                    if(i == self.spots.spots.length - 1) {
+                        self.spots.spots.push(newSpot);
+                        break; // required to not check it against itself
+                    }
+                    // otherwise check the next spot
+                }
+            }
         }
     };
 

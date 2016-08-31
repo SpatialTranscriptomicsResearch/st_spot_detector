@@ -21,13 +21,15 @@ image_processor = ImageProcessor()
 @get('/detect_spots')
 def get_spots():
     # ast converts the query strings into python dictionaries
-    print('yay!')
+    timer_start = time.time()
     TL_coords = ast.literal_eval(request.query['TL'])
     BR_coords = ast.literal_eval(request.query['BR'])
     array_size = ast.literal_eval(request.query['arraySize'])
     spots.set_array_size(array_size)
     spots.set_coords(TL_coords, BR_coords)
     spots.create_spots_from_keypoints()
+    print("Spot detection took:")
+    print(time.time() - timer_start)
     return spots.get_spots()
     
 @get('/tiles')
@@ -56,6 +58,7 @@ def receive_image(filepath):
         
         spots.keypoints = image_processor.keypoints_from_image(my_image)
 
+        print("Image processing took:")
         print(time.time() - timer_start)
         return
     else:

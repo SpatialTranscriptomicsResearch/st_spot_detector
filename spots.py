@@ -50,8 +50,8 @@ class Spots:
         An array of spots wrapped in a dictionary is returned.
         """
         threshold_distance = 80
-        for i in range(0, self.array_size['x']):
-            for j in range(0, self.array_size['y']):
+        for i in range(0, self.array_size['y']):
+            for j in range(0, self.array_size['x']):
                 predicted_position = {'x': self.spacer['x'] * j + self.TL_coords['x'],
                                       'y': self.spacer['y'] * i + self.TL_coords['y']
                 }
