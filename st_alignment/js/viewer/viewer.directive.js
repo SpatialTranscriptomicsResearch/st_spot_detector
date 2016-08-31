@@ -163,6 +163,10 @@ angular.module('viewer')
                         renderer.renderSpots(spots.spots);
                     }
                     else if(logicHandler.currentState == logicHandler.state.calibrate) {
+                        scaleManager.updateScaleLevel(camera.scale);
+                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
+                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
+                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         renderer.renderImages(images);
                         renderer.renderCalibrationPoints(calibrator.calibrationData);
                         $rootScope.$broadcast('calibratorAdjusted', calibrator.calibrationData);

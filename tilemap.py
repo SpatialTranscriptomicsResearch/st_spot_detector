@@ -6,8 +6,11 @@ class Tilemap:
     # to return from a GET request in a JSON data format
     dict_wrapper = {
         'tilemapLevels': [1, 2, 3, 5, 10, 20],
-        'tileWidth': 1000,
-        'tileHeight': 1000,
+        # do not change these two tileWidth and tileHeight values:
+        # can lead to offset point rendering and bad quality images etc.
+        # a fix would be nice!
+        'tileWidth': 1024,
+        'tileHeight': 1024,
         'tilemaps': {}
     }
 
