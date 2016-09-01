@@ -4,16 +4,34 @@ var Vec2 = (function() {
         fromValues: function(x, y) {
             return {x: x, y: y};
         },
-        cap: function(vec2, lowerLimit, upperLimit) {
+        copy: function(vec2) {
+            return {x: vec2.x, y: vec2.y};
+        },
+        clampX: function(vec2, lowerLimit, upperLimit) {
+            var newVec = this.copy(vec2);
             if(lowerLimit) {
-                vec2.x = Math.max(vec2.x, lowerLimit);
-                vec2.y = Math.max(vec2.y, lowerLimit);
+                newVec.x = Math.max(vec2.x, lowerLimit);
             }
             if(upperLimit) {
-                vec2.x = Math.min(vec2.x, upperLimit);
-                vec2.y = Math.min(vec2.y, upperLimit);
+                newVec.x = Math.min(vec2.x, upperLimit);
             }
-            return vec2;
+            return newVec;
+        },
+        clampY: function(vec2, lowerLimit, upperLimit) {
+            var newVec = this.copy(vec2);
+            if(lowerLimit) {
+                newVec.y = Math.max(vec2.y, lowerLimit);
+            }
+            if(upperLimit) {
+                newVec.y = Math.min(vec2.y, upperLimit);
+            }
+            return newVec;
+        },
+        clamp: function(vec2, lowerLimit, upperLimit) {
+            var newVec = this.copy(vec2);
+            newVec = clampX(newVec, lowerLimit, upperLimit);
+            newVec = clampY(newVec, lowerLimit, upperLimit);
+            return newVec;
         },
         add: function(a, b) {
             // adds b to a and returns a

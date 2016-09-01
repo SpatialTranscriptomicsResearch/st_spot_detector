@@ -14,7 +14,7 @@
             t: 0, b: 0,
             width: 0,
             height: 0,
-            scale: {x: 1.0, y: 1.0}
+            scale: Vec2.fromValues(1, 1)
         };
         self.navFactor = 60;
         self.panFactor = 5;
@@ -62,7 +62,7 @@
             self.updateViewport();
         },
         navigate: function(dir) {
-            var movement = {x: 0, y: 0};
+            var movement = Vec2.fromValues(0, 0);
             var scaleFactor = 1;
             if(dir === self.dir.left) {
                 movement.x -= self.navFactor;
@@ -87,8 +87,8 @@
         },
         pan: function(direction) {
             // takes an object {x, y} and moves the camera with that distance //
-            self.position.x += (direction.x * self.panFactor);
-            self.position.y += (direction.y * self.panFactor);
+            direction = Vec2.multiply(direction, self.panFactor);
+            self.position = Vec2.add(self.position, direction);
             self.updateViewport();
         },
         zoom: function(scaleFactor) {
@@ -96,24 +96,19 @@
             self.updateViewport();
         },
         calculateOffset: function() {
-            return {x: (self.context.canvas.width  / 2) / self.scale,
-                    y: (self.context.canvas.height / 2) / self.scale};
+            return Vec2.divide(Vec2.divide(self.context.canvas, 2), self.scale);
         },
         clampValues: function() {
             // keep the scale and position values within reasonable limits
-            self.position.x = Math.max(self.position.x, self.positionBoundaries.minX);
-            self.position.x = Math.min(self.position.x, self.positionBoundaries.maxX);
-            self.position.y = Math.max(self.position.y, self.positionBoundaries.minY);
-            self.position.y = Math.min(self.position.y, self.positionBoundaries.maxY);
+            Vec2.clampX(self.position, self.positionBoundaries.minX, self.positionBoundaries.maxX);
+            Vec2.clampY(self.position, self.positionBoundaries.minY, self.positionBoundaries.maxY);
             self.scale = Math.max(self.scale, self.minScale);
             self.scale = Math.min(self.scale, self.maxScale);
         },
         mouseToCameraPosition: function(position) {
-            var cam = {x: self.position.x - self.positionOffset.x,
-                       y: self.position.y - self.positionOffset.y};
-            var mouse = {x: position.x / self.scale,
-                         y: position.y / self.scale};
-            return {x: cam.x + mouse.x, y: cam.y + mouse.y};
+            var cam = Vec2.subtract(self.position, self.positionOffset);
+            var mouse = Vec2.divide(position, self.scale);
+            return Vec2.add(cam, mouse);
         }
     };
   
