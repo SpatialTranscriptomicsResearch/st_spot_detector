@@ -154,14 +154,6 @@ angular.module('viewer')
                         renderer.renderCalibrationPoints(calibrator.calibrationData);
                         renderer.renderDetectingScreen();
                     }
-                    else if(logicHandler.currentState == logicHandler.state.move_camera) {
-                        scaleManager.updateScaleLevel(camera.scale);
-                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
-                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
-                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        renderer.renderImages(images);
-                        renderer.renderSpots(spots.spots);
-                    }
                     else if(logicHandler.currentState == logicHandler.state.calibrate) {
                         scaleManager.updateScaleLevel(camera.scale);
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
@@ -170,6 +162,14 @@ angular.module('viewer')
                         renderer.renderImages(images);
                         renderer.renderCalibrationPoints(calibrator.calibrationData);
                         $rootScope.$broadcast('calibratorAdjusted', calibrator.calibrationData);
+                    }
+                    else if(logicHandler.currentState == logicHandler.state.move_camera) {
+                        scaleManager.updateScaleLevel(camera.scale);
+                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
+                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
+                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+                        renderer.renderImages(images);
+                        renderer.renderSpots(spots.spots);
                     }
                     else if(logicHandler.currentState == logicHandler.state.select_spots) {
                         renderer.renderImages(images);

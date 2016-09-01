@@ -30,6 +30,7 @@ def get_spots():
     spots.create_spots_from_keypoints()
     print("Spot detection took:")
     print(time.time() - timer_start)
+    print("sending: " + str(len(spots.get_spots()['spots'])) + " spots")
     return spots.get_spots()
     
 @get('/tiles')

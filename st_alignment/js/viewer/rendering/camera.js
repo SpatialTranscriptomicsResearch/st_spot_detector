@@ -6,7 +6,7 @@
     var Camera = function(ctx, initialPosition, initialScale) {
         self = this;
         self.context = ctx;
-        self.position = initialPosition || {x: 0, y: 0};
+        self.position = initialPosition || Vec2.fromValues(0, 0);
         self.scale = initialScale || 1.0;
         self.positionOffset = self.calculateOffset();
         self.viewport = {
