@@ -14,7 +14,7 @@
 
     SpotAdjuster.prototype = {
         adjust: function(direction) {
-            var movement = {x: 0, y: 0};
+            var movement = Vec2.Vec2(0, 0);
             if(direction === self.camera.dir.left) {
                 movement.x -= this.adjustFactor;
             }
@@ -29,12 +29,9 @@
             }
             for(var i = 0; i < self.spots.spots.length; ++i) {
                 if(self.spots.spots[i].selected) {
-                    var arrayPosOffsetX = movement.x / self.spots.spacer.x;
-                    var arrayPosOffsetY = movement.y / self.spots.spacer.y;
-                    self.spots.spots[i].newArrayPosition.x += arrayPosOffsetX;
-                    self.spots.spots[i].newArrayPosition.y += arrayPosOffsetY;
-                    self.spots.spots[i].renderPosition.x += movement.x;
-                    self.spots.spots[i].renderPosition.y += movement.y;
+                    var arrayPosOffset = Vec2.divide(movement, self.spots.spacer);
+                    self.spots.spots[i].newArrayPosition = Vec2.add(self.spots.spots[i].newArrayPosition, arrayPosOffset);
+                    self.spots.spots[i].renderPosition = Vec2.add(self.spots.spots[i].renderPosition, movement);
                 }
             }
         },
@@ -47,31 +44,19 @@
         },
         addSpot: function(position) {
             var renderPosition = self.camera.mouseToCameraPosition(position);
-            var adjustedPosition = {
-                x: renderPosition.x - self.calibrationData.TL.x,
-                y: renderPosition.y - self.calibrationData.TL.y
-            };
+            var adjustedPosition = Vec2.subtract(renderPosition, self.calibrationData.TL);
             // we don't want negative array coordinates
-            adjustedPosition.x = Math.max(0, adjustedPosition.x);
-            adjustedPosition.y = Math.max(0, adjustedPosition.y);
+            adjustedPosition = Vec2.clamp(adjustedPosition, 0);
             // this array positioning is very naive! it should take
             // into account the array positions of the spots around it
-            var newArrayPosition = {
-                // array positions start on (1, 1), not (0, 0)
-                x: (adjustedPosition.x / self.spots.spacer.x) + 1,
-                y: (adjustedPosition.y / self.spots.spacer.y) + 1
-            };
-            var arrayPosition = {
-                x: Math.round(newArrayPosition.x),
-                y: Math.round(newArrayPosition.y)
-            };
+            var newArrayPosition = Vec2.add(Vec2.divide(adjustedPosition, self.spots.spacer), Vec2.Vec2(1, 1));
+            var arrayPosition = Vec2.round(newArrayPosition);
             var newSpot = {
                 'arrayPosition': arrayPosition,
                 'newArrayPosition': newArrayPosition,
                 'renderPosition': renderPosition,
                 'selected': false
             };
-
             // inserting the spot in order in the array
             var newSpotOrder = arrayPosition.y * self.calibrationData.arraySize.x + arrayPosition.x;
             for(var i = 0; i < self.spots.spots.length; ++i) {

@@ -6,25 +6,20 @@
         self = this;
         self.camera = camera;
         self.calibrationData = {
-            TL: { x: 1251, y: 676 },
-            BR: { x: 11780, y: 11982 },
-            arraySize: { x: 33, y: 35 }
+            TL: Vec2.Vec2(1251, 676),
+            BR: Vec2.Vec2(11780, 11982),
+            arraySize: Vec2.Vec2(33, 35)
         };
         self.selected = false;
     };
   
     Calibrator.prototype = {
-        distanceBetween: function(a, b) {
-            var w = a.x - b.x;
-            var h = a.y - b.y;
-            return Math.sqrt(w * w + h * h);
-        },
         detectSelection: function(position) {
             position = self.camera.mouseToCameraPosition(position);
-            if(self.distanceBetween(position, self.calibrationData.TL) < 100) {
+            if(Vec2.distanceBetween(position, self.calibrationData.TL) < 100) {
                 self.selected = 'TL';
             }
-            else if(self.distanceBetween(position, self.calibrationData.BR) < 100) {
+            else if(Vec2.distanceBetween(position, self.calibrationData.BR) < 100) {
                 self.selected = 'BR';
             }
         },

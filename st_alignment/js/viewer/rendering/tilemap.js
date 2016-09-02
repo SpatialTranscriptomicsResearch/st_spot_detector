@@ -6,8 +6,7 @@
         self = this;
         self.loadTilemap = function(tilemap) {
             self.tilemapLevels = tilemap.tilemapLevels;
-            self.tileWidth  = tilemap.tileWidth;
-            self.tileHeight = tilemap.tileHeight;
+            self.tilesize = Vec2.Vec2(tilemap.tileWidth, tilemap.tileHeight);
             self.tilemaps = {};
             for(var tilemapLevel in tilemap.tilemaps) {
                 if(tilemap.tilemaps.hasOwnProperty(tilemapLevel)) {
@@ -40,14 +39,11 @@
                the relevant images are returned from the tile map */
             var images = [];
             for(var i = 0; i < tilePositions.length; ++i) {
-                var tileX = tilePositions[i].x;
-                var tileY = tilePositions[i].y;
-                var image = self.tilemaps[tilemapLevel][tileX][tileY]; 
+                var tile = Vec2.Vec2(tilePositions[i].x, tilePositions[i].y);
+                var image = self.tilemaps[tilemapLevel][tile.x][tile.y]; 
 
-                image.renderPosition = {x: (tileX * self.tileWidth)  * tilemapLevel,
-                                        y: (tileY * self.tileHeight) * tilemapLevel};
-                image.scaledSize = {x: self.tileWidth  * tilemapLevel,
-                                    y: self.tileHeight * tilemapLevel};
+                image.renderPosition = Vec2.scale(Vec2.multiply(tile, self.tilesize), tilemapLevel);
+                image.scaledSize = Vec2.scale(self.tilesize, tilemapLevel);
                 images.push(image);
             }
             return images;
@@ -70,7 +66,7 @@
                     var tilemapWidth  = self.tilemaps[tilemapLevel].length;
                     if(!(xPos < 0 || xPos >= tilemapWidth ||
                          yPos < 0 || yPos >= tilemapHeight)) {
-                        positions.push({x: xPos, y: yPos});
+                        positions.push(Vec2.Vec2(xPos, yPos));
                         ++i;
                     }
                 }
@@ -80,11 +76,9 @@
         getTilePosition: function(imagePosition, tilemapLevel) {
             /* calculates the tile position from a given image
                position, i.e. converts image to tile coordinates */
-            var tileSizeInImageCoords = {x: self.tileWidth * tilemapLevel,
-                                         y: self.tileHeight * tilemapLevel};
-            var tileX = Math.trunc(imagePosition.x / tileSizeInImageCoords.x);
-            var tileY = Math.trunc(imagePosition.y / tileSizeInImageCoords.y);
-            return {x: tileX, y: tileY};
+            var tileSizeInImageCoords = Vec2.scale(self.tilesize, tilemapLevel);
+            var tilePos = Vec2.truncate(Vec2.divide(imagePosition, tileSizeInImageCoords));
+            return tilePos;
         }
     };
 

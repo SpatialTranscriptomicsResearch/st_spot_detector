@@ -6,7 +6,7 @@
     var Camera = function(ctx, initialPosition, initialScale) {
         self = this;
         self.context = ctx;
-        self.position = initialPosition || Vec2.fromValues(0, 0);
+        self.position = initialPosition || Vec2.Vec2(0, 0);
         self.scale = initialScale || 1.0;
         self.positionOffset = self.calculateOffset();
         self.viewport = {
@@ -14,7 +14,7 @@
             t: 0, b: 0,
             width: 0,
             height: 0,
-            scale: Vec2.fromValues(1, 1)
+            scale: Vec2.Vec2(1, 1)
         };
         self.navFactor = 60;
         self.panFactor = 5;
@@ -62,7 +62,7 @@
             self.updateViewport();
         },
         navigate: function(dir) {
-            var movement = Vec2.fromValues(0, 0);
+            var movement = Vec2.Vec2(0, 0);
             var scaleFactor = 1;
             if(dir === self.dir.left) {
                 movement.x -= self.navFactor;
@@ -87,7 +87,7 @@
         },
         pan: function(direction) {
             // takes an object {x, y} and moves the camera with that distance //
-            direction = Vec2.multiply(direction, self.panFactor);
+            direction = Vec2.scale(direction, self.panFactor);
             self.position = Vec2.add(self.position, direction);
             self.updateViewport();
         },
@@ -96,8 +96,8 @@
             self.updateViewport();
         },
         calculateOffset: function() {
-            var canvasMiddle = Vec2.fromValues(self.context.canvas.width / 2, self.context.canvas.height / 2);
-            var offset = Vec2.divide(canvasMiddle, self.scale);
+            var canvasMiddle = Vec2.Vec2(self.context.canvas.width / 2, self.context.canvas.height / 2);
+            var offset = Vec2.scale(canvasMiddle, 1 / self.scale);
             return offset;
         },
         clampValues: function() {
@@ -109,7 +109,7 @@
         },
         mouseToCameraPosition: function(position) {
             var cam = Vec2.subtract(self.position, self.positionOffset);
-            var mouse = Vec2.divide(position, self.scale);
+            var mouse = Vec2.scale(position, 1 / self.scale);
             return Vec2.add(cam, mouse);
         }
     };

@@ -27,25 +27,25 @@
     EventHandler.prototype = {
         setUpMouseEvents: function(canvas, camera) {
             canvas.onmousedown = function(e) {
-                self.mousePos = {x: e.layerX, y: e.layerY};
+                self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 self.mouseDown = true;
                 self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.down, {position: self.mousePos});
             }
             canvas.onmouseup = function(e) {
-                self.mousePos = {x: e.layerX, y: e.layerY};
+                self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 self.mouseDown = false;
                 self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.up, {position: self.mousePos});
             }
 
             canvas.onmouseout = function(e) {
-                self.mousePos = {x: e.layerX, y: e.layerY};
+                self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 self.mouseDown = false;
                 self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.out, {position: self.mousePos});
             }
 
             canvas.onmousemove = function(e) {
-                var distanceMoved = {x: self.mousePos.x - e.layerX, y: self.mousePos.y - e.layerY};
-                self.mousePos = {x: e.layerX, y: e.layerY};
+                var distanceMoved = Vec2.Vec2(self.mousePos.x - e.layerX, self.mousePos.y - e.layerY);
+                self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.move, {position: self.mousePos, difference: distanceMoved});
                 if(self.mouseDown) {
                     self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.drag, {position: self.mousePos, difference: distanceMoved});

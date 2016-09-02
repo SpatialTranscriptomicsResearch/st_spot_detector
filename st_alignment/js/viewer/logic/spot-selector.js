@@ -9,10 +9,10 @@
         self.spotManager = spotManager;
         self.selected = false;
         self.shiftPressed = false;
-        self.renderingRect = {TL: {x: 0, y: 0},
-                              WH: {x: 0, y: 0}};
-        self.selectionRect = {TL: {x: 0, y: 0},
-                              BR: {x: 0, y: 0}};
+        self.renderingRect = {TL: Vec2.Vec2(),
+                              WH: Vec2.Vec2()}
+        self.selectionRect = {TL: Vec2.Vec2(),
+                              BR: Vec2.Vec2()};
     };
   
     SpotSelector.prototype = {
@@ -60,14 +60,13 @@
         },
         beginSelection: function(topLeft) {
             self.renderingRect.TL = topLeft;
-            self.renderingRect.WH = {x: 0, y: 0};
+            self.renderingRect.WH = Vec2.Vec2();
             topLeft = self.camera.mouseToCameraPosition(topLeft);
             self.selectionRect.TL = topLeft;
             self.selectionRect.BR = topLeft;
         },
         updateSelection: function(bottomRight) {
-            self.renderingRect.WH = {x: bottomRight.x - self.renderingRect.TL.x,
-                                     y: bottomRight.y - self.renderingRect.TL.y};
+            self.renderingRect.WH = Vec2.subtract(bottomRight, self.renderingRect.TL);
             bottomRight = self.camera.mouseToCameraPosition(bottomRight);
             self.selectionRect.BR = bottomRight;
             self.selectSpots();
@@ -75,8 +74,8 @@
         endSelection: function() {
             self.selected  = true;
             self.selectSpots();
-            self.renderingRect = {TL: {x: 0, y: 0},
-                                  WH: {x: 0, y: 0}};
+            self.renderingRect = {TL: Vec2.Vec2(),
+                                  WH: Vec2.Vec2()};
         },
         toggleShift: function(bool) {
             self.shiftPressed = bool;
