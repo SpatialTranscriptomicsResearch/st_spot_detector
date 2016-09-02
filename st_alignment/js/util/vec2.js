@@ -28,8 +28,7 @@ var Vec2 = (function() {
             return newVec;
         },
         clamp: function(vec2, lowerLimit, upperLimit) {
-            var newVec = this.copy(vec2);
-            newVec = clampX(newVec, lowerLimit, upperLimit);
+            var newVec = clampX(vec2, lowerLimit, upperLimit);
             newVec = clampY(newVec, lowerLimit, upperLimit);
             return newVec;
         },

@@ -96,12 +96,14 @@
             self.updateViewport();
         },
         calculateOffset: function() {
-            return Vec2.divide(Vec2.divide(self.context.canvas, 2), self.scale);
+            var canvasMiddle = Vec2.fromValues(self.context.canvas.width / 2, self.context.canvas.height / 2);
+            var offset = Vec2.divide(canvasMiddle, self.scale);
+            return offset;
         },
         clampValues: function() {
             // keep the scale and position values within reasonable limits
-            Vec2.clampX(self.position, self.positionBoundaries.minX, self.positionBoundaries.maxX);
-            Vec2.clampY(self.position, self.positionBoundaries.minY, self.positionBoundaries.maxY);
+            self.position = Vec2.clampX(self.position, self.positionBoundaries.minX, self.positionBoundaries.maxX);
+            self.position = Vec2.clampY(self.position, self.positionBoundaries.minY, self.positionBoundaries.maxY);
             self.scale = Math.max(self.scale, self.minScale);
             self.scale = Math.min(self.scale, self.maxScale);
         },
