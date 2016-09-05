@@ -48,6 +48,11 @@ def serve_site(filepath):
 
 @post('/<filepath:path>') # the argument should possibly be different
 def receive_image(filepath):
+    # we want these three objects to be reinitialised every time a new image is chosen
+    spots = Spots()
+    tiles = Tilemap()
+    image_processor = ImageProcessor()
+
     image_string = request.body.read()
     valid = image_processor.validate_jpeg_URI(image_string)
     if(valid):

@@ -49,6 +49,7 @@ class Spots:
         their correct array coordinate.
         An array of spots wrapped in a dictionary is returned.
         """
+        print("creating from: " + str(len(self.keypoints)) + " keypoints")
         threshold_distance = 80
         for i in range(0, self.array_size['y']):
             for j in range(0, self.array_size['x']):

@@ -25,8 +25,7 @@
             {
                 for(var i = 0; i < spots.length; ++i) {
                     var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
-                    if(Math.abs(pos.x - self.selectionRect.TL.x) < spots[i].size &&
-                       Math.abs(pos.y - self.selectionRect.TL.y) < spots[i].size) {
+                    if(Vec2.distanceBetween(pos, self.selectionRect.TL) < 100) {
                         if(self.shiftPressed && spots[i].selected) {
                             // deselect spots that are already selected
                             spots[i].selected = false;

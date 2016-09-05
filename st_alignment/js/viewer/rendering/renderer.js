@@ -25,7 +25,7 @@
         },
         renderStartScreen: function() {
             self.ctx.fillStyle = 'black';
-            self.ctx.fillText("Click on Upload to upload and process an image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+            self.ctx.fillText("Click on Upload to upload an image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
         renderLoadingScreen: function() {
             self.ctx.fillStyle = 'black';

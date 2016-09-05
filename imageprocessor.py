@@ -114,6 +114,7 @@ class ImageProcessor:
     def keypoints_from_image(self, image):
         PIL_image = ImageOps.invert(image)
         PIL_image.save("out.jpg", 'JPEG')
+        #image.save("out.jpg", 'JPEG')
 
         cv2_image = cv2.imread("out.jpg", cv2.IMREAD_GRAYSCALE)
         params = cv2.SimpleBlobDetector_Params()

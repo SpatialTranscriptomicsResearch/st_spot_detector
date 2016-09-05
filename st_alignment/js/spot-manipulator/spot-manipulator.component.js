@@ -7,7 +7,7 @@ angular.module('spotManipulator')
             '$scope',
             '$rootScope',
             function($scope, $rootScope) {
-                $scope.visible = true;
+                $scope.visible = false;
                 $scope.spotOpacity = 0.5;
                 $scope.spotColour = 0;
                 $scope.previousOpacity = $scope.spotOpacity;
