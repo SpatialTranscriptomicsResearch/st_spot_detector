@@ -21,3 +21,16 @@ class Tilemap:
         tilemap_level = int(tilemap_level)
         self.dict_wrapper['tilemaps'][tilemap_level] = tiles
 
+    def fill_dummy_tiles(self):
+        """Fills the tilemap with pre-calculated images."""
+        for level in self.dict_wrapper['tilemapLevels']:
+            w = 20 / level
+            h = 20 / level
+            tiles = []
+            for x in range(0, w):
+                new_row = []
+                for y in range(0, h):
+                    string = "./img/zoom" + str(level) + "_x" + str(x) + "_y" + str(y) + ".jpg"
+                    new_row.append(string)
+                tiles.append(new_row)
+            self.dict_wrapper['tilemaps'][level] = tiles

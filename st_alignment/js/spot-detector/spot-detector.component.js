@@ -14,7 +14,10 @@ angular.module('spotDetector')
                     // values are only manipulable by dragging around the spots
                     TL: { x: 1251, y: 676 },
                     BR: { x: 11780, y: 11982 },
-                    arraySize: { x: 33, y: 35 }
+                    arraySize: { x: 33, y: 35 },
+                    brightness: 0,
+                    contrast: 0,
+                    threshold: 50,
                 };
                 $scope.detectSpots = function() {
                     $rootScope.$broadcast('spotDetecting');

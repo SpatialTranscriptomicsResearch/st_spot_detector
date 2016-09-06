@@ -19,6 +19,14 @@
         <input ng-model='formData.arraySize.x' ng-change='formChange()' type='number' min='0' step='1'/>
         <input ng-model='formData.arraySize.y' ng-change='formChange()' type='number' min='0' step='1'/>
     </div>
+    <div class='input-group'>
+        <span class='input-group-addon'>Brightness</span>
+        <input ng-model='formData.brightness' ng-change='formChange()' type='number' min='-100'  max='100' step='1'/>
+        <span class='input-group-addon'>Contrast</span>
+        <input ng-model='formData.contrast' ng-change='formChange()' type='number' min='-100'  max='100' step='1'/>
+        <span class='input-group-addon'>Threshold</span>
+        <input ng-model='formData.threshold' ng-change='formChange()' type='number' min='0' max='100' step='1'/>
+    </div>
     <button>Submit and detect</button>
     </form>
 <!--

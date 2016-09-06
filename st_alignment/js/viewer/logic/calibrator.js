@@ -8,7 +8,10 @@
         self.calibrationData = {
             TL: Vec2.Vec2(1251, 676),
             BR: Vec2.Vec2(11780, 11982),
-            arraySize: Vec2.Vec2(33, 35)
+            arraySize: Vec2.Vec2(33, 35),
+            brightness: 0,
+            contrast: 0,
+            threshold: 50,
         };
         self.selected = false;
     };

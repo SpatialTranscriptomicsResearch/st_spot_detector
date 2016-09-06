@@ -16,7 +16,8 @@ angular.module('buttonBar')
                         var reader = new FileReader();
 
                         reader.addEventListener('load', function() {
-                            var postUrl = '../server.py';
+                            //var postUrl = '../server.py';
+                            var postUrl = '../dummy_image';
                             var imageData = reader.result;
                             var successCallback = function(response) {
                                 $rootScope.$broadcast('imageLoaded', response.data);

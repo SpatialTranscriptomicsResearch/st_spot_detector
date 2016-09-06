@@ -5,7 +5,7 @@ import io
 import cv2
 import numpy
 
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageEnhance
 
 class ImageProcessor:
     """Takes the jpeg image and performs various methods on it."""
@@ -39,28 +39,6 @@ class ImageProcessor:
         jpeg_string = unicode(jpeg_string, 'utf-8')
         return jpeg_string
 
-
-    def tile_image_dummy(self, image, tilemap_level):
-        """Function included for debugging purposes to avoid waiting times"""
-        tiles = []
-
-        photoWidth = image.size[0]
-        photoHeight = image.size[1]
-        tileWidth = 1024;
-        tileHeight = 1024;
-
-        tilemapWidth = int((photoWidth / tilemap_level) / tileWidth) + 1
-        tilemapHeight = int((photoHeight / tilemap_level) / tileHeight) + 1
-
-        image = image.resize((tileWidth, tileHeight))
-
-        for x in range(0, tilemapHeight):
-            new_row = []
-            for y in range(0, tilemapWidth):
-                new_row.append(self.Image_to_jpeg_URI(image))
-            tiles.append(new_row)
-
-        return tiles
 
     def tile_image(self, image, tilemap_level):
         """Takes a jpeg image, scales its size down and splits it up 
@@ -111,10 +89,16 @@ class ImageProcessor:
 
         return tiles
 
+    def process_image(self, image, brightness, contrast, threshold):
+        #ImageEnhance.brightness
+        print(brightness)
+        print(contrast)
+        print(threshold)
+        return image
+
     def keypoints_from_image(self, image):
         PIL_image = ImageOps.invert(image)
         PIL_image.save("out.jpg", 'JPEG')
-        #image.save("out.jpg", 'JPEG')
 
         cv2_image = cv2.imread("out.jpg", cv2.IMREAD_GRAYSCALE)
         params = cv2.SimpleBlobDetector_Params()

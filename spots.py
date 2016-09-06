@@ -44,11 +44,13 @@ class Spots:
                  / (self.array_size['y'] - 1)
         }
 
-    def create_spots_from_keypoints(self):
+    def create_spots_from_keypoints(self, size, TL, BR):
         """Takes keypoints generated from opencv and tries to match them to
         their correct array coordinate.
         An array of spots wrapped in a dictionary is returned.
         """
+        self.set_array_size(size)
+        self.set_coords(TL, BR)
         print("creating from: " + str(len(self.keypoints)) + " keypoints")
         threshold_distance = 80
         for i in range(0, self.array_size['y']):
