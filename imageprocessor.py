@@ -131,7 +131,8 @@ class ImageProcessor:
         cv2_image = self.PIL_to_CV2_image(image)
 
         # http://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html?highlight=threshold#threshold
-        retval, thresholded_image = cv2.threshold(cv2_image, 30, 255, cv2.THRESH_BINARY)
+        #retval, thresholded_image = cv2.threshold(cv2_image, threshold, 255, cv2.THRESH_BINARY)
+        thresholded_image = cv2.adaptiveThreshold(cv2_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 103, 20)
 
         # convert the image back into a PIL image
         image = self.CV2_to_PIL_image(thresholded_image)
