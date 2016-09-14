@@ -6,8 +6,8 @@
         self = this;
         self.camera = camera;
         self.calibrationData = {
-            TL: Vec2.Vec2(1251, 676),
-            BR: Vec2.Vec2(11780, 11982),
+            TL: Vec2.Vec2(5250, 4301),
+            BR: Vec2.Vec2(15840, 15581),
             arraySize: Vec2.Vec2(33, 35),
             brightness: 0,
             contrast: 0,
@@ -15,7 +15,6 @@
         };
         self.selected = false;
     };
-  
     Calibrator.prototype = {
         detectSelection: function(position) {
             position = self.camera.mouseToCameraPosition(position);

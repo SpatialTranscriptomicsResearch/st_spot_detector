@@ -28,9 +28,28 @@ angular.module('viewer')
                 var eventHandler = new EventHandler(canvas, camera, logicHandler);
 
                 var tilePosition;
-                var images;
+                var images = {
+                    images: '',
+                    thumbnail: new Image()
+                };
 
                 updateCanvas();
+
+                var getThumbnail = function() {
+                    var thumbnailSuccessCallback = function(response) {
+                        images.thumbnail.src = response.data.thumbnail;
+                        updateCanvas();
+                        //$rootScope.$broadcast('thumbnailLoaded');
+                    };
+                    var thumbnailErrorCallback = function(response) {
+                        console.error(response.data);
+                    };
+                    var config = {
+                        params: calibrator.calibrationData
+                    };
+                    $http.get('../thumbnail', config)
+                        .then(thumbnailSuccessCallback, thumbnailErrorCallback);
+                };
 
                 $rootScope.$on('imageLoading', function(event, data) {
                     logicHandler.currentState = logicHandler.state.loading;
@@ -40,19 +59,20 @@ angular.module('viewer')
                 });
                 $rootScope.$on('imageLoaded', function(event, data) {
                     var getTileData = function() {
-                        var successCallback = function(response) {
+                        var tileSuccessCallback = function(response) {
                             tilemap.loadTilemap(response.data);
                             scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
                             tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
-                            images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
+                            images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
                             updateCanvas();
                             $rootScope.$broadcast('imageRendered');
                         };
-                        var errorCallback = function(response) {
+                        var tileErrorCallback = function(response) {
                             console.error(response.data);
                         };
                         $http.get('../tiles')
-                            .then(successCallback, errorCallback);
+                            .then(tileSuccessCallback, tileErrorCallback);
+                        getThumbnail();
                     };
 
                     logicHandler.currentState = logicHandler.state.calibrate;
@@ -104,7 +124,10 @@ angular.module('viewer')
                     updateCanvas();
                 });
                 $rootScope.$on('spotDetectorAdjusted', function(event, data) {
-                    calibrator.calibrationData = data;
+                    calibrator.calibrationData = data.data;
+                    if(data.bctChanged) {
+                        getThumbnail();
+                    }
                     updateCanvas();
                 });
                 $rootScope.$on('colourUpdate', function(event, data) {
@@ -150,7 +173,7 @@ angular.module('viewer')
                         renderer.renderErrorScreen();
                     }
                     else if(logicHandler.currentState == logicHandler.state.spot_detecting) {
-                        renderer.renderImages(images);
+                        renderer.renderImages(images.images);
                         renderer.renderCalibrationPoints(calibrator.calibrationData);
                         renderer.renderDetectingScreen();
                     }
@@ -158,8 +181,9 @@ angular.module('viewer')
                         scaleManager.updateScaleLevel(camera.scale);
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
-                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        renderer.renderImages(images);
+                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+                        //renderer.renderImages(images.images); // not necessary anymore if showing the thumbnail
+                        renderer.renderThumbnail(images.thumbnail);
                         renderer.renderCalibrationPoints(calibrator.calibrationData);
                         $rootScope.$broadcast('calibratorAdjusted', calibrator.calibrationData);
                     }
@@ -167,21 +191,21 @@ angular.module('viewer')
                         scaleManager.updateScaleLevel(camera.scale);
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
-                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        renderer.renderImages(images);
+                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+                        renderer.renderImages(images.images);
                         renderer.renderSpots(spots.spots);
                     }
                     else if(logicHandler.currentState == logicHandler.state.select_spots) {
-                        renderer.renderImages(images);
+                        renderer.renderImages(images.images);
                         renderer.renderSpots(spots.spots);
                         renderer.renderSpotSelection(spotSelector.renderingRect);
                     }
                     else if(logicHandler.currentState == logicHandler.state.adjust_spots) {
-                        renderer.renderImages(images);
+                        renderer.renderImages(images.images);
                         renderer.renderSpots(spots.spots);
                     }
                     else if(logicHandler.currentState == logicHandler.state.add_spots) {
-                        renderer.renderImages(images);
+                        renderer.renderImages(images.images);
                         renderer.renderSpots(spots.spots);
                     }
                 }

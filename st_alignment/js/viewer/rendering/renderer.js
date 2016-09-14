@@ -39,6 +39,11 @@
             self.ctx.fillStyle = 'black';
             self.ctx.fillText("Detecting...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
+        renderThumbnail: function(thumbnail) {
+            self.camera.begin();
+                self.ctx.drawImage(thumbnail, 0, 0, thumbnail.width * 20, thumbnail.height * 20);
+            self.camera.end();
+        },
         renderImages: function(images) {
             self.camera.begin();
                 for(var i = 0; i < images.length; ++i) {

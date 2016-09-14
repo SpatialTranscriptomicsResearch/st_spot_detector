@@ -12,8 +12,8 @@ angular.module('spotDetector')
                 $scope.formData = {
                     // these values may be unnecessary; may change it so that the
                     // values are only manipulable by dragging around the spots
-                    TL: { x: 1251, y: 676 },
-                    BR: { x: 11780, y: 11982 },
+                    TL: { x: 0, y: 0 },
+                    BR: { x: 0, y: 0 },
                     arraySize: { x: 33, y: 35 },
                     brightness: 0,
                     contrast: 0,
@@ -22,8 +22,12 @@ angular.module('spotDetector')
                 $scope.detectSpots = function() {
                     $rootScope.$broadcast('spotDetecting');
                 };
-                $scope.formChange = function() {
-                    $rootScope.$broadcast('spotDetectorAdjusted', $scope.formData);
+                $scope.formChange = function(bctChanged) {
+                    var data = {
+                        data: $scope.formData,
+                        bctChanged: bctChanged
+                    }
+                    $rootScope.$broadcast('spotDetectorAdjusted', data);
                 };
                 $rootScope.$on('imageLoading', function(event) {
                     $scope.visible = false;

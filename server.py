@@ -14,6 +14,7 @@ from PIL import Image
 class ImageHolder:
     image_loaded = False
     image = None
+    thumbnail = None
 
 #######################
 ### ↓ server code ↓ ###
@@ -35,29 +36,42 @@ def receive_dummy_image():
     image.image = image_processor.jpeg_URI_to_Image(image_string)
     image.image_loaded = True
     return
-    
 
 @get('/detect_spots')
 def get_spots():
     timer_start = time.time()
-    # ast converts the query strings into python dictionaries
-    TL_coords = ast.literal_eval(request.query['TL'])
-    BR_coords = ast.literal_eval(request.query['BR'])
-    array_size = ast.literal_eval(request.query['arraySize'])
-    brightness = int(request.query['brightness'])
-    contrast = int(request.query['contrast'])
-    threshold = int(request.query['threshold'])
-
     if(image.image_loaded):
-        image.image = image_processor.process_image(image.image, brightness, contrast, threshold)
-        spots.keypoints = image_processor.keypoints_from_image(image.image)
-        spots.create_spots_from_keypoints(array_size, TL_coords, BR_coords)
+        # ast converts the query strings into python dictionaries
+        TL_coords = ast.literal_eval(request.query['TL'])
+        BR_coords = ast.literal_eval(request.query['BR'])
+        array_size = ast.literal_eval(request.query['arraySize'])
+        brightness = float(request.query['brightness'])
+        contrast = float(request.query['contrast'])
+        threshold = float(request.query['threshold'])
+
+        spots.keypoints = image_processor.keypoints_from_image(image.image, brightness, contrast, threshold)
+        spots.create_spots_from_keypoints(spots.keypoints, array_size, TL_coords, BR_coords)
 
     print("Spot detection took:")
     print(time.time() - timer_start)
     print("sending: " + str(len(spots.get_spots()['spots'])) + " spots")
     return spots.get_spots()
     
+@get('/thumbnail')
+def process_thumbnail():
+    brightness = float(request.query['brightness'])
+    contrast = float(request.query['contrast'])
+    threshold = float(request.query['threshold'])
+    if(image.image_loaded):
+        thumbnail = image_processor.process_thumbnail(image.thumbnail, brightness, contrast, threshold)
+        thumbnail = image_processor.Image_to_jpeg_URI(thumbnail)
+        thumbnail_dictionary = {
+            'thumbnail': thumbnail,
+        }
+        return thumbnail_dictionary
+    else:
+        return
+
 @get('/tiles')
 def get_tiles():
     return tiles.dict_wrapper
@@ -83,7 +97,7 @@ def receive_image(filepath):
     if(valid):
         image.image = image_processor.jpeg_URI_to_Image(image_string)
         for x in tiles.dict_wrapper['tilemapLevels']:
-            tiles.put_tiles_at(x, image_processor.tile_image(image.image, x))
+            tiles.put_tiles_at(x, image_processor.tile_image(image, x))
         image.image_loaded = True
         return
     else:
