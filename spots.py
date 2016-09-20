@@ -166,6 +166,7 @@ class Spots:
         # crop out each surrounding pixel area, and analyse the whiteness of these
         thresholded_image = Image.open("BCT_image_after.jpg")
         image_pixels = thresholded_image.load()
+        filled_in_spots = []
         for spot in missing_spots:
             x = spot['x']
             y = spot['y']
@@ -197,12 +198,28 @@ class Spots:
             whiteness_average = float(whiteness) / float(len(pixels))
             if(whiteness_average < whiteness_threshold):
                 # not yet added in order
-                self.spots.append({
+                filled_in_spots.append({
                     'arrayPosition': array_position,
                     'newArrayPosition': new_array_position,
                     'renderPosition': pixel_position,
                     'selected': True
                 })
+
+        # Inserting the filled-in spots in the correct order in the spots array
+        # this is identical to the JS version in spot-adjuster.js
+        for new_spot in filled_in_spots:
+            new_spot_order = new_spot['arrayPosition']['y'] * self.array_size['x'] + new_spot['arrayPosition']['x']
+            for i in range(0, len(self.spots)):
+                spot = self.spots[i]
+                spot_order = spot['arrayPosition']['y'] * self.array_size['x'] + spot['arrayPosition']['x']
+                if(new_spot_order <= spot_order):
+                    self.spots.insert(i, new_spot)
+                    break
+                elif(new_spot_order > spot_order):
+                    # if the order is higher than the last spot, append to array
+                    if(i == len(self.spots) - 1):
+                        self.spots.append(new_spot)
+                        break
 
         spot_dictionary = {'spots': self.spots}
         return spot_dictionary
