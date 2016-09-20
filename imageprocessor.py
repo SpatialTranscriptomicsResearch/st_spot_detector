@@ -81,8 +81,7 @@ class ImageProcessor:
             scaled_image = image_holder.image.resize((newPhotoWidth, newPhotoHeight))
             if(tilemap_level == 20):
                 image_holder.thumbnail = scaled_image
-                print("The thumbnail size is: %d, %d", (newPhotoWidth, newPhotoHeight))
-                print(image_holder.thumbnail)
+                print("The thumbnail size is: %d, %d" % (newPhotoWidth, newPhotoHeight))
         else:
             scaled_image = image_holder.image
 
@@ -107,7 +106,7 @@ class ImageProcessor:
 
         return tiles
 
-    def apply_BCT(self, image, brightness, contrast, threshold):
+    def apply_BCT(self, image, brightness, contrast, threshold, large_image=False):
         """First inverts, then applies brightness and contrast
         transforms on a PIL Image, converts it to an OpenCV
         image for thresholding, then converts it back and
@@ -131,8 +130,14 @@ class ImageProcessor:
         cv2_image = self.PIL_to_CV2_image(image)
 
         # http://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html?highlight=threshold#threshold
+        # will make it possible to choose between normal thresholding and adaptive thresholding
         #retval, thresholded_image = cv2.threshold(cv2_image, threshold, 255, cv2.THRESH_BINARY)
-        thresholded_image = cv2.adaptiveThreshold(cv2_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 103, 20)
+        block_size = 103
+        if(large_image):
+            block_size = 2061
+        # Gaussian adaptive thresholding is very slow, takes about 15 minutes
+        # for a 20k x 20k image and does not yield significantly better results
+        thresholded_image = cv2.adaptiveThreshold(cv2_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, block_size, 20)
 
         # convert the image back into a PIL image
         image = self.CV2_to_PIL_image(thresholded_image)
@@ -151,7 +156,7 @@ class ImageProcessor:
         automatic blob detection and returns the keypoints generated.
         """
         image.save("BCT_image_before.jpg")
-        image = self.apply_BCT(image, brightness, contrast, threshold)
+        image = self.apply_BCT(image, brightness, contrast, threshold, True)
         image.save("BCT_image_after.jpg")
 
         # convert the image to an OpenCV image for blob detection
@@ -163,7 +168,7 @@ class ImageProcessor:
         params.minThreshold = 170.0
         params.maxThreshold = params.minThreshold + 50.0;
         params.filterByArea = True
-        params.minArea = 15000
+        params.minArea = 10000
         params.maxArea = 35000
 
         detector = cv2.SimpleBlobDetector_create(params)
