@@ -57,9 +57,6 @@ class Spots:
         self.keypoints = keypoints
         self.set_array_size(size)
         self.set_coords(TL, BR)
-        print("The TL coords are %d, %d" % (TL['x'], TL['y']))
-        print("The BR coords are %d, %d" % (BR['x'], BR['y']))
-        print("creating from: " + str(len(self.keypoints)) + " keypoints")
 
         threshold_distance = 180 # this can be adjusted for stringency
 
@@ -150,9 +147,6 @@ class Spots:
                 # then there is a spot deemed missing
                     missing_spots.append({'x': j, 'y': i})
 
-        print("So there are " + str(len(missing_spots)) + " missing spots")
-        print(missing_spots)
-        print("Calculating averages")
         # Calculate the average row and column positions. This is to help us
         # determine the most likely positions of the missing spots.
         row_position_average = [0] * self.array_size['y']
@@ -167,20 +161,8 @@ class Spots:
             if(col_position_count[col] != 0):
                 col_position_average[col] = col_position_sum[col] / float(col_position_count[col])
 
-        print("The sums are: ")
-        print(row_position_sum)
-        print(col_position_sum)
-
-        print("The counts are: ")
-        print(row_position_count)
-        print(col_position_count)
-
-        print("The averages are: ")
-        print(row_position_average)
-        print(col_position_average)
-
-        print("Opening thresholded images")
-        # might take up too much RAM -- in this case, it is better to separately
+        # Open up processed (brightness, contrast, threshold) image for reading
+        # of pixel values. This is very RAM heavy. Alternatively, one may
         # crop out each surrounding pixel area, and analyse the whiteness of these
         thresholded_image = Image.open("BCT_image_after.jpg")
         image_pixels = thresholded_image.load()
@@ -200,15 +182,10 @@ class Spots:
                 'x': int((new_array_position['x'] - 1.0) * self.spacer['x'] + self.TL_coords['x']),
                 'y': int((new_array_position['y'] - 1.0) * self.spacer['y'] + self.TL_coords['y'])
             }
-            print("One missing spot at %d, %d." % (x, y))
-            print("It has a pixel position of %d, %d." % (pixel_position['x'], pixel_position['y']))
-            print("It has an array position of %d, %d." % (array_position['x'], array_position['y']))
-            print("It has a new array position of %d, %d." % (new_array_position['x'], new_array_position['y']))
 
             whiteness = 0
             whiteness_threshold = 254.0
 
-            # currently returns a square, but we eventually want a circle
             pixels = get_surrounding_pixels(pixel_position, 50)
             for pixel in pixels:
                 # calculating the "whiteness" of area at that position
@@ -218,7 +195,6 @@ class Spots:
                 whiteness += pixel_r
                 
             whiteness_average = float(whiteness) / float(len(pixels))
-            #print("It has a whiteness of %d." % whiteness)
             if(whiteness_average < whiteness_threshold):
                 # not yet added in order
                 self.spots.append({
