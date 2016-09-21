@@ -60,6 +60,7 @@ class Spots:
 
         threshold_distance = 180 # this can be adjusted for stringency
 
+        self.spots = []
         missing_spots = []
 
         # these arrays are used to calculate the average position at which
@@ -120,6 +121,7 @@ class Spots:
                             'x': array_position['x'] + array_position_offset['x'],
                             'y': array_position['y'] + array_position_offset['y']
                         }
+                        print("Appending a spot onto %d, %d" % (j, i))
                         self.spots.append({
                             'arrayPosition': array_position,
                             'newArrayPosition': new_array_position,

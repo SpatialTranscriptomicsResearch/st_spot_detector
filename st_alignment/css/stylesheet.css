@@ -25,6 +25,13 @@ canvas:active {
     border-radius: 35px;
 }
 
+spot-detector {
+    position: fixed;
+    width: 400px;
+    bottom: 30px;
+    left: 30px;
+}
+
 spot-manipulator {
     position: fixed;
     width: 400px;
