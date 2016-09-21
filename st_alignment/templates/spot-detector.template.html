@@ -5,16 +5,6 @@
 <div class='panel-body'>
     <form name='spotDetectorForm' ng-submit='detectSpots()'>
     <div class='input-group'>
-        <span class='input-group-addon'>Top left spot centre</span>
-        <input ng-model='formData.TL.x' ng-change='formChange(false)' type='number' min='0' />
-        <input ng-model='formData.TL.y' ng-change='formChange(false)' type='number' min='0' />
-    </div>
-    <div class='input-group'>
-        <span class='input-group-addon'>Bottom right spot centre</span>
-        <input ng-model='formData.BR.x' ng-change='formChange(false)' type='number' min='0' />
-        <input ng-model='formData.BR.y' ng-change='formChange(false)' type='number' min='0' />
-    </div>
-    <div class='input-group'>
         <span class='input-group-addon'>Array size</span>
         <input ng-model='formData.arraySize.x' ng-change='formChange(false)' type='number' min='0' step='1'/>
         <input ng-model='formData.arraySize.y' ng-change='formChange(false)' type='number' min='0' step='1'/>

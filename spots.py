@@ -130,6 +130,7 @@ class Spots:
                             'selected': False
                         })
                         if(spot_detected):
+                            # this should not occur if the for loop is broken out of
                             print("Warning: more than one spot detected for this keypoint!")
                         else:
                             spot_detected = True
@@ -140,7 +141,7 @@ class Spots:
                             row_position_sum[i] += new_array_position['y']
                             col_position_sum[j] += new_array_position['x']
 
-                        #break # to only get one spot per keypoint
+                        break # to only get one spot per keypoint
 
                 if(not spot_detected):
                 # if no spot has been detected at this array position,
@@ -160,6 +161,11 @@ class Spots:
             # do not do anything if there is no data for this column
             if(col_position_count[col] != 0):
                 col_position_average[col] = col_position_sum[col] / float(col_position_count[col])
+
+        print(row_position_average)
+        print(col_position_average)
+        print("The number of detected spots is %d" % len(self.spots))
+        print("The number of missing spots is %d" % len(missing_spots))
 
         # Open up processed (brightness, contrast, threshold) image for reading
         # of pixel values. This is very RAM heavy. Alternatively, one may
@@ -220,6 +226,7 @@ class Spots:
                     if(i == len(self.spots) - 1):
                         self.spots.append(new_spot)
                         break
+        print("The number of filled in spots is %d" % len(filled_in_spots))
 
         spot_dictionary = {'spots': self.spots}
         return spot_dictionary

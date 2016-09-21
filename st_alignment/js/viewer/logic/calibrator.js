@@ -30,6 +30,7 @@
         },
         moveSpot: function(position) {
             position = self.camera.mouseToCameraPosition(position);
+            position = Vec2.truncate(position);
             if(self.selected == 'TL') {
                 self.calibrationData.TL = position;
             }
