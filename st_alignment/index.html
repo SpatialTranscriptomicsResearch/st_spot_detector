@@ -46,11 +46,24 @@
 <body ng-app='aligner' ng-strict-di='true'>
     <div id='main-container' class='container-fluid'>
         <button-bar></button-bar>
-        <viewer></viewer>
         <spot-detector></spot-detector>
         <spot-manipulator></spot-manipulator>
     </div>
+        <viewer></viewer>
 </body>
     <script>
+        
+$(function(){
+        InitContext();
+});
+function InitContext()
+{
+    var $canvasDiv = $('#canvasdiv');
+    console.log('hej');
+
+    var canvas = document.getElementById("mycanvas");
+    canvas.height = $canvasDiv.innerHeight();
+    canvas.width = $canvasDiv.innerWidth();
+}
     </script>
 </html>
