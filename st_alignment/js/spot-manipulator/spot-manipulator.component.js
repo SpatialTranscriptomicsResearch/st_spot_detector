@@ -38,7 +38,6 @@ angular.module('spotManipulator')
                 $scope.editSpots = function() {
                     $rootScope.$broadcast('editSpots');
                 };
-
                 $rootScope.$on('imageLoading', function(event) {
                     $scope.visible = false;
                 });
