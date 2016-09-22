@@ -121,13 +121,12 @@ class Spots:
                             'x': array_position['x'] + array_position_offset['x'],
                             'y': array_position['y'] + array_position_offset['y']
                         }
-                        print("Appending a spot onto %d, %d" % (j, i))
                         self.spots.append({
                             'arrayPosition': array_position,
                             'newArrayPosition': new_array_position,
                             'renderPosition': {
-                                'x': kp_position['x'],
-                                'y': kp_position['y']
+                                'x': int(kp_position['x']),
+                                'y': int(kp_position['y'])
                             },
                             'selected': False
                         })
@@ -178,15 +177,24 @@ class Spots:
         for spot in missing_spots:
             x = spot['x']
             y = spot['y']
+
+            if(col_position_average[x] == 0 or row_position_average[y] == 0):
+                # if no average has been calculated, then we can not guess
+                # the position of the missing spot
+                continue;
+
             array_position = {
                 'x': x + 1,
                 'y': y + 1
             }
 
             new_array_position = {
+                # we need to do something else if the average is 0
                 'x': col_position_average[x],
                 'y': row_position_average[y]
             }
+
+
             pixel_position = {
                 'x': int((new_array_position['x'] - 1.0) * self.spacer['x'] + self.TL_coords['x']),
                 'y': int((new_array_position['y'] - 1.0) * self.spacer['y'] + self.TL_coords['y'])

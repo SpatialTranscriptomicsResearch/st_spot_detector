@@ -13,7 +13,10 @@
         self.spotMiddleColour = 'black';
         self.ctx.textAlign = "center";
         self.ctx.font = "48px serif";
-        self.calibrationColour = 'cyan';
+        self.calibrationColour = {
+            TL: 'cyan',
+            BR: 'orange'
+        }
         self.spotSize = 90;
         self.spotCentreSize = 4;
     };
@@ -77,15 +80,25 @@
         },
         renderCalibrationPoints: function(data) {
             self.camera.begin();
-                self.ctx.fillStyle = self.calibrationColour;
+                self.ctx.strokeStyle = self.calibrationColour.TL;
+                self.ctx.lineWidth = 20.0;
+                // TL
                 self.ctx.beginPath();
-                self.ctx.arc(data.TL.x, data.TL.y, self.spotSize, 0, Math.PI * 2);
+                self.ctx.moveTo(data.TL.x, 0);
+                self.ctx.lineTo(data.TL.x, 20000);
+                self.ctx.moveTo(0, data.TL.y);
+                self.ctx.lineTo(20000, data.TL.y);
+                self.ctx.stroke();
                 self.ctx.closePath();
-                self.ctx.fill();
+                // BR
+                self.ctx.strokeStyle = self.calibrationColour.BR;
                 self.ctx.beginPath();
-                self.ctx.arc(data.BR.x, data.BR.y, self.spotSize, 0, Math.PI * 2);
+                self.ctx.moveTo(data.BR.x, 0);
+                self.ctx.lineTo(data.BR.x, 20000);
+                self.ctx.moveTo(0, data.BR.y);
+                self.ctx.lineTo(20000, data.BR.y);
+                self.ctx.stroke();
                 self.ctx.closePath();
-                self.ctx.fill();
             self.camera.end();
         },
         renderSpotSelection: function(rectCoords) {
