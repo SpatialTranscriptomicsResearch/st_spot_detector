@@ -42,7 +42,7 @@ angular.module('spotManipulator')
                 $rootScope.$on('imageLoading', function(event) {
                     $scope.visible = false;
                 });
-                $rootScope.$on('imageRendered', function(event) {
+                $rootScope.$on('finishedDetecting', function(event, data) {
                     $scope.visible = true;
                 });
             }
