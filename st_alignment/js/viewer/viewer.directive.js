@@ -38,6 +38,7 @@ angular.module('viewer')
                 var getThumbnail = function() {
                     var thumbnailSuccessCallback = function(response) {
                         images.thumbnail.src = response.data.thumbnail;
+			logicHandler.currentState = logicHandler.state.calibrate;
                         updateCanvas();
                         //$rootScope.$broadcast('thumbnailLoaded');
                     };
@@ -75,7 +76,6 @@ angular.module('viewer')
                         getThumbnail();
                     };
 
-                    logicHandler.currentState = logicHandler.state.calibrate;
                     getTileData();
                 });
                 $rootScope.$on('spotDetecting', function(event, data) {
