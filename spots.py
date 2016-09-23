@@ -218,7 +218,7 @@ class Spots:
                     'arrayPosition': array_position,
                     'newArrayPosition': new_array_position,
                     'renderPosition': pixel_position,
-                    'selected': True
+                    'selected': False
                 })
 
         # Inserting the filled-in spots in the correct order in the spots array
