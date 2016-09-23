@@ -5,13 +5,18 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    background-color: #eeeeee;
+}
+
+button-bar {
+    /*top: 5px;*/
 }
 
 canvas {
     cursor: -webkit-grab;
     cursor:-moz-grab;
-    background-color: lightBlue;
-    border: 1px dotted black;
+    background-color: white;
+    margin: 10px 20px;
 }
 canvas:active {
     cursor: -webkit-grabbing;
