@@ -7,12 +7,14 @@
         self = this;
         self.ctx = context;
         self.camera = camera;
-        self.bgColour = 'khaki';
+        self.bgColour = 'white';
         self.spotColour = 'red';
         self.selectedSpotColour = 'green';
         self.spotMiddleColour = 'black';
         self.ctx.textAlign = "center";
-        self.ctx.font = "48px serif";
+        self.ctx.font = "bold 48px Courier";
+        self.fontColour = 'lightgray';
+        self.fontOutlineColour = 'black';
         self.calibrationColour = {
             TL: 'cyan',
             BR: 'orange'
@@ -27,20 +29,28 @@
             self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
         },
         renderStartScreen: function() {
-            self.ctx.fillStyle = 'black';
+            self.ctx.fillStyle = self.fontColour;
+            self.ctx.strokeStyle = self.fontOutlineColour;
             self.ctx.fillText("Click on Upload to upload an image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+            self.ctx.strokeText("Click on Upload to upload an image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
         renderLoadingScreen: function() {
-            self.ctx.fillStyle = 'black';
+            self.ctx.strokeStyle = self.fontOutlineColour;
+            self.ctx.fillStyle = self.fontColour;
             self.ctx.fillText("Loading...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+            self.ctx.strokeText("Loading...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
         renderErrorScreen: function() {
-            self.ctx.fillStyle = 'black';
+            self.ctx.fillStyle = self.fontColour;
+            self.ctx.strokeStyle = self.fontOutlineColour;
             self.ctx.fillText("Error! Please select and upload a valid jpeg image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+            self.ctx.strokeText("Error! Please select and upload a valid jpeg image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
         renderDetectingScreen: function() {
-            self.ctx.fillStyle = 'black';
+            self.ctx.fillStyle = self.fontColour;
+            self.ctx.strokeStyle = self.fontOutlineColour;
             self.ctx.fillText("Detecting...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+            self.ctx.strokeText("Detecting...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
         renderThumbnail: function(thumbnail) {
             self.camera.begin();
