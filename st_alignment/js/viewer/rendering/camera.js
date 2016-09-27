@@ -22,7 +22,7 @@
         self.minScale = 0.03;
         self.maxScale = 1.00;
         self.positionBoundaries = {"minX": 0, "maxX": 20480, "minY": 0, "maxY": 20480};
-        self.dir = Object.freeze({"left": 1, "up": 2, "right": 3, "down": 4, "zin": 5, "zout": 6});
+        self.dir = Object.freeze({"left": 1, "up": 2, "right": 3, "down": 4, "zin": 5, "zout": 6, "shift": 7});
         self.updateViewport();
     };
   
@@ -111,6 +111,11 @@
             var cam = Vec2.subtract(self.position, self.positionOffset);
             var mouse = Vec2.scale(position, 1 / self.scale);
             return Vec2.add(cam, mouse);
+        },
+        mouseToCameraDifference: function(vector) {
+            // this does not take the camera position into account, so it is ideal
+            // for use with values such as difference/movement values
+            return Vec2.scale(vector, 1 / self.scale);
         }
     };
   

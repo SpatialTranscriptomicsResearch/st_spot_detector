@@ -201,7 +201,7 @@ class Spots:
             }
 
             whiteness = 0
-            whiteness_threshold = 254.0
+            whiteness_threshold = 200.0
 
             pixels = get_surrounding_pixels(pixel_position, 50)
             for pixel in pixels:
@@ -212,13 +212,14 @@ class Spots:
                 whiteness += pixel_r
                 
             whiteness_average = float(whiteness) / float(len(pixels))
+            print("The whiteness average for %d, %d is %f and the threshold is %f" % (array_position['x'], array_position['y'], whiteness_average, whiteness_threshold))
             if(whiteness_average < whiteness_threshold):
                 # not yet added in order
                 filled_in_spots.append({
                     'arrayPosition': array_position,
                     'newArrayPosition': new_array_position,
                     'renderPosition': pixel_position,
-                    'selected': False
+                    'selected': True
                 })
 
         # Inserting the filled-in spots in the correct order in the spots array

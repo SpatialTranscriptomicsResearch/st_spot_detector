@@ -12,6 +12,7 @@
         self.updateCanvasFunction = updateCanvasFunction;
 
         self.mouseEvent = Object.freeze({"down": 1, "up": 2, "move": 3, "drag": 4, "wheel": 5});
+        self.mouseButton = Object.freeze({"left": 0, "right": 2})
         self.keyEvent = camera.dir;
         self.state = Object.freeze({
             "upload_ready": 1,
@@ -30,19 +31,23 @@
   
     LogicHandler.prototype = {
         processKeydownEvent: function(keyEvent, eventData) {
+            /*
             if(self.currentState == self.state.move_camera) {
                 self.camera.navigate(keyEvent);
             }
-            else if(self.currentState == self.state.select_spots) {
-                self.spotSelector.toggleShift(true);
-            }
-            else if(self.currentState == self.state.adjust_spots) {
-                self.spotAdjuster.adjust(keyEvent);
+            */
+            if(self.currentState == self.state.adjust_spots) {
+                if(keyEvent == self.keyEvent.shift) {
+                    self.spotSelector.toggleShift(true);
+                }
+                else {
+                    self.spotAdjuster.adjustSpots(keyEvent);
+                }
             }
             self.updateCanvasFunction();
         },
         processKeyupEvent: function(keyEvent, eventData) {
-            if(self.currentState == self.state.select_spots) {
+            if(self.currentState == self.state.adjust_spots) {
                 self.spotSelector.toggleShift(false);
             }
             self.updateCanvasFunction();
@@ -52,15 +57,6 @@
             if(self.currentState == self.state.upload_ready) {
                 if(mouseEvent == self.mouseEvent.up) {
                     // load image
-                }
-            }
-            // move camera state
-            else if(self.currentState == self.state.move_camera) {
-                if(mouseEvent == self.mouseEvent.drag) {
-                    self.camera.pan(eventData.difference);
-                }
-                else if(mouseEvent == self.mouseEvent.wheel) {
-                    self.camera.navigate(eventData);
                 }
             }
             // calibrate state
@@ -73,6 +69,7 @@
                 else {
                     // moving the canvas normally
                     if(mouseEvent == self.mouseEvent.drag) {
+                        // maybe this should take the position rather than the difference
                         self.camera.pan(eventData.difference);
                     }
                     else if(mouseEvent == self.mouseEvent.wheel) {
@@ -86,16 +83,48 @@
                     self.calibrator.endSelection();
                 }
             }
-            // select spots state
-            else if(self.currentState == self.state.select_spots) {
-                if(mouseEvent == self.mouseEvent.down) {
-                    self.spotSelector.beginSelection(eventData.position);
+            // adjusting spots state
+            else if(self.currentState == self.state.adjust_spots) {
+                if(eventData.button == self.mouseButton.left) {
+                    // LMB, moving canvas or spots
+                    if(mouseEvent == self.mouseEvent.down) {
+                        self.spotAdjuster.moving = self.spotAdjuster.atSelectedSpots(eventData.position);
+                        console.log("Down at: " + eventData.position.x + ", " + eventData.position.y);
+                        var hej = self.camera.mouseToCameraPosition(eventData.position);
+                        console.log("Or: " + hej.x + ", " + hej.y);
+                    }
+                    else if(mouseEvent == self.mouseEvent.up) {
+                        self.spotAdjuster.moving = false;
+                        console.log("Up at: " + eventData.position.x + ", " + eventData.position.y);
+                        var hej = self.camera.mouseToCameraPosition(eventData.position);
+                        console.log("Or: " + hej.x + ", " + hej.y);
+                        // drop possible selected spots
+                    }
+                    else if(mouseEvent == self.mouseEvent.drag) {
+                        // needs to depend on if spots are getting dragged around or not
+                        if(self.spotAdjuster.moving) {
+                            self.spotAdjuster.dragSpots(eventData.difference);
+                        }
+                        else {
+                            self.camera.pan(eventData.difference);
+                        }
+                    }
                 }
-                else if(mouseEvent == self.mouseEvent.up) {
-                    self.spotSelector.endSelection();
+                else if(eventData.button == self.mouseButton.right) {
+                    // RMB, selecting spots
+                    if(mouseEvent == self.mouseEvent.down) {
+                        self.spotSelector.beginSelection(eventData.position);
+                    }
+                    else if(mouseEvent == self.mouseEvent.up) {
+                        self.spotSelector.endSelection();
+                    }
+                    else if(mouseEvent == self.mouseEvent.drag) {
+                        self.spotSelector.updateSelection(eventData.position);
+                    }
                 }
-                else if(mouseEvent == self.mouseEvent.drag) {
-                    self.spotSelector.updateSelection(eventData.position);
+                if(mouseEvent == self.mouseEvent.wheel) {
+                    // scrolling
+                    self.camera.navigate(eventData);
                 }
             }
             // add spots state

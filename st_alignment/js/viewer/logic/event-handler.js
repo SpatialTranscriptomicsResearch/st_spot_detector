@@ -1,3 +1,5 @@
+'use strict';
+
 (function() {
     var self;
     var EventHandler = function(canvas, camera, logicHandler) {
@@ -29,18 +31,18 @@
             canvas.onmousedown = function(e) {
                 self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 self.mouseDown = true;
-                self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.down, {position: self.mousePos});
+                self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.down, {position: self.mousePos, button: e.button});
             }
             canvas.onmouseup = function(e) {
                 self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 self.mouseDown = false;
-                self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.up, {position: self.mousePos});
+                self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.up, {position: self.mousePos, button: e.button});
             }
 
             canvas.onmouseout = function(e) {
                 self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 self.mouseDown = false;
-                self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.out, {position: self.mousePos});
+                self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.out, {position: self.mousePos, button: e.button});
             }
 
             canvas.onmousemove = function(e) {
@@ -48,7 +50,7 @@
                 self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.move, {position: self.mousePos, difference: distanceMoved});
                 if(self.mouseDown) {
-                    self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.drag, {position: self.mousePos, difference: distanceMoved});
+                    self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.drag, {position: self.mousePos, difference: distanceMoved, button: e.button});
                 }
             }
             canvas.onmousewheel = function(e) {

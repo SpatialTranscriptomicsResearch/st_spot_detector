@@ -9,6 +9,9 @@ angular.module('viewer')
             var link = function(scope, element) {
                 var canvas = element[0];
                 var ctx = canvas.getContext('2d');
+                
+                // prevents the context menu from appearing
+                canvas.oncontextmenu = function(e) { e.preventDefault(); } 
 
                 var tilemapLevel = 20;
                 var cameraPosition = {x: (ctx.canvas.width  / 2) * tilemapLevel,
@@ -83,7 +86,8 @@ angular.module('viewer')
                         var successCallback = function(response) {
                             spots.loadSpots(response.data);
                             $rootScope.$broadcast('finishedDetecting');
-                            logicHandler.currentState = logicHandler.state.move_camera;
+                            logicHandler.currentState = logicHandler.state.adjust_spots;
+                            //logicHandler.currentState = logicHandler.state.move_camera;
                         };
                         var errorCallback = function(response) {
                             console.error(response.data);
@@ -104,8 +108,8 @@ angular.module('viewer')
                     updateCanvas();
                 });
                 $rootScope.$on('selectState', function(event, data) {
-                    logicHandler.currentState = logicHandler.state.select_spots;
-                    updateCanvas();
+                    //logicHandler.currentState = logicHandler.state.select_spots;
+                    //updateCanvas();
                 });
                 $rootScope.$on('adjustState', function(event, data) {
                     logicHandler.currentState = logicHandler.state.adjust_spots;
@@ -198,11 +202,15 @@ angular.module('viewer')
                     else if(logicHandler.currentState == logicHandler.state.select_spots) {
                         renderer.renderImages(images.images);
                         renderer.renderSpots(spots.spots);
-                        renderer.renderSpotSelection(spotSelector.renderingRect);
                     }
                     else if(logicHandler.currentState == logicHandler.state.adjust_spots) {
+                        scaleManager.updateScaleLevel(camera.scale);
+                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
+                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
+                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         renderer.renderImages(images.images);
                         renderer.renderSpots(spots.spots);
+                        renderer.renderSpotSelection(spotSelector.renderingRect);
                     }
                     else if(logicHandler.currentState == logicHandler.state.add_spots) {
                         renderer.renderImages(images.images);

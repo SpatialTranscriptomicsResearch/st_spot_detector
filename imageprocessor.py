@@ -168,8 +168,8 @@ class ImageProcessor:
         params.minThreshold = 170.0
         params.maxThreshold = params.minThreshold + 50.0;
         params.filterByArea = True
-        params.minArea = 10000
-        params.maxArea = 35000
+        params.minArea = 20000
+        params.maxArea = 70000
 
         detector = cv2.SimpleBlobDetector_create(params)
         keypoints = detector.detect(cv2_image)

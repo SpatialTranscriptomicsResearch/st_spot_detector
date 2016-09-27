@@ -19,20 +19,23 @@
             TL: 'cyan',
             BR: 'orange'
         }
-        self.spotSize = 90;
+        self.spotSize = 110;
         self.spotCentreSize = 4;
     };
   
     Renderer.prototype = {
+        renderText: function(text) {
+            self.ctx.fillStyle = self.fontColour;
+            self.ctx.strokeStyle = self.fontOutlineColour;
+            self.ctx.fillText(text, self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+            self.ctx.strokeText(text, self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+        },
         clearCanvas: function() {
             self.ctx.fillStyle = self.bgColour;
             self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
         },
         renderStartScreen: function() {
-            self.ctx.fillStyle = self.fontColour;
-            self.ctx.strokeStyle = self.fontOutlineColour;
-            self.ctx.fillText("Click on Upload to upload an image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
-            self.ctx.strokeText("Click on Upload to upload an image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
+            self.renderText("Click on Upload to upload an image.");
         },
         renderLoadingScreen: function() {
             self.ctx.strokeStyle = self.fontOutlineColour;

@@ -10,10 +10,27 @@
         self.spots = spots;
         self.calibrationData = calibrationData;
         self.adjustFactor = 10;
+        self.moving = false;
     };
 
     SpotAdjuster.prototype = {
-        adjust: function(direction) {
+        atSelectedSpots: function(position) {
+            // detects if the mouse is close to a selected spot and
+            // whether the selection can be dragged around or not
+            var atSpots = false;
+
+            position = self.camera.mouseToCameraPosition(position);
+            for(var i = 0; i < self.spots.spots.length; ++i) {
+                if(self.spots.spots[i].selected) {
+                    if(Vec2.distanceBetween(position, self.spots.spots[i].renderPosition) < 100) {
+                        atSpots = true;
+                        break;
+                    }
+                }
+            }
+            return atSpots;
+        },
+        adjustSpots: function(direction) {
             var movement = Vec2.Vec2(0, 0);
             if(direction === self.camera.dir.left) {
                 movement.x -= this.adjustFactor;
@@ -32,6 +49,17 @@
                     var arrayPosOffset = Vec2.divide(movement, self.spots.spacer);
                     self.spots.spots[i].newArrayPosition = Vec2.add(self.spots.spots[i].newArrayPosition, arrayPosOffset);
                     self.spots.spots[i].renderPosition = Vec2.add(self.spots.spots[i].renderPosition, movement);
+                }
+            }
+        },
+        dragSpots: function(movement) {
+            movement = self.camera.mouseToCameraDifference(movement);
+            movement = Vec2.truncate(movement);
+            for(var i = 0; i < self.spots.spots.length; ++i) {
+                if(self.spots.spots[i].selected) {
+                    var arrayPosOffset = Vec2.divide(movement, self.spots.spacer);
+                    self.spots.spots[i].newArrayPosition = Vec2.subtract(self.spots.spots[i].newArrayPosition, arrayPosOffset);
+                    self.spots.spots[i].renderPosition = Vec2.subtract(self.spots.spots[i].renderPosition, movement);
                 }
             }
         },
