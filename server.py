@@ -108,4 +108,4 @@ def receive_image(filepath):
 def error404(error):
     return "404 Not Found"
 
-run(host='localhost', port=8081, debug=True, reloader=True)
+run(host='0.0.0.0', port=8080, debug=True, reloader=True)
