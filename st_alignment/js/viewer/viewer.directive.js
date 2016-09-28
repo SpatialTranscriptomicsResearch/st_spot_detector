@@ -41,7 +41,7 @@ angular.module('viewer')
                 var getThumbnail = function() {
                     var thumbnailSuccessCallback = function(response) {
                         images.thumbnail.src = response.data.thumbnail;
-			logicHandler.currentState = logicHandler.state.calibrate;
+                        logicHandler.currentState = logicHandler.state.calibrate;
                         updateCanvas();
                         //$rootScope.$broadcast('thumbnailLoaded');
                     };
@@ -87,7 +87,6 @@ angular.module('viewer')
                             spots.loadSpots(response.data);
                             $rootScope.$broadcast('finishedDetecting');
                             logicHandler.currentState = logicHandler.state.adjust_spots;
-                            //logicHandler.currentState = logicHandler.state.move_camera;
                         };
                         var errorCallback = function(response) {
                             console.error(response.data);
@@ -102,14 +101,6 @@ angular.module('viewer')
                     logicHandler.currentState = logicHandler.state.spot_detecting;
                     getSpotData();
                     updateCanvas();
-                });
-                $rootScope.$on('moveState', function(event, data) {
-                    logicHandler.currentState = logicHandler.state.move_camera;
-                    updateCanvas();
-                });
-                $rootScope.$on('selectState', function(event, data) {
-                    //logicHandler.currentState = logicHandler.state.select_spots;
-                    //updateCanvas();
                 });
                 $rootScope.$on('adjustState', function(event, data) {
                     logicHandler.currentState = logicHandler.state.adjust_spots;
@@ -190,18 +181,6 @@ angular.module('viewer')
                         renderer.renderThumbnail(images.thumbnail);
                         renderer.renderCalibrationPoints(calibrator.calibrationData);
                         $rootScope.$broadcast('calibratorAdjusted', calibrator.calibrationData);
-                    }
-                    else if(logicHandler.currentState == logicHandler.state.move_camera) {
-                        scaleManager.updateScaleLevel(camera.scale);
-                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
-                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
-                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        renderer.renderImages(images.images);
-                        renderer.renderSpots(spots.spots);
-                    }
-                    else if(logicHandler.currentState == logicHandler.state.select_spots) {
-                        renderer.renderImages(images.images);
-                        renderer.renderSpots(spots.spots);
                     }
                     else if(logicHandler.currentState == logicHandler.state.adjust_spots) {
                         scaleManager.updateScaleLevel(camera.scale);

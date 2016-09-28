@@ -19,11 +19,9 @@
             "loading": 2,
             "error": 3,
             "spot_detecting": 4,
-            "move_camera": 5,
-            "calibrate": 6,
-            "select_spots": 7,
-            "adjust_spots": 8,
-            "add_spots": 9
+            "calibrate": 5,
+            "adjust_spots": 6,
+            "add_spots": 7
         });
 
         self.currentState = self.state.upload_ready;
@@ -31,17 +29,17 @@
   
     LogicHandler.prototype = {
         processKeydownEvent: function(keyEvent, eventData) {
-            /*
-            if(self.currentState == self.state.move_camera) {
-                self.camera.navigate(keyEvent);
-            }
-            */
             if(self.currentState == self.state.adjust_spots) {
                 if(keyEvent == self.keyEvent.shift) {
                     self.spotSelector.toggleShift(true);
                 }
                 else {
-                    self.spotAdjuster.adjustSpots(keyEvent);
+                    if(self.spotSelector.selected) {
+                        self.spotAdjuster.adjustSpots(keyEvent);
+                    }
+                    else {
+                        self.camera.navigate(keyEvent);
+                    }
                 }
             }
             self.updateCanvasFunction();
@@ -89,19 +87,11 @@
                     // LMB, moving canvas or spots
                     if(mouseEvent == self.mouseEvent.down) {
                         self.spotAdjuster.moving = self.spotAdjuster.atSelectedSpots(eventData.position);
-                        console.log("Down at: " + eventData.position.x + ", " + eventData.position.y);
-                        var hej = self.camera.mouseToCameraPosition(eventData.position);
-                        console.log("Or: " + hej.x + ", " + hej.y);
                     }
                     else if(mouseEvent == self.mouseEvent.up) {
                         self.spotAdjuster.moving = false;
-                        console.log("Up at: " + eventData.position.x + ", " + eventData.position.y);
-                        var hej = self.camera.mouseToCameraPosition(eventData.position);
-                        console.log("Or: " + hej.x + ", " + hej.y);
-                        // drop possible selected spots
                     }
                     else if(mouseEvent == self.mouseEvent.drag) {
-                        // needs to depend on if spots are getting dragged around or not
                         if(self.spotAdjuster.moving) {
                             self.spotAdjuster.dragSpots(eventData.difference);
                         }
