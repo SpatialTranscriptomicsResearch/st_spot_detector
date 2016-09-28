@@ -72,11 +72,10 @@
         },
         addSpot: function(position) {
             var renderPosition = self.camera.mouseToCameraPosition(position);
+            renderPosition = Vec2.truncate(renderPosition);
             var adjustedPosition = Vec2.subtract(renderPosition, self.calibrationData.TL);
             // we don't want negative array coordinates
             adjustedPosition = Vec2.clamp(adjustedPosition, 0);
-            // this array positioning is very naive! it should take
-            // into account the array positions of the spots around it
             var newArrayPosition = Vec2.add(Vec2.divide(adjustedPosition, self.spots.spacer), Vec2.Vec2(1, 1));
             var arrayPosition = Vec2.round(newArrayPosition);
             var newSpot = {

@@ -54,6 +54,7 @@
                 }
             }
             canvas.onmousewheel = function(e) {
+                console.log(e);
                 if(e.deltaY < 0) {
                     self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.wheel, camera.dir.zin);
                 }

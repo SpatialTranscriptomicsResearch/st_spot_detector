@@ -61,8 +61,9 @@
             self.position = pos;
             self.updateViewport();
         },
-        navigate: function(dir) {
-            var movement = Vec2.Vec2(0, 0);
+        navigate: function(dir, zoomCentre) {
+
+            var movement = zoomCentre || Vec2.Vec2(0, 0);
             var scaleFactor = 1;
             if(dir === self.dir.left) {
                 movement.x -= self.navFactor;
