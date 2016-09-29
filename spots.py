@@ -37,10 +37,10 @@ class Spots:
     def create_spots_from_keypoints(self, keypoints):
         """Takes keypoints generated from opencv spot detection and
         tries to match them to their correct array positions.
-        It also tries to fill in "missing spots" by finding which array positions
-        do not have a corresponding keypoint, then analyses the black/white 
-        content of the thresholded image at the missing spot position in order
-        to determine if a spot is likely to be there or not.
+        It also tries to fill in "missing spots" by finding which array
+        positions do not have a corresponding keypoint, then analyses the
+        black/white content of the thresholded image at the missing spot
+        position in order to determine if a spot is likely to be there or not.
         """
 
         missing_spots = []
@@ -86,8 +86,10 @@ class Spots:
                         'x': kp.pt[0],
                         'y': kp.pt[1]
                     }
-                    if(distance_between(kp_position, predicted_position) < threshold_distance):
-                    # a keypoint is at the expected position if it is close enough to it
+                    if(distance_between(kp_position, predicted_position)
+                            < threshold_distance):
+                    # a keypoint is at the expected position if it is close
+                    # enough to it
                         difference = {
                             'x': kp_position['x'] - predicted_position['x'],
                             'y': kp_position['y'] - predicted_position['y']
@@ -101,8 +103,10 @@ class Spots:
                             'y': i + 1
                         }
                         new_array_position = {
-                            'x': array_position['x'] + array_position_offset['x'],
-                            'y': array_position['y'] + array_position_offset['y']
+                            'x': array_position['x']
+                                 + array_position_offset['x'],
+                            'y': array_position['y']
+                                 + array_position_offset['y']
                         }
                         self.spots.append({
                             'arrayPosition': array_position,
@@ -113,10 +117,7 @@ class Spots:
                             },
                             'selected': False
                         })
-                        if(spot_detected):
-                            # this should not occur if the for loop is broken out of
-                            print("Warning: more than one spot detected for this keypoint!")
-                        else:
+                        if(!spot_detected):
                             spot_detected = True
                             # the first spot detected at this position is used
                             # to calculate the average row and column positions
@@ -139,16 +140,19 @@ class Spots:
         for row, position in enumerate(row_position_average):
             # do not do anything if there is no data for this row
             if(row_position_count[row] != 0):
-                row_position_average[row] = row_position_sum[row] / float(row_position_count[row])
+                row_position_average[row] = row_position_sum[row]
+                                            / float(row_position_count[row])
 
         for col, position in enumerate(col_position_average):
             # do not do anything if there is no data for this column
             if(col_position_count[col] != 0):
-                col_position_average[col] = col_position_sum[col] / float(col_position_count[col])
+                col_position_average[col] = col_position_sum[col]
+                                            / float(col_position_count[col])
 
-        # Open up processed (brightness, contrast, threshold) image for reading
-        # of pixel values. This is very RAM heavy. Alternatively, one may
-        # crop out each surrounding pixel area, and analyse the whiteness of these
+        # Open up processed (brightness, contrast, threshold) image for
+        # reading of pixel values. This is very RAM heavy. Alternatively,
+        # one may crop out each surrounding pixel area, and analyse the
+        # whiteness of these
         thresholded_image = Image.open("BCT_image_after.jpg")
         image_pixels = thresholded_image.load()
         filled_in_spots = []
@@ -174,8 +178,10 @@ class Spots:
 
 
             pixel_position = {
-                'x': int((new_array_position['x'] - 1.0) * self.spacer['x'] + self.TL_coords['x']),
-                'y': int((new_array_position['y'] - 1.0) * self.spacer['y'] + self.TL_coords['y'])
+                'x': int((new_array_position['x'] - 1.0) * self.spacer['x']
+                     + self.TL_coords['x']),
+                'y': int((new_array_position['y'] - 1.0) * self.spacer['y']
+                     + self.TL_coords['y'])
             }
 
             whiteness = 0
@@ -185,9 +191,9 @@ class Spots:
             for pixel in pixels:
                 # calculating the "whiteness" of area at that position
                 # these should all be 255 if white, 0 if black
-                pixel_r, pixel_g, pixel_b = image_pixels[pixel['x'], pixel['y']]
-                # the images are in greyscale so only one channel needs to be checked
-                whiteness += pixel_r
+                r, g, b = image_pixels[pixel['x'], pixel['y']]
+                # greyscale so only one channel needs to be checked
+                whiteness += r
                 
             whiteness_average = float(whiteness) / float(len(pixels))
             if(whiteness_average < whiteness_threshold):
@@ -202,15 +208,18 @@ class Spots:
         # Inserting the filled-in spots in the correct order in the spots array
         # this is identical to the JS version in spot-adjuster.js
         for new_spot in filled_in_spots:
-            new_spot_order = new_spot['arrayPosition']['y'] * self.array_size['x'] + new_spot['arrayPosition']['x']
+            new_spot_order = new_spot['arrayPosition']['y']
+                             * self.array_size['x']
+                             + new_spot['arrayPosition']['x']
             for i in range(0, len(self.spots)):
                 spot = self.spots[i]
-                spot_order = spot['arrayPosition']['y'] * self.array_size['x'] + spot['arrayPosition']['x']
+                spot_order = spot['arrayPosition']['y'] * self.array_size['x']
+                             + spot['arrayPosition']['x']
                 if(new_spot_order <= spot_order):
                     self.spots.insert(i, new_spot)
                     break
                 elif(new_spot_order > spot_order):
-                    # if the order is higher than the last spot, append to array
+                    # if the order is higher than last spot, append to array
                     if(i == len(self.spots) - 1):
                         self.spots.append(new_spot)
                         break

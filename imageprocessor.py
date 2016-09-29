@@ -89,7 +89,8 @@ class ImageProcessor:
 
         return tiles
 
-    def apply_BCT(self, image, brightness, contrast, threshold, large_image=False):
+    def apply_BCT(self, image, brightness, contrast, threshold,
+                  large_image=False):
         """First inverts, then applies brightness and contrast
         transforms on a PIL Image, converts it to an OpenCV
         image for thresholding, then converts it back and
