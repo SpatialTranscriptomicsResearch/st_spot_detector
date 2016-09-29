@@ -32,7 +32,7 @@ angular.module('spotDetector')
                 $rootScope.$on('imageLoading', function(event) {
                     $scope.visible = false;
                 });
-                $rootScope.$on('imageRendered', function(event) {
+                $rootScope.$on('thumbnailLoaded', function(event) {
                     $scope.visible = true;
                 });
                 $rootScope.$on('calibratorAdjusted', function(event, data) {

@@ -19,15 +19,10 @@ angular.module('buttonBar')
                             var postUrl = '../server.py';
                             //var postUrl = '../dummy_image';
                             var imageData = reader.result;
-                            var successCallback = function(response) {
-                                $rootScope.$broadcast('imageLoaded', response.data);
+                            var data = {
+                                image: imageData
                             };
-                            var errorCallback = function(response) {
-                                console.error(response.data);
-                                $rootScope.$broadcast('imageLoadingError', response.data);
-                            };
-                            $http.post(postUrl, imageData)
-                                .then(successCallback, errorCallback);
+                            $rootScope.$broadcast('clientValid', data);
                         }, false);
                         if(img) {
                             reader.readAsDataURL(img);

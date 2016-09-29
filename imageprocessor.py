@@ -9,7 +9,6 @@ from PIL import Image, ImageOps, ImageEnhance
 
 class ImageProcessor:
     """Takes the jpeg image and performs various methods on it."""
-    # look into implementing this https://www.learnopencv.com/blob-detection-using-opencv-python-c/
     URI_header = b'data:image/jpeg;base64,'
 
     def PIL_to_CV2_image(self, PIL_image):
@@ -49,7 +48,7 @@ class ImageProcessor:
         return jpeg_string
 
 
-    def tile_image(self, image_holder, tilemap_level):
+    def tile_image(self, image, tilemap_level):
         """Takes a jpeg image, scales its size down and splits it up 
         into tiles, the amount depends on the "level" of tile splitting.
 
@@ -57,41 +56,26 @@ class ImageProcessor:
         """
         tiles = []
 
-        photoWidth = image_holder.image.size[0]
-        photoHeight = image_holder.image.size[1]
+        photoWidth = image.size[0]
+        photoHeight = image.size[1]
         tileWidth = 1024;
         tileHeight = 1024;
 
         tilemapWidth = int((photoWidth / tilemap_level) / tileWidth) + 1
         tilemapHeight = int((photoHeight / tilemap_level) / tileHeight) + 1
 
-        print("Working on zoom out level %s, with a tilemap size of %s, %s."
-            % (tilemap_level, tilemapWidth, tilemapHeight)
-        )
-
-        print("The photo width and height is: ")
-        print(photoWidth)
-        print(photoHeight)
         if(tilemap_level != 1):
             newPhotoWidth = int(photoWidth / tilemap_level)
             newPhotoHeight = int(photoHeight / tilemap_level)
-            print("Resizing the large image file to a size of %s, %s"
-                % (newPhotoWidth, newPhotoHeight)
-            )
-            scaled_image = image_holder.image.resize((newPhotoWidth, newPhotoHeight))
-            if(tilemap_level == 20):
-                image_holder.thumbnail = scaled_image
-                print("The thumbnail size is: %d, %d" % (newPhotoWidth, newPhotoHeight))
+            scaled_image = image.resize((newPhotoWidth, newPhotoHeight))
         else:
-            scaled_image = image_holder.image
+            scaled_image = image
 
         for x in range(0, tilemapHeight):
             new_row = []
             for y in range(0, tilemapWidth):
                 widthOffset = tileWidth * x
                 heightOffset = tileHeight * y
-
-                print("Processing tile %d, %d" % (x, y))
 
                 image_tile = scaled_image.crop((
                     widthOffset, 
@@ -101,7 +85,6 @@ class ImageProcessor:
                 ))
 
                 new_row.append(self.Image_to_jpeg_URI(image_tile))
-            print("Appending row %d to the tiles array" % x)
             tiles.append(new_row)
 
         return tiles
@@ -129,15 +112,19 @@ class ImageProcessor:
         # convert the image into a grayscale cv2 formatted image
         cv2_image = self.PIL_to_CV2_image(image)
 
-        # http://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html?highlight=threshold#threshold
-        # will make it possible to choose between normal thresholding and adaptive thresholding
-        #retval, thresholded_image = cv2.threshold(cv2_image, threshold, 255, cv2.THRESH_BINARY)
+        # may make it possible to choose between normal thresholding and
+        # adaptive thresholding
+        #retval, thresholded_image = cv2.threshold(cv2_image, threshold,
+        #                                          255, cv2.THRESH_BINARY)
         block_size = 103
         if(large_image):
             block_size = 2061
         # Gaussian adaptive thresholding is very slow, takes about 15 minutes
         # for a 20k x 20k image and does not yield significantly better results
-        thresholded_image = cv2.adaptiveThreshold(cv2_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, block_size, 20)
+        thresholded_image = cv2.adaptiveThreshold(cv2_image, 255,
+                                                  cv2.ADAPTIVE_THRESH_MEAN_C,
+                                                  cv2.THRESH_BINARY,
+                                                  block_size, 20)
 
         # convert the image back into a PIL image
         image = self.CV2_to_PIL_image(thresholded_image)
@@ -145,20 +132,15 @@ class ImageProcessor:
 
     def process_thumbnail(self, thumbnail, brightness, contrast, threshold):
         thumbnail = self.apply_BCT(thumbnail, brightness, contrast, threshold)
-        thumbnail.save("thumbnail.jpg")
         return thumbnail
 
-    def keypoints_from_image(self, image, brightness, contrast, threshold):
+    def detect_keypoints(self, image):
         """This function takes an image and first inverts it (to colour the
         features darkest), then applies brightness and contrast (input 
         values from -100 to 100).
         It then uses OpenCV to do threshold the image and do some simple,
         automatic blob detection and returns the keypoints generated.
         """
-        image.save("BCT_image_before.jpg")
-        image = self.apply_BCT(image, brightness, contrast, threshold, True)
-        image.save("BCT_image_after.jpg")
-
         # convert the image to an OpenCV image for blob detection
         cv2_image = self.PIL_to_CV2_image(image)
 
@@ -173,6 +155,13 @@ class ImageProcessor:
 
         detector = cv2.SimpleBlobDetector_create(params)
         keypoints = detector.detect(cv2_image)
-        print("number of keypoints detected: " + str(len(keypoints)))
 
         return keypoints
+
+    def transform_original_image(self, image):
+        """Here we want to take an original fluorescently stained image
+        (around ~30k x 30k), rotate it 180° and scale it down to ~20k x 20k
+        and return it.
+        """
+        # to be filled in
+        return image

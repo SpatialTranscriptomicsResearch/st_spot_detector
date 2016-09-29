@@ -6,103 +6,116 @@ import time
 
 from bottle import error, get, post, response, request, route, run, static_file
 
+from imageprocessor import ImageProcessor
+from sessioncacher import SessionCacher
 from spots import Spots
 from tilemap import Tilemap
-from imageprocessor import ImageProcessor
 from PIL import Image
-
-class ImageHolder:
-    image_loaded = False
-    image = None
-    thumbnail = None
 
 #######################
 ### ↓ server code ↓ ###
 #######################
 
-spots = Spots()
-tiles = Tilemap()
+session_cacher = SessionCacher()
 image_processor = ImageProcessor()
-image = ImageHolder()
 
-@post('/dummy_image')
-def receive_dummy_image():
-    # we want these three objects to be reinitialised every time a new image is chosen
-    spots = Spots()
-    tiles = Tilemap()
-    image_processor = ImageProcessor()
-    tiles.fill_dummy_tiles()
-    image_string = request.body.read()
-    image.image = image_processor.jpeg_URI_to_Image(image_string)
-    image.image_loaded = True
-    return
+@get('/session_id')
+def create_session_cache():
+    new_session_id = session_cacher.create_session_cache()
+    print(new_session_id[:20] + ": New session created.")
+    return new_session_id
 
 @get('/detect_spots')
 def get_spots():
-    timer_start = time.time()
-    if(image.image_loaded):
+    session_id = request.query['session_id']
+    session_cache = session_cacher.get_session_cache(session_id)
+    if(session_cache is not None):
+        print(session_id[:20] + ": Detecting spots.")
         # ast converts the query strings into python dictionaries
         TL_coords = ast.literal_eval(request.query['TL'])
         BR_coords = ast.literal_eval(request.query['BR'])
-        array_size = ast.literal_eval(request.query['arraySize'])
+        array_size = ast.literal_eval(request.query['array_size'])
         brightness = float(request.query['brightness'])
         contrast = float(request.query['contrast'])
         threshold = float(request.query['threshold'])
 
-        spots.keypoints = image_processor.keypoints_from_image(image.image, brightness, contrast, threshold)
-        spots.create_spots_from_keypoints(spots.keypoints, array_size, TL_coords, BR_coords)
+        # converts the image into a BW thresholded image for easier
+        # keypoint detection
+        session_cache.image = image_processor.apply_BCT(session_cache.image,
+                                                        brightness, contrast,
+                                                        threshold, True)
+        keypoints = image_processor.detect_keypoints(session_cache.image)
+        spots = Spots(TL_coords, BR_coords, array_size)
+        spots.create_spots_from_keypoints(keypoints)
 
-    print("Spot detection took:")
-    print(time.time() - timer_start)
-    print("sending: " + str(len(spots.get_spots()['spots'])) + " spots")
-    return spots.get_spots()
+        print(session_id[:20] + ": Spot detection finished.")
+        # all is said and done; we can now safely remove the session cache
+        session_cacher.remove_session_cache(session_id)
+        return spots.wrap_spots()
+    else:
+        response.status = 400
+        return 'Session ID expired. Please try again.'
     
 @get('/thumbnail')
 def process_thumbnail():
     brightness = float(request.query['brightness'])
     contrast = float(request.query['contrast'])
     threshold = float(request.query['threshold'])
-    if(image.image_loaded):
-        thumbnail = image_processor.process_thumbnail(image.thumbnail, brightness, contrast, threshold)
+    session_id = request.query['session_id']
+
+    session_cache = session_cacher.get_session_cache(session_id)
+    if(session_cache is not None):
+        print(session_id[:20] + ": Creating thumbnail.")
+        thumbnail = image_processor.process_thumbnail(session_cache.thumbnail,
+                                                      brightness, contrast,
+                                                      threshold)
         thumbnail = image_processor.Image_to_jpeg_URI(thumbnail)
         thumbnail_dictionary = {
             'thumbnail': thumbnail,
         }
-        return thumbnail_dictionary
     else:
-        return
+        response.status = 400
+        return 'Session ID expired. Please try again.'
+    return thumbnail_dictionary
 
-@get('/tiles')
+@post('/tiles')
 def get_tiles():
-    return tiles.dict_wrapper
+    tiles = Tilemap()
 
-@get('/tiles/<level:int>')
-def get_tiles_at(level=1):
-    level_string = "level_" + str(level)
-    return tiles.dict_wrapper['tilemaps'][level_string]
-    
+    data = ast.literal_eval(request.body.read())
+    image_string = data['image']
+    session_id = data['session_id']
+    session_cache = session_cacher.get_session_cache(session_id)
+    if(session_cache is not None):
+        valid = image_processor.validate_jpeg_URI(image_string)
+        # also do proper type validation here; see
+        # https://zubu.re/bottle-security-checklist.html and
+        # https://github.com/ahupp/python-magic
+        if(valid):
+            print(session_id[:20] + ": Tiling images.")
+            image = image_processor.jpeg_URI_to_Image(image_string)
+            image = image_processor.transform_original_image(image)
+            for x in tiles.tilemapLevels:
+                tiles.put_tiles_at(x, image_processor.tile_image(image, x))
+
+            session_cache.image = image
+            largest_tile = tiles.tilemapLevels[-1]
+            thumbnail = tiles.tilemaps[largest_tile][0][0]
+            thumbnail = image_processor.jpeg_URI_to_Image(thumbnail)
+            session_cache.thumbnail = thumbnail
+            print(session_id[:20] + ": Image tiling complete.")
+        else:
+            response.status = 400
+            return 'Invalid image. Please upload a jpeg image.'
+    else:
+        response.status = 400
+        return 'Session ID expired. Please try again.'
+
+    return tiles.wrapped_tiles()
+
 @route('/<filepath:path>')
 def serve_site(filepath):
     return static_file(filepath, root='./st_alignment')
-
-@post('/<filepath:path>') # the argument should possibly be different
-def receive_image(filepath):
-    # we want these three objects to be reinitialised every time a new image is chosen
-    spots = Spots()
-    tiles = Tilemap()
-    image_processor = ImageProcessor()
-
-    image_string = request.body.read()
-    valid = image_processor.validate_jpeg_URI(image_string)
-    if(valid):
-        image.image = image_processor.jpeg_URI_to_Image(image_string)
-        for x in tiles.dict_wrapper['tilemapLevels']:
-            tiles.put_tiles_at(x, image_processor.tile_image(image, x))
-        image.image_loaded = True
-        return
-    else:
-        response.status = 400
-        return 'Invalid image. Please upload a jpeg image.'
 
 @error(404)
 def error404(error):

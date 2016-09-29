@@ -35,6 +35,7 @@ angular.module('viewer')
                     images: '',
                     thumbnail: new Image()
                 };
+                var sessionId;
 
                 updateCanvas();
 
@@ -43,13 +44,18 @@ angular.module('viewer')
                         images.thumbnail.src = response.data.thumbnail;
                         logicHandler.currentState = logicHandler.state.calibrate;
                         updateCanvas();
-                        //$rootScope.$broadcast('thumbnailLoaded');
+                        $rootScope.$broadcast('thumbnailLoaded');
                     };
                     var thumbnailErrorCallback = function(response) {
                         console.error(response.data);
                     };
                     var config = {
-                        params: calibrator.calibrationData
+                        params: {
+                            brightness: calibrator.calibrationData.brightness,
+                            contrast:   calibrator.calibrationData.contrast,
+                            threshold:  calibrator.calibrationData.threshold,
+                            session_id: sessionId
+                        }
                     };
                     $http.get('../thumbnail', config)
                         .then(thumbnailSuccessCallback, thumbnailErrorCallback);
@@ -61,25 +67,40 @@ angular.module('viewer')
                 $rootScope.$on('imageLoadingError', function(event, data) {
                     logicHandler.currentState = logicHandler.state.error;
                 });
-                $rootScope.$on('imageLoaded', function(event, data) {
+                $rootScope.$on('clientValid', function(event, data) {
                     var getTileData = function() {
                         var tileSuccessCallback = function(response) {
                             tilemap.loadTilemap(response.data);
                             scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
                             tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
                             images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
+
+                            logicHandler.currentState = logicHandler.state.calibrate;
+                            getThumbnail();
                             updateCanvas();
-                            $rootScope.$broadcast('imageRendered');
                         };
                         var tileErrorCallback = function(response) {
                             console.error(response.data);
+                            $rootScope.$broadcast('imageLoadingError', response.data);
                         };
-                        $http.get('../tiles')
+                        data.session_id = sessionId;
+                        $http.post('../tiles', data)
                             .then(tileSuccessCallback, tileErrorCallback);
-                        getThumbnail();
                     };
 
-                    getTileData();
+                    var getSessionId = function() {
+                        var sessionSuccessCallback = function(response) {
+                            sessionId = response.data;
+                            getTileData();
+                        };
+                        var sessionErrorCallback = function(response) {
+                            console.error(response.data);
+                            $rootScope.$broadcast('imageLoadingError', response.data);
+                        };
+                        $http.get('../session_id')
+                            .then(sessionSuccessCallback, sessionErrorCallback);
+                    };
+                    getSessionId();
                 });
                 $rootScope.$on('spotDetecting', function(event, data) {
                     var getSpotData = function() {
@@ -93,7 +114,15 @@ angular.module('viewer')
                             // should it change to some other state on error?
                         };
                         var config = {
-                            params: calibrator.calibrationData
+                            params: {
+                                TL:         calibrator.calibrationData.TL,
+                                BR:         calibrator.calibrationData.BR,
+                                array_size: calibrator.calibrationData.arraySize,
+                                brightness: calibrator.calibrationData.brightness,
+                                contrast:   calibrator.calibrationData.contrast,
+                                threshold:  calibrator.calibrationData.threshold,
+                                session_id: sessionId
+                            }
                         };
                         $http.get('../detect_spots', config)
                             .then(successCallback, errorCallback);
@@ -177,7 +206,7 @@ angular.module('viewer')
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
                         images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        //renderer.renderImages(images.images); // not necessary anymore if showing the thumbnail
+                        renderer.renderImages(images.images); // can switch between images and thumbnail
                         renderer.renderThumbnail(images.thumbnail);
                         renderer.renderCalibrationPoints(calibrator.calibrationData);
                         $rootScope.$broadcast('calibratorAdjusted', calibrator.calibrationData);

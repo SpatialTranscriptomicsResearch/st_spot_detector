@@ -11,33 +11,15 @@ def distance_between(a, b):
 
 class Spots:
     """Holds the spot data"""
-    spots = []
-    keypoints = [] # generated from OpenCV spot detection
 
-    array_size = {'x': 33, 'y': 35}
-    TL_coords = { # the position of the centre of the top left spot
-        'x': 1251,
-        'y': 676
-    }
-    BR_coords = { # the position of the centre of the bottom right spot
-        'x': 11780, 
-        'y': 11982
-    }
-    spacer = {'x': 330, 'y': 333}
-
-    def get_spots(self):
-        spot_dictionary = {
-            'spots': self.spots,
-            'spacer': self.spacer,
-        }
-        return spot_dictionary
-        
-    def set_array_size(self, size):
-        self.array_size = size
-
-    def set_coords(self, TL, BR):
+    def __init__(self, TL, BR, array_size):
+        self.spots = []
+        self.array_size = array_size
+        # the expected position of the centre of the top left spot
         self.TL_coords = TL
+        # the expected position of the centre of bottom right left spot
         self.BR_coords = BR
+        # the average expected space between each spot
         self.spacer = {
             'x': (self.BR_coords['x'] - self.TL_coords['x'])
                  / (self.array_size['x'] - 1),
@@ -45,23 +27,24 @@ class Spots:
                  / (self.array_size['y'] - 1)
         }
 
-    def create_spots_from_keypoints(self, keypoints, size, TL, BR):
-        """Takes keypoints generated from opencv and tries to match them to
-        their correct array positions.
+    def wrap_spots(self):
+        spot_dictionary = {
+            'spots': self.spots,
+            'spacer': self.spacer,
+        }
+        return spot_dictionary
+        
+    def create_spots_from_keypoints(self, keypoints):
+        """Takes keypoints generated from opencv spot detection and
+        tries to match them to their correct array positions.
         It also tries to fill in "missing spots" by finding which array positions
         do not have a corresponding keypoint, then analyses the black/white 
         content of the thresholded image at the missing spot position in order
         to determine if a spot is likely to be there or not.
-        An array of spots wrapped in a dictionary is returned.
         """
-        self.keypoints = keypoints
-        self.set_array_size(size)
-        self.set_coords(TL, BR)
 
-        threshold_distance = 180 # this can be adjusted for stringency
-
-        self.spots = []
         missing_spots = []
+        threshold_distance = 180 # this can be adjusted for stringency
 
         # these arrays are used to calculate the average position at which
         # each spot column and row are at within the spot array
@@ -96,7 +79,7 @@ class Spots:
                     'x': self.spacer['x'] * j + self.TL_coords['x'],
                     'y': self.spacer['y'] * i + self.TL_coords['y']
                 }
-                for kp in self.keypoints:
+                for kp in keypoints:
                 # iterate through the keypoints to see if one of them is at
                 # the current "expected" array position
                     kp_position = {
@@ -163,11 +146,6 @@ class Spots:
             if(col_position_count[col] != 0):
                 col_position_average[col] = col_position_sum[col] / float(col_position_count[col])
 
-        print(row_position_average)
-        print(col_position_average)
-        print("The number of detected spots is %d" % len(self.spots))
-        print("The number of missing spots is %d" % len(missing_spots))
-
         # Open up processed (brightness, contrast, threshold) image for reading
         # of pixel values. This is very RAM heavy. Alternatively, one may
         # crop out each surrounding pixel area, and analyse the whiteness of these
@@ -212,7 +190,6 @@ class Spots:
                 whiteness += pixel_r
                 
             whiteness_average = float(whiteness) / float(len(pixels))
-            print("The whiteness average for %d, %d is %f and the threshold is %f" % (array_position['x'], array_position['y'], whiteness_average, whiteness_threshold))
             if(whiteness_average < whiteness_threshold):
                 # not yet added in order
                 filled_in_spots.append({
@@ -237,7 +214,5 @@ class Spots:
                     if(i == len(self.spots) - 1):
                         self.spots.append(new_spot)
                         break
-        print("The number of filled in spots is %d" % len(filled_in_spots))
 
-        spot_dictionary = {'spots': self.spots}
-        return spot_dictionary
+        # Spot detection complete
