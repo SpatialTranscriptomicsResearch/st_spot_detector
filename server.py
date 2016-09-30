@@ -48,8 +48,9 @@ def get_spots():
         spots = Spots(TL_coords, BR_coords, array_size)
         spots.create_spots_from_keypoints(keypoints)
 
-        print(session_id[:20] + ": Spot detection finished. Session removed.")
         # all is said and done; we can now safely remove the session cache
+        print(session_id[:20] + ": Spot detection finished.")
+        print(session_id[:20] + ": Session removed.")
         session_cacher.remove_session_cache(session_id)
         print(session_cacher.session_caches)
         return spots.wrap_spots()
