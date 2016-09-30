@@ -155,10 +155,10 @@ angular.module('viewer')
                     updateCanvas();
                 });
                 $rootScope.$on('colourUpdate', function(event, data) {
-                    renderer.spotColour = data['background-color'];
-                    if(logicHandler.currentState != logicHandler.state.upload_ready &&
-                       logicHandler.currentState != logicHandler.state.loading &&
-                       logicHandler.currentState != logicHandler.state.error ) {
+                    renderer.spotColour = 'hsla(' + data['spotColour'] + ', 100%, 50%,' + data['spotOpacity'] + ')';
+                    renderer.selectedSpotColour = 'hsla(120, 100%, 50%,' + data['spotOpacity'] + ')';
+                    if(logicHandler.currentState == logicHandler.state.adjust_spots ||
+                       logicHandler.currentState == logicHandler.state.add_spots) {
                         updateCanvas();
                     }
 

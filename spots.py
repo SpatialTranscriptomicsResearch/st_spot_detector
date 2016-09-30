@@ -21,10 +21,10 @@ class Spots:
         self.BR_coords = BR
         # the average expected space between each spot
         self.spacer = {
-            'x': (self.BR_coords['x'] - self.TL_coords['x'])
-                 / (self.array_size['x'] - 1),
-            'y': (self.BR_coords['y'] - self.TL_coords['y'])
-                 / (self.array_size['y'] - 1)
+            'x': ((self.BR_coords['x'] - self.TL_coords['x'])
+                   / (self.array_size['x'] - 1)),
+            'y': ((self.BR_coords['y'] - self.TL_coords['y'])
+                   / (self.array_size['y'] - 1))
         }
 
     def wrap_spots(self):
@@ -117,7 +117,7 @@ class Spots:
                             },
                             'selected': False
                         })
-                        if(!spot_detected):
+                        if(not spot_detected):
                             spot_detected = True
                             # the first spot detected at this position is used
                             # to calculate the average row and column positions
@@ -140,14 +140,14 @@ class Spots:
         for row, position in enumerate(row_position_average):
             # do not do anything if there is no data for this row
             if(row_position_count[row] != 0):
-                row_position_average[row] = row_position_sum[row]
-                                            / float(row_position_count[row])
+                row_position_average[row] = (row_position_sum[row]
+                                            / float(row_position_count[row]))
 
         for col, position in enumerate(col_position_average):
             # do not do anything if there is no data for this column
             if(col_position_count[col] != 0):
-                col_position_average[col] = col_position_sum[col]
-                                            / float(col_position_count[col])
+                col_position_average[col] = (col_position_sum[col]
+                                            / float(col_position_count[col]))
 
         # Open up processed (brightness, contrast, threshold) image for
         # reading of pixel values. This is very RAM heavy. Alternatively,
@@ -178,10 +178,10 @@ class Spots:
 
 
             pixel_position = {
-                'x': int((new_array_position['x'] - 1.0) * self.spacer['x']
-                     + self.TL_coords['x']),
-                'y': int((new_array_position['y'] - 1.0) * self.spacer['y']
-                     + self.TL_coords['y'])
+                'x': (int((new_array_position['x'] - 1.0) * self.spacer['x']
+                      + self.TL_coords['x'])),
+                'y': (int((new_array_position['y'] - 1.0) * self.spacer['y']
+                      + self.TL_coords['y']))
             }
 
             whiteness = 0
@@ -208,13 +208,13 @@ class Spots:
         # Inserting the filled-in spots in the correct order in the spots array
         # this is identical to the JS version in spot-adjuster.js
         for new_spot in filled_in_spots:
-            new_spot_order = new_spot['arrayPosition']['y']
-                             * self.array_size['x']
-                             + new_spot['arrayPosition']['x']
+            new_spot_order = (new_spot['arrayPosition']['y']
+                              * self.array_size['x']
+                              + new_spot['arrayPosition']['x'])
             for i in range(0, len(self.spots)):
                 spot = self.spots[i]
-                spot_order = spot['arrayPosition']['y'] * self.array_size['x']
-                             + spot['arrayPosition']['x']
+                spot_order = (spot['arrayPosition']['y'] * self.array_size['x']
+                              + spot['arrayPosition']['x'])
                 if(new_spot_order <= spot_order):
                     self.spots.insert(i, new_spot)
                     break

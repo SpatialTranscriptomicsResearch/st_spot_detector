@@ -165,4 +165,7 @@ class ImageProcessor:
         and return it.
         """
         # to be filled in
+        # http://stackoverflow.com/questions/273946/how-do-i-resize-an-image-using-pil-and-maintain-its-aspect-ratio
+        # im.rotate(45).show()
+        # scaled_image = image.resize((newPhotoWidth, newPhotoHeight))
         return image

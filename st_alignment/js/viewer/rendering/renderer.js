@@ -8,8 +8,8 @@
         self.ctx = context;
         self.camera = camera;
         self.bgColour = 'white';
-        self.spotColour = 'red';
-        self.selectedSpotColour = 'green';
+        self.spotColour = 'hsla(0, 100%, 50%, 0.5)'; // red
+        self.selectedSpotColour = 'hsla(120, 100%, 50%, 0.5)'; // green
         self.spotMiddleColour = 'black';
         self.ctx.textAlign = "center";
         self.ctx.font = "bold 48px Courier";
