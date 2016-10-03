@@ -47,6 +47,9 @@
             if(self.currentState == self.state.adjust_spots) {
                 self.spotSelector.toggleShift(false);
             }
+            else if(self.currentState == self.state.add_spots) {
+                self.spotAdjuster.finishAddSpots(false);
+            }
             self.updateCanvasFunction();
         },
         processMouseEvent: function(mouseEvent, eventData) {
@@ -117,9 +120,37 @@
                 }
             }
             // add spots state
+            // copies code from adjust_state; please fix (DRY)
             else if(self.currentState == self.state.add_spots) {
-                if(mouseEvent == self.mouseEvent.up) {
-                    self.spotAdjuster.addSpot(eventData.position);
+                if(eventData.button == self.mouseButton.left) {
+                    // LMB, moving canvas or spots
+                    if(mouseEvent == self.mouseEvent.down) {
+                        self.spotAdjuster.moving = self.spotAdjuster.atSelectedSpots(eventData.position);
+                    }
+                    else if(mouseEvent == self.mouseEvent.up) {
+                        self.spotAdjuster.moving = false;
+                    }
+                    else if(mouseEvent == self.mouseEvent.drag) {
+                        if(self.spotAdjuster.moving) {
+                            self.spotAdjuster.dragSpots(eventData.difference);
+                        }
+                        else {
+                            self.camera.pan(eventData.difference);
+                        }
+                    }
+                }
+                else if(eventData.button == self.mouseButton.right) {
+                    // RMB, adding spots
+                    if(mouseEvent == self.mouseEvent.up) {
+                        self.spotAdjuster.addSpot(eventData.position);
+                    }
+                }
+                if(mouseEvent == self.mouseEvent.move) {
+                    self.spotAdjuster.updateSpotToAdd(eventData.position);
+                }
+                else if(mouseEvent == self.mouseEvent.wheel) {
+                    // scrolling
+                    self.camera.navigate(eventData);
                 }
             }
             self.updateCanvasFunction();

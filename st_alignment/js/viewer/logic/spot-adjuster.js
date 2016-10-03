@@ -70,6 +70,10 @@
                 }
             }
         },
+        updateSpotToAdd: function(position) {
+            var renderPosition = self.camera.mouseToCameraPosition(position);
+            self.spots.spotToAdd.renderPosition = renderPosition;
+        },
         addSpot: function(position) {
             var renderPosition = self.camera.mouseToCameraPosition(position);
             renderPosition = Vec2.truncate(renderPosition);
@@ -102,6 +106,8 @@
                     // otherwise check the next spot
                 }
             }
+        },
+        finishAddSpots: function() {
         }
     };
 

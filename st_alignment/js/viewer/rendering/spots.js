@@ -5,6 +5,9 @@
         self = this;
         self.spots = [];
         self.spacer = {};
+        self.spotToAdd = {
+            renderPosition: Vec2.Vec2(0, 0)
+        };
     };
 
     SpotManager.prototype = {

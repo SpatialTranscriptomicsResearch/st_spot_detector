@@ -55,7 +55,7 @@
         setUpKeyEvents: function(canvas, camera) {
             document.onkeydown = function(event) {
                 event = event || window.event;
-                // this function can be simplified by iterating through the keycodes object
+                // this function can (and should) be simplified by iterating through the keycodes object
                 if(keycodes.left.includes(event.which)) {
                     // ← left
                     self.logicHandler.processKeydownEvent(keyevents.left);

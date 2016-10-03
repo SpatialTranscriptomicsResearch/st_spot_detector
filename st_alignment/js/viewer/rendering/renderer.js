@@ -73,22 +73,31 @@
                     var spot = spots[i];
 
                     self.ctx.beginPath();
-                    if(spot.selected) {
-                        self.ctx.fillStyle = self.selectedSpotColour;
-                    }
-                    else {
-                        self.ctx.fillStyle = self.spotColour;
-                    }
-                    self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotSize, 0, Math.PI * 2);
+                        if(spot.selected) {
+                            self.ctx.fillStyle = self.selectedSpotColour;
+                        }
+                        else {
+                            self.ctx.fillStyle = self.spotColour;
+                        }
+                        self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotSize, 0, Math.PI * 2);
                     self.ctx.closePath();
                     self.ctx.fill();
 
                     self.ctx.beginPath();
-                    self.ctx.fillStyle = self.spotMiddleColour;
-                    self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotCentreSize, 0, Math.PI * 2);
+                        self.ctx.fillStyle = self.spotMiddleColour;
+                        self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotCentreSize, 0, Math.PI * 2);
                     self.ctx.closePath();
                     self.ctx.fill();
                 }
+            self.camera.end();
+        },
+        renderSpotToAdd: function(spot) {
+            self.camera.begin();
+                self.ctx.beginPath();
+                    self.ctx.fillStyle = self.selectedSpotColour;
+                    self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotSize, 0, Math.PI * 2);
+                self.ctx.closePath();
+                self.ctx.fill();
             self.camera.end();
         },
         renderCalibrationPoints: function(data) {

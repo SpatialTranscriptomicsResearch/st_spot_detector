@@ -36,6 +36,7 @@ angular.module('viewer')
                     thumbnail: new Image()
                 };
                 var sessionId;
+                var calibrationThumbnailOn = true;
 
                 updateCanvas();
 
@@ -199,11 +200,15 @@ angular.module('viewer')
                     }
                     else if(logicHandler.currentState == logicHandler.state.calibrate) {
                         scaleManager.updateScaleLevel(camera.scale);
-                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
-                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
-                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        renderer.renderImages(images.images); // can switch between images and thumbnail
-                        renderer.renderThumbnail(images.thumbnail);
+                        if(!calibrationThumbnailOn) {
+                            tilemapLevel = 1 / scaleManager.currentScaleLevel;
+                            tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
+                            images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+                            renderer.renderImages(images.images); 
+                        }
+                        else {
+                            renderer.renderThumbnail(images.thumbnail);
+                        }
                         renderer.renderCalibrationPoints(calibrator.calibrationData);
                         $rootScope.$broadcast('calibratorAdjusted', calibrator.calibrationData);
                     }
@@ -217,8 +222,13 @@ angular.module('viewer')
                         renderer.renderSpotSelection(spotSelector.renderingRect);
                     }
                     else if(logicHandler.currentState == logicHandler.state.add_spots) {
+                        scaleManager.updateScaleLevel(camera.scale);
+                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
+                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
+                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         renderer.renderImages(images.images);
                         renderer.renderSpots(spots.spots);
+                        renderer.renderSpotToAdd(spots.spotToAdd);
                     }
                 }
             };
