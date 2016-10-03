@@ -7,7 +7,8 @@ angular.module('buttonBar')
             scope: true,
             link: function(scope, elem, attrs) {
                 elem.bind('click', function(event) {
-                    $rootScope.$broadcast('exportSpotData');
+                    $rootScope.$broadcast('exportSpotData', 'adjustedArray');
+                    //$rootScope.$broadcast('exportSpotData', 'pixel');
                 });
             }
         };}

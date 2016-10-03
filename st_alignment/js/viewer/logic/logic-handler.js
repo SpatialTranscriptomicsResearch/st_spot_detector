@@ -13,7 +13,6 @@
 
         self.mouseEvent = Object.freeze({"down": 1, "up": 2, "move": 3, "drag": 4, "wheel": 5});
         self.mouseButton = Object.freeze({"left": 0, "right": 2})
-        self.keyEvent = camera.dir;
         self.state = Object.freeze({
             "upload_ready": 1,
             "loading": 2,
@@ -30,7 +29,7 @@
     LogicHandler.prototype = {
         processKeydownEvent: function(keyEvent, eventData) {
             if(self.currentState == self.state.adjust_spots) {
-                if(keyEvent == self.keyEvent.shift) {
+                if(keyEvent == keyevents.shift) {
                     self.spotSelector.toggleShift(true);
                 }
                 else {

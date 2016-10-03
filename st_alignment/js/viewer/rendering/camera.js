@@ -22,7 +22,6 @@
         self.minScale = 0.03;
         self.maxScale = 1.00;
         self.positionBoundaries = {"minX": 0, "maxX": 20480, "minY": 0, "maxY": 20480};
-        self.dir = Object.freeze({"left": 1, "up": 2, "right": 3, "down": 4, "zin": 5, "zout": 6, "shift": 7});
         self.updateViewport();
     };
   
@@ -65,22 +64,22 @@
 
             var movement = zoomCentre || Vec2.Vec2(0, 0);
             var scaleFactor = 1;
-            if(dir === self.dir.left) {
+            if(dir === keyevents.left) {
                 movement.x -= self.navFactor;
             }
-            else if(dir === self.dir.up) {
+            else if(dir === keyevents.up) {
                 movement.y -= self.navFactor;
             }
-            else if(dir === self.dir.right) {
+            else if(dir === keyevents.right) {
                 movement.x += self.navFactor;
             }
-            else if(dir === self.dir.down) {
+            else if(dir === keyevents.down) {
                 movement.y += self.navFactor;
             }
-            else if(dir === self.dir.zin) {
+            else if(dir === keyevents.zin) {
                 scaleFactor = 1 / self.scaleFactor;
             }
-            else if(dir === self.dir.zout) {
+            else if(dir === keyevents.zout) {
                 scaleFactor = self.scaleFactor;
             }
             self.pan(movement);

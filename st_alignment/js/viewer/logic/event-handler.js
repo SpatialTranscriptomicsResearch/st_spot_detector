@@ -11,17 +11,6 @@
         self.mousePos = {};
         self.mouseDown = false;
 
-        /* https://css-tricks.com/snippets/javascript/javascript-keycodes/#article-header-id-1 */
-        self.keycodes = {
-            left : [ 37, 65], // left,  a
-            up   : [ 38, 87], // up,    w
-            right: [ 39, 68], // right, d
-            down : [ 40, 83], // down,  s
-            zin  : [107, 69], // +,     e
-            zout : [109, 81], // -,     q
-            shift: [     16]  // shift
-        };
-
         self.setUpMouseEvents(self.canvas, self.camera);
         self.setUpKeyEvents(self.canvas, self.camera);
     };
@@ -56,49 +45,58 @@
             canvas.onmousewheel = function(e) {
                 console.log(e);
                 if(e.deltaY < 0) {
-                    self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.wheel, camera.dir.zin);
+                    self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.wheel, keyevents.zin);
                 }
                 else if(e.deltaY > 0) {
-                    self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.wheel, camera.dir.zout);
+                    self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.wheel, keyevents.zout);
                 }
             }
         },
         setUpKeyEvents: function(canvas, camera) {
             document.onkeydown = function(event) {
                 event = event || window.event;
-                if(self.keycodes.left.includes(event.which)) {
+                // this function can be simplified by iterating through the keycodes object
+                if(keycodes.left.includes(event.which)) {
                     // ← left
-                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.left);
+                    self.logicHandler.processKeydownEvent(keyevents.left);
                 }
-                else if(self.keycodes.up.includes(event.which)) {
+                else if(keycodes.up.includes(event.which)) {
                     // ↑ up
-                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.up);
+                    self.logicHandler.processKeydownEvent(keyevents.up);
                 }
-                else if(self.keycodes.right.includes(event.which)) {
+                else if(keycodes.right.includes(event.which)) {
                     // → right
-                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.right);
+                    self.logicHandler.processKeydownEvent(keyevents.right);
                 }
-                else if(self.keycodes.down.includes(event.which)) {
+                else if(keycodes.down.includes(event.which)) {
                     // ↓ down
-                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.down);
+                    self.logicHandler.processKeydownEvent(keyevents.down);
                 }
-                else if(self.keycodes.zin.includes(event.which)) {
+                else if(keycodes.zin.includes(event.which)) {
                     // + in
-                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.zin);
+                    self.logicHandler.processKeydownEvent(keyevents.zin);
                 }
-                else if(self.keycodes.zout.includes(event.which)) {
+                else if(keycodes.zout.includes(event.which)) {
                     // - out
-                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.zout);
+                    self.logicHandler.processKeydownEvent(keyevents.zout);
                 }
-                else if(self.keycodes.shift.includes(event.which)) {
+                else if(keycodes.shift.includes(event.which)) {
                     // ⇧ shift
-                    self.logicHandler.processKeydownEvent(self.logicHandler.keyEvent.shift);
+                    self.logicHandler.processKeydownEvent(keyevents.shift);
                 }
             };
             document.onkeyup = function(event) {
                 event = event || window.event;
-                if(self.keycodes.shift.includes(event.which)) {
-                    self.logicHandler.processKeyupEvent(self.logicHandler.keyEvent.shift);
+                if(keycodes.shift.includes(event.which)) {
+                    self.logicHandler.processKeyupEvent(keyevents.shift);
+                }
+                else if(keycodes.esc.includes(event.which)) {
+                    // escape
+                    self.logicHandler.processKeydownEvent(keyevents.esc);
+                }
+                else if(keycodes.del.includes(event.which)) {
+                    // delete
+                    self.logicHandler.processKeydownEvent(keyevents.del);
                 }
             }
         }

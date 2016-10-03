@@ -32,16 +32,16 @@
         },
         adjustSpots: function(direction) {
             var movement = Vec2.Vec2(0, 0);
-            if(direction === self.camera.dir.left) {
+            if(direction === keyevents.left) {
                 movement.x -= this.adjustFactor;
             }
-            else if(direction === self.camera.dir.up) {
+            else if(direction === keyevents.up) {
                 movement.y -= this.adjustFactor;
             }
-            else if(direction === self.camera.dir.right) {
+            else if(direction === keyevents.right) {
                 movement.x += this.adjustFactor;
             }
-            else if(direction === self.camera.dir.down) {
+            else if(direction === keyevents.down) {
                 movement.y += this.adjustFactor;
             }
             for(var i = 0; i < self.spots.spots.length; ++i) {

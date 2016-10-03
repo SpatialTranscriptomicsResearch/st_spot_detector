@@ -11,10 +11,10 @@
         <span class='input-group-addon'>Spot Opacity</span>
         <input class='form-control' ng-model='spotOpacity' type='range' max='1' min='0' step='0.05'/>
     </div>
-    <div class='spotExample' ng-style='updateElementStyle(spotColour, spotOpacity)'></div>
-    <div class='btn-group' role='group' aria-label='add, delete or edit spots'>
-        <button ng-click='addSpots()' type='button' class='btn btn-default'>Add</button>
-        <button ng-click='deleteSpots()' type='button' class='btn btn-default'>Delete</button>
+    <div class='btn-group' role='group' aria-label='add or delete spots'>
+        <button ng-click='addSpots()'       ng-show='addSpotsVisible'       type='button' class='btn btn-default'>Add spots</button>
+        <button ng-click='finishAddSpots()' ng-show='finishAddSpotsVisible' type='button' class='btn btn-default'>Finish adding spots</button>
+        <button ng-click='deleteSpots()'    ng-show='deleteSpotsVisible'    type='button' class='btn btn-default'>Delete selected spots</button>
     </div>
 </div>
 </div>

@@ -144,9 +144,6 @@ angular.module('viewer')
                     spotAdjuster.deleteSpots();
                     updateCanvas();
                 });
-                $rootScope.$on('editSpots', function(event, data) {
-                    updateCanvas();
-                });
                 $rootScope.$on('spotDetectorAdjusted', function(event, data) {
                     calibrator.calibrationData = data.data;
                     if(data.bctChanged) {
@@ -164,11 +161,10 @@ angular.module('viewer')
 
                 });
                 $rootScope.$on('exportSpotData', function(event, data) {
-                    var format = 'tsv';
-                    var spotDataString = spots.exportSpots(format);
+                    var spotDataString = spots.exportSpots(data);
 
                     var blob = new Blob([spotDataString]);
-                    var filename = "spot_data-" + new Date().toISOString().slice(0, 10) + "." + format;
+                    var filename = "spot_data-" + new Date().toISOString().slice(0, 10) + ".tsv";
 
                     // the next 11 lines are adapted from https://github.com/mholt/PapaParse/issues/175
                     if(window.navigator.msSaveOrOpenBlob) { // IE hack; see http://msdn.microsoft.com/en-us/library/ie/hh779016.aspx
@@ -176,7 +172,7 @@ angular.module('viewer')
                     }
                     else {
                         var a = window.document.createElement("a");
-                        a.href = window.URL.createObjectURL(blob, {type: 'text/' + format});
+                        a.href = window.URL.createObjectURL(blob, {type: 'text/tsv'});
                         a.download = filename;
                         document.body.appendChild(a);
                         a.click();  // IE: "Access is denied"; see: https://connect.microsoft.com/IE/feedback/details/797361/ie-10-treats-blob-url-as-cross-origin-and-denies-access

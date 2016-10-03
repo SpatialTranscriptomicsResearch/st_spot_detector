@@ -12,22 +12,20 @@
             self.spots = spotData.spots;
             self.spacer = spotData.spacer;
         },
-        exportSpots: function(format) {
+        exportSpots: function(type) {
             var dataString = "";
 
-            if(format == 'json') {
-                dataString = JSON.stringify(self.spots, null, '\t');
-            }
-            else if(format == 'tsv') {
-                dataString += "original_position\tnew_position\tpixel_position\n";
-                for(var i = 0; i < self.spots.length; ++i) {
-                    var spot = self.spots[i];
-                    dataString += spot.arrayPosition.x  + "," + spot.arrayPosition.y  + "\t";
-                    dataString += spot.newArrayPosition.x  + "," + spot.newArrayPosition.y  + "\t"; 
-                    dataString += spot.renderPosition.x + "," + spot.renderPosition.y;
-                    if(i != self.spots.length - 1) {
-                        dataString += "\n"
-                    }
+            for(var i = 0; i < self.spots.length; ++i) {
+                var spot = self.spots[i];
+                dataString += spot.arrayPosition.x  + "\t" + spot.arrayPosition.y  + "\t";
+                if(type == "adjustedArray") {
+                    dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y; 
+                }
+                else if(type == "pixel") {
+                    dataString += spot.renderPosition.x + "\t" + spot.renderPosition.y;
+                }
+                if(i != self.spots.length - 1) {
+                    dataString += "\n"
                 }
             }
             return dataString;
