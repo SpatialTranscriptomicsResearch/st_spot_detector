@@ -160,12 +160,21 @@ class ImageProcessor:
         return keypoints
 
     def transform_original_image(self, image):
-        """Here we want to take an original fluorescently stained image
-        (around ~30k x 30k), rotate it 180° and scale it down to ~20k x 20k
-        and return it.
+        """Here we take an original fluorescently stained image (~30k x 30k),
+        rotate it 180° and scale it down to ~20k x 20k and return it.
         """
-        # to be filled in
-        # http://stackoverflow.com/questions/273946/how-do-i-resize-an-image-using-pil-and-maintain-its-aspect-ratio
-        # im.rotate(45).show()
-        # scaled_image = image.resize((newPhotoWidth, newPhotoHeight))
-        return image
+        # resize image
+        width, height = image.size
+        aspect_ratio = float(width) / float(height)
+        if(aspect_ratio >= 1.0):
+            new_width = 20000
+            new_height = int(float(new_width) / aspect_ratio)
+        else:
+            new_height = 20000
+            new_width = int(float(new_height) * aspect_ratio)
+        scaled_image = image.resize((new_width, new_height), Image.ANTIALIAS)
+
+        # rotate image
+        transformed_image = scaled_image.rotate(180)
+
+        return transformed_image

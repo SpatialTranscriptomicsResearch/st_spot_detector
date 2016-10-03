@@ -94,9 +94,10 @@ def get_tiles():
         # https://zubu.re/bottle-security-checklist.html and
         # https://github.com/ahupp/python-magic
         if(valid):
-            print(session_id[:20] + ": Tiling images.")
+            print(session_id[:20] + ": Transforming images.")
             image = image_processor.jpeg_URI_to_Image(image_string)
             image = image_processor.transform_original_image(image)
+            print(session_id[:20] + ": Tiling images.")
             for x in tiles.tilemapLevels:
                 tiles.put_tiles_at(x, image_processor.tile_image(image, x))
 
