@@ -197,21 +197,15 @@ angular.module('viewer')
                         renderer.renderErrorScreen();
                     }
                     else if(logicHandler.currentState == logicHandler.state.spot_detecting) {
-                        renderer.renderImages(images.images);
-                        renderer.renderCalibrationPoints(calibrator.calibrationData);
                         renderer.renderDetectingScreen();
                     }
                     else if(logicHandler.currentState == logicHandler.state.calibrate) {
                         scaleManager.updateScaleLevel(camera.scale);
-                        if(!calibrationThumbnailOn) {
-                            tilemapLevel = 1 / scaleManager.currentScaleLevel;
-                            tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
-                            images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                            renderer.renderImages(images.images); 
-                        }
-                        else {
-                            renderer.renderThumbnail(images.thumbnail);
-                        }
+                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
+                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
+                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+                        renderer.renderImages(images.images); 
+                        //renderer.renderThumbnail(images.thumbnail);
                         renderer.renderCalibrationPoints(calibrator.calibrationData);
                         $rootScope.$broadcast('calibratorAdjusted', calibrator.calibrationData);
                     }
@@ -223,6 +217,7 @@ angular.module('viewer')
                         renderer.renderImages(images.images);
                         renderer.renderSpots(spots.spots);
                         renderer.renderSpotSelection(spotSelector.renderingRect);
+                        /* currently does not work; the view does not change upon receiving a signal
                         if(spotSelector.selected) {
                             // unideal since it broadcasts this every update; only needs to broadcast
                             // upon selection from the spot-selector (how?)
@@ -231,6 +226,7 @@ angular.module('viewer')
                         else {
                             $rootScope.$broadcast('unSelectedSpots');
                         }
+                        */
                     }
                     else if(logicHandler.currentState == logicHandler.state.add_spots) {
                         scaleManager.updateScaleLevel(camera.scale);

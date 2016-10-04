@@ -6,11 +6,11 @@
         self = this;
         self.camera = camera;
         self.calibrationData = {
-            TL: Vec2.Vec2(5250, 4301),
-            BR: Vec2.Vec2(15840, 15581),
+            TL: Vec2.Vec2( 3189,  1320),
+            BR: Vec2.Vec2(17234, 16446),
             arraySize: Vec2.Vec2(33, 35),
             brightness: 0,
-            contrast: 0,
+            contrast: 200,
             threshold: 50,
         };
         self.selected = false;

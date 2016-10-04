@@ -120,8 +120,9 @@ class ImageProcessor:
         block_size = 103
         if(large_image):
             block_size = 2061
-        # Gaussian adaptive thresholding is very slow, takes about 15 minutes
-        # for a 20k x 20k image and does not yield significantly better results
+        # Mean adaptive threshold has been chosen here because Gaussian
+        # adaptive thresholding is very slow, takes about 15 minutes for a
+        # 20k x 20k image and does not yield significantly better results
         thresholded_image = cv2.adaptiveThreshold(cv2_image, 255,
                                                   cv2.ADAPTIVE_THRESH_MEAN_C,
                                                   cv2.THRESH_BINARY,

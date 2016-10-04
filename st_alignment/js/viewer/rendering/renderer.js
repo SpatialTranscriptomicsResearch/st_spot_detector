@@ -35,7 +35,7 @@
             self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
         },
         renderStartScreen: function() {
-            self.renderText("Click on Upload to upload an image.");
+            self.renderText("Upload a Cy3 image to get started.");
         },
         renderLoadingScreen: function() {
             self.ctx.strokeStyle = self.fontOutlineColour;
