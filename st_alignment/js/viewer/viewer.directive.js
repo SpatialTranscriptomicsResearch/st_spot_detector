@@ -152,6 +152,9 @@ angular.module('viewer')
                     }
                     updateCanvas();
                 });
+                $rootScope.$on('finishedAddSpots', function(event) {
+                    logicHandler.currentState = logicHandler.state.adjust_spots;
+                });
                 $rootScope.$on('colourUpdate', function(event, data) {
                     renderer.spotColour = 'hsla(' + data['spotColour'] + ', 100%, 50%,' + data['spotOpacity'] + ')';
                     renderer.selectedSpotColour = 'hsla(120, 100%, 50%,' + data['spotOpacity'] + ')';
@@ -220,6 +223,14 @@ angular.module('viewer')
                         renderer.renderImages(images.images);
                         renderer.renderSpots(spots.spots);
                         renderer.renderSpotSelection(spotSelector.renderingRect);
+                        if(spotSelector.selected) {
+                            // unideal since it broadcasts this every update; only needs to broadcast
+                            // upon selection from the spot-selector (how?)
+                            $rootScope.$broadcast('selectedSpots');
+                        }
+                        else {
+                            $rootScope.$broadcast('unSelectedSpots');
+                        }
                     }
                     else if(logicHandler.currentState == logicHandler.state.add_spots) {
                         scaleManager.updateScaleLevel(camera.scale);

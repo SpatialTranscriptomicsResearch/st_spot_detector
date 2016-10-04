@@ -120,7 +120,7 @@
                 }
             }
             // add spots state
-            // copies code from adjust_state; please fix (DRY)
+            // copies lots of code from adjust_state; please fix (DRY)
             else if(self.currentState == self.state.add_spots) {
                 if(eventData.button == self.mouseButton.left) {
                     // LMB, moving canvas or spots
