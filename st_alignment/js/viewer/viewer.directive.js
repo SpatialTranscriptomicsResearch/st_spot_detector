@@ -141,8 +141,8 @@ angular.module('viewer')
                     logicHandler.currentState = logicHandler.state.add_spots;
                     updateCanvas();
                 });
-                $rootScope.$on('deleteSpots', function(event, data) {
-                    spotAdjuster.deleteSpots();
+                $rootScope.$on('deleteSelectedSpots', function(event, data) {
+                    spotAdjuster.deleteSelectedSpots();
                     updateCanvas();
                 });
                 $rootScope.$on('spotDetectorAdjusted', function(event, data) {

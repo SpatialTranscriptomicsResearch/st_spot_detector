@@ -63,7 +63,7 @@
                 }
             }
         },
-        deleteSpots: function() {
+        deleteSelectedSpots: function() {
             for(var i = self.spots.spots.length - 1; i >= 0; --i) {
                 if(self.spots.spots[i].selected) {
                     self.spots.spots.splice(i, 1);
