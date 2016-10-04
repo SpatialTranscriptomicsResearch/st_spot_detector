@@ -2,6 +2,6 @@ angular.module('aligner', [
     'buttonBar',
     'viewer',
     'spotDetector',
-    'spotManipulator',
+    'spotAdjuster',
     'core'
 ]);

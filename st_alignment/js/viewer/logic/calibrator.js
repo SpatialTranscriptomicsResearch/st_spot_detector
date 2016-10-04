@@ -18,10 +18,10 @@
     Calibrator.prototype = {
         detectSelection: function(position) {
             position = self.camera.mouseToCameraPosition(position);
-            if(Vec2.distanceBetween(position, self.calibrationData.TL) < 100) {
+            if(Vec2.distanceBetween(position, self.calibrationData.TL) < 200) {
                 self.selected = 'TL';
             }
-            else if(Vec2.distanceBetween(position, self.calibrationData.BR) < 100) {
+            else if(Vec2.distanceBetween(position, self.calibrationData.BR) < 200) {
                 self.selected = 'BR';
             }
         },
