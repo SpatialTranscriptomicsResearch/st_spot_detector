@@ -155,7 +155,7 @@ angular.module('viewer')
                 $rootScope.$on('finishedAddSpots', function(event) {
                     logicHandler.currentState = logicHandler.state.adjust_spots;
                 });
-                $rootScope.$on('colourUpdate', function(event, data) {
+                $rootScope.$on('colorUpdate', function(event, data) {
                     renderer.spotColour = 'hsla(' + data['spotColour'] + ', 100%, 50%,' + data['spotOpacity'] + ')';
                     renderer.selectedSpotColour = 'hsla(120, 100%, 50%,' + data['spotOpacity'] + ')';
                     if(logicHandler.currentState == logicHandler.state.adjust_spots ||
