@@ -7,14 +7,12 @@ angular.module('spotManipulator')
             '$scope',
             '$rootScope',
             function($scope, $rootScope) {
-                $scope.visible = true;
+                $scope.visible = false;
                 $scope.spotOpacity = 0.5;
                 $scope.spotColour = 0.0;
-                $scope.visibools = {
-                };
-                $scope.visibools.addSpotsVisible = true;
-                $scope.visibools.finishAddSpotsVisible = false;
-                $scope.visibools.deleteSpotsVisible = false;
+                $scope.addSpotsVisible = true;
+                $scope.finishAddSpotsVisible = false;
+                $scope.deleteSpotsVisible = false;
 
                 $scope.updateElementStyle = function() {
                     var data = {
@@ -27,21 +25,18 @@ angular.module('spotManipulator')
                     $rootScope.$broadcast(state);
                 };
                 $scope.addSpots = function() {
-                    $scope.visibools.addSpotsVisible = false;
-                    $scope.visibools.finishAddSpotsVisible = true;
-                    $scope.visibools.deleteSpotsVisible = false;
+                    $scope.addSpotsVisible = false;
+                    $scope.finishAddSpotsVisible = true;
+                    $scope.deleteSpotsVisible = false;
                     $rootScope.$broadcast('addSpots');
                 };
                 $scope.finishAddSpots = function() {
-                    $scope.visibools.addSpotsVisible = true;
-                    $scope.visibools.finishAddSpotsVisible = false;
-                    $scope.visibools.deleteSpotsVisible = false;
+                    $scope.addSpotsVisible = true;
+                    $scope.finishAddSpotsVisible = false;
+                    $scope.deleteSpotsVisible = false;
                     $rootScope.$broadcast('finishedAddSpots');
                 };
                 $scope.deleteSpots = function() {
-                    $scope.visibools.addSpotsVisible = true;
-                    $scope.visibools.finishAddSpotsVisible = false;
-                    $scope.visibools.deleteSpotsVisible = false;
                     $rootScope.$broadcast('deleteSelectedSpots');
                 };
                 $rootScope.$on('imageLoading', function(event) {
@@ -50,20 +45,18 @@ angular.module('spotManipulator')
                 $rootScope.$on('finishedDetecting', function(event, data) {
                     $scope.visible = true;
                 });
+                /*
                 $rootScope.$on('selectedSpots', function(event, data) {
-                    console.log('selected');
-                    $scope.visibools.addSpotsVisible = false;
-                    $scope.visibools.finishAddSpotsVisible = false;
-                    $scope.visibools.deleteSpotsVisible = true;
-                    console.log($scope.visibools);
+                    $scope.addSpotsVisible = false;
+                    $scope.finishAddSpotsVisible = false;
+                    $scope.deleteSpotsVisible = true;
                 });
                 $rootScope.$on('unSelectedSpots', function(event, data) {
-                    console.log('unselected');
-                    $scope.visibools.addSpotsVisible = true;
-                    $scope.visibools.finishAddSpotsVisible = false;
-                    $scope.visibools.deleteSpotsVisible = false;
-                    console.log($scope.visibools);
+                    $scope.addSpotsVisible = true;
+                    $scope.finishAddSpotsVisible = false;
+                    $scope.deleteSpotsVisible = false;
                 });
+                */
             }
         ]
     });
