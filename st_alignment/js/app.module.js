@@ -3,5 +3,6 @@ angular.module('aligner', [
     'viewer',
     'spotDetector',
     'spotAdjuster',
+    'spotColor',
     'core'
 ]);

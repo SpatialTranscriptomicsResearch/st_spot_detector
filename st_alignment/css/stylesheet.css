@@ -30,7 +30,7 @@ canvas:active {
     border-radius: 35px;
 }
 
-spot-detector {
+spot-detector, spot-color {
     position: fixed;
     width: 400px;
     bottom: 30px;
