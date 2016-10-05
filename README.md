@@ -6,25 +6,31 @@ printing artifacts. This web tool aims to detect correct spot positions using th
 with the overlay of the spots and then generate a file that can be used to adjust
 the coordinates of ST data.
 
-NOTE that this software is not fully functional yet as it is in an early stage of development. 
+NOTE that this software is currently not yet fully functional and in an early stage of development. 
 
 ## Dependencies
 The server uses Python 2.7 with the libraries OpenCV-Python and Pillow (PIL Fork) for image processing. These can easily be installed within a virtual environment using pip and requirements.txt (see Usage)
+
 A modern browser with HTML5 support is required for the front-end interface. The web app has only been tested on the lastest version of Chrome.
 
 ## Usage
 ### Server setup
 1. Create and activate a Python virtual environment 
+
     ```
     pip install virtualenv
     virtualenv venv
     source venv/bin/activate
     ```
+    
 2. Install the dependencies in requirements.txt.
+
     ```
     pip install -r requirements.txt
     ```
+
 3. Run the server
+
     ```
     chmod +x server.py
     ./server.py
