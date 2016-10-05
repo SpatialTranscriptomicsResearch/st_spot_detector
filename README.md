@@ -9,17 +9,36 @@ the coordinates of ST data.
 NOTE that this software is not fully functional yet as it is in an early stage of development. 
 
 ## Dependencies
-The server uses Python 2.7 with the libraries OpenCV-Python and Pillow (PIL Fork) for image processing.
-A modern browser with HTML5 support is required for the front-end interface.
+The server uses Python 2.7 with the libraries OpenCV-Python and Pillow (PIL Fork) for image processing. These can easily be installed within a virtual environment using pip and requirements.txt (see Usage)
+A modern browser with HTML5 support is required for the front-end interface. The web app has only been tested on the lastest version of Chrome.
 
 ## Usage
-The server can be started by running the server.py script.
-The web tool can then be interfaced by browsing to http://127.0.0.1:8081/index.html 
-A HE image can be uploaded and will be processed by the server. Spot detection is currently very primitive.
-The canvas can be moved around with the mouse and zoomed in and out by scrolling.
-Spots can be adjusted by clicking on 'Select' and using the mouse to select the desired spots (hold in shift to add to the selection).
-The selected spots can then be adjusted by clcking on 'Adjust' and using the arrow keys to shift their positions.
-Spot data can then be exported by clicking on the 'Export' button at the top. The export file is however not currently usable.
+### Server setup
+1. Create and activate a Python virtual environment 
+```
+pip install virtualenv
+virtualenv venv
+source venv/bin/activate
+```
+2. Install the dependencies in requirements.txt.
+```
+pip install -r requirements.txt
+```
+3. Run the server
+```
+chmod +x server.py
+./server.py
+```
+
+### Client interface
+1. Upload the desired Cy3 fluorescent image (takes a minute or two)
+2. Drag the blue top left and orange bottom right corners onto the top left and bottom right spots to "frame" the spots
+3. Click "Submit and detect" (will take another minute or two)
+4. Spot adjustment:
+..1. Move around the image with left-click and scroll-wheel to zoom.
+..2. Select spots with right-click and move selected spots with left click, or delete them using the "Delete selected spots button".
+..3. Add additional spots by clicking Add spots and right-clicking where they should be placed (left-click navigates around the image).
+5. Export the spot values by clicking Export.
 
 ## License
 MIT (see LICENSE).
