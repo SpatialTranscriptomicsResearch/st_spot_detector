@@ -9,18 +9,18 @@ angular.module('spotColor')
             function($scope, $rootScope) {
                 $scope.visible = false;
                 $scope.spotOpacity = 0.5;
-                $scope.spotColour = 0.0;
+                $scope.spotColor = 0.0;
                 $scope.addSpotsVisible = true;
                 $scope.finishAddSpotsVisible = false;
                 $scope.deleteSpotsVisible = false;
 
                 $scope.updateElementStyle = function() {
                     var data = {
-                        'spotColour': $scope.spotColour,
+                        'spotColor': $scope.spotColor,
                         'spotOpacity': $scope.spotOpacity
                     }
                     var style = {
-                        'background-color': 'hsla(' + $scope.spotColour + ', 100%, 50%, ' + $scope.spotOpacity + ')'
+                        'background-color': 'hsla(' + $scope.spotColor + ', 100%, 50%, ' + $scope.spotOpacity + ')'
                     };
                     $rootScope.$broadcast('colorUpdate', data);
                     return style;

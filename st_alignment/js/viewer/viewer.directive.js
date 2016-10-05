@@ -156,8 +156,8 @@ angular.module('viewer')
                     logicHandler.currentState = logicHandler.state.adjust_spots;
                 });
                 $rootScope.$on('colorUpdate', function(event, data) {
-                    renderer.spotColour = 'hsla(' + data['spotColour'] + ', 100%, 50%,' + data['spotOpacity'] + ')';
-                    renderer.selectedSpotColour = 'hsla(120, 100%, 50%,' + data['spotOpacity'] + ')';
+                    renderer.spotColor = 'hsla(' + data['spotColor'] + ', 100%, 50%,' + data['spotOpacity'] + ')';
+                    renderer.selectedSpotColor = 'hsla(120, 100%, 50%,' + data['spotOpacity'] + ')';
                     if(logicHandler.currentState == logicHandler.state.adjust_spots ||
                        logicHandler.currentState == logicHandler.state.add_spots) {
                         updateCanvas();

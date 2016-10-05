@@ -9,7 +9,7 @@ angular.module('spotAdjuster')
             function($scope, $rootScope) {
                 $scope.visible = false;
                 $scope.spotOpacity = 0.5;
-                $scope.spotColour = 0.0;
+                $scope.spotColor = 0.0;
                 $scope.addSpotsVisible = true;
                 $scope.finishAddSpotsVisible = false;
                 $scope.deleteSpotsVisible = false;

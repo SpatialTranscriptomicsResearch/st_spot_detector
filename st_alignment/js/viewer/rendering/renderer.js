@@ -7,15 +7,15 @@
         self = this;
         self.ctx = context;
         self.camera = camera;
-        self.bgColour = 'white';
-        self.spotColour = 'hsla(0, 100%, 50%, 0.5)'; // red
-        self.selectedSpotColour = 'hsla(120, 100%, 50%, 0.5)'; // green
-        self.spotMiddleColour = 'black';
+        self.bgColor = 'white';
+        self.spotColor = 'hsla(0, 100%, 50%, 0.5)'; // red
+        self.selectedSpotColor = 'hsla(120, 100%, 50%, 0.5)'; // green
+        self.spotMiddleColor = 'black';
         self.ctx.textAlign = "center";
         self.ctx.font = "bold 48px Courier";
-        self.fontColour = 'lightgray';
-        self.fontOutlineColour = 'black';
-        self.calibrationColour = {
+        self.fontColor = 'lightgray';
+        self.fontOutlineColor = 'black';
+        self.calibrationColor = {
             TL: 'cyan',
             BR: 'orange'
         }
@@ -25,33 +25,33 @@
   
     Renderer.prototype = {
         renderText: function(text) {
-            self.ctx.fillStyle = self.fontColour;
-            self.ctx.strokeStyle = self.fontOutlineColour;
+            self.ctx.fillStyle = self.fontColor;
+            self.ctx.strokeStyle = self.fontOutlineColor;
             self.ctx.fillText(text, self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
             self.ctx.strokeText(text, self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
         clearCanvas: function() {
-            self.ctx.fillStyle = self.bgColour;
+            self.ctx.fillStyle = self.bgColor;
             self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
         },
         renderStartScreen: function() {
             self.renderText("Upload a Cy3 image to get started.");
         },
         renderLoadingScreen: function() {
-            self.ctx.strokeStyle = self.fontOutlineColour;
-            self.ctx.fillStyle = self.fontColour;
+            self.ctx.strokeStyle = self.fontOutlineColor;
+            self.ctx.fillStyle = self.fontColor;
             self.ctx.fillText("Loading...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
             self.ctx.strokeText("Loading...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
         renderErrorScreen: function() {
-            self.ctx.fillStyle = self.fontColour;
-            self.ctx.strokeStyle = self.fontOutlineColour;
+            self.ctx.fillStyle = self.fontColor;
+            self.ctx.strokeStyle = self.fontOutlineColor;
             self.ctx.fillText("Error! Please select and upload a valid jpeg image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
             self.ctx.strokeText("Error! Please select and upload a valid jpeg image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
         renderDetectingScreen: function() {
-            self.ctx.fillStyle = self.fontColour;
-            self.ctx.strokeStyle = self.fontOutlineColour;
+            self.ctx.fillStyle = self.fontColor;
+            self.ctx.strokeStyle = self.fontOutlineColor;
             self.ctx.fillText("Detecting...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
             self.ctx.strokeText("Detecting...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
@@ -74,17 +74,17 @@
 
                     self.ctx.beginPath();
                         if(spot.selected) {
-                            self.ctx.fillStyle = self.selectedSpotColour;
+                            self.ctx.fillStyle = self.selectedSpotColor;
                         }
                         else {
-                            self.ctx.fillStyle = self.spotColour;
+                            self.ctx.fillStyle = self.spotColor;
                         }
                         self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotSize, 0, Math.PI * 2);
                     self.ctx.closePath();
                     self.ctx.fill();
 
                     self.ctx.beginPath();
-                        self.ctx.fillStyle = self.spotMiddleColour;
+                        self.ctx.fillStyle = self.spotMiddleColor;
                         self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotCentreSize, 0, Math.PI * 2);
                     self.ctx.closePath();
                     self.ctx.fill();
@@ -94,7 +94,7 @@
         renderSpotToAdd: function(spot) {
             self.camera.begin();
                 self.ctx.beginPath();
-                    self.ctx.fillStyle = self.selectedSpotColour;
+                    self.ctx.fillStyle = self.selectedSpotColor;
                     self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotSize, 0, Math.PI * 2);
                 self.ctx.closePath();
                 self.ctx.fill();
@@ -102,7 +102,7 @@
         },
         renderCalibrationPoints: function(data) {
             self.camera.begin();
-                self.ctx.strokeStyle = self.calibrationColour.TL;
+                self.ctx.strokeStyle = self.calibrationColor.TL;
                 self.ctx.lineWidth = 20.0;
                 // TL
                 self.ctx.beginPath();
@@ -113,7 +113,7 @@
                 self.ctx.stroke();
                 self.ctx.closePath();
                 // BR
-                self.ctx.strokeStyle = self.calibrationColour.BR;
+                self.ctx.strokeStyle = self.calibrationColor.BR;
                 self.ctx.beginPath();
                 self.ctx.moveTo(data.BR.x, 0);
                 self.ctx.lineTo(data.BR.x, 20000);

@@ -99,7 +99,7 @@ class ImageProcessor:
         brightness = (brightness / 100.0) + 1.0
         contrast = (contrast / 100.0) + 1.0
 
-        # the image is inverted to colour the features darkest
+        # the image is inverted to color the features darkest
         image = ImageOps.invert(image)
 
         # the image enhancers take a copy of the image, not a reference,
@@ -137,7 +137,7 @@ class ImageProcessor:
         return thumbnail
 
     def detect_keypoints(self, image):
-        """This function takes an image and first inverts it (to colour the
+        """This function takes an image and first inverts it (to color the
         features darkest), then applies brightness and contrast (input 
         values from -100 to 100).
         It then uses OpenCV to do threshold the image and do some simple,
