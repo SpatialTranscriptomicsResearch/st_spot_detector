@@ -15,29 +15,29 @@ A modern browser with HTML5 support is required for the front-end interface. The
 ## Usage
 ### Server setup
 1. Create and activate a Python virtual environment 
-```
-pip install virtualenv
-virtualenv venv
-source venv/bin/activate
-```
+    ```
+    pip install virtualenv
+    virtualenv venv
+    source venv/bin/activate
+    ```
 2. Install the dependencies in requirements.txt.
-```
-pip install -r requirements.txt
-```
+    ```
+    pip install -r requirements.txt
+    ```
 3. Run the server
-```
-chmod +x server.py
-./server.py
-```
+    ```
+    chmod +x server.py
+    ./server.py
+    ```
 
 ### Client interface
 1. Upload the desired Cy3 fluorescent image (takes a minute or two)
 2. Drag the blue top left and orange bottom right corners onto the top left and bottom right spots to "frame" the spots
 3. Click "Submit and detect" (will take another minute or two)
 4. Spot adjustment:
-..1. Move around the image with left-click and scroll-wheel to zoom.
-..2. Select spots with right-click and move selected spots with left click, or delete them using the "Delete selected spots button".
-..3. Add additional spots by clicking Add spots and right-clicking where they should be placed (left-click navigates around the image).
+  1. Move around the image with left-click and scroll-wheel to zoom.
+  2. Select spots with right-click and move selected spots with left click, or delete them using the "Delete selected spots button".
+  3. Add additional spots by clicking Add spots and right-clicking where they should be placed (left-click navigates around the image).
 5. Export the spot values by clicking Export.
 
 ## License
