@@ -1,8 +1,2 @@
-angular.module('aligner', [
-    'buttonBar',
-    'viewer',
-    'spotDetector',
-    'spotAdjuster',
-    'spotColor',
-    'core'
+angular.module('st-spots', [
 ]);

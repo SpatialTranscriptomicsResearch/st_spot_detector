@@ -7,18 +7,21 @@
 	<meta name="description" content="Spatial Transcriptomics Alignment Web Tool">
 
     <!-- library css -->
-	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+
     <!-- project css -->
 	<link rel="stylesheet" href="css/stylesheet.css">
 
     <!-- library js -->
-	<script src="bower_components/angular/angular.js"></script>
     <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-    <script src="bower_components/bootstrap/js/dropdown.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js"</script>
 	<script src="js/util/vec2.js"></script>
 
     <!-- project js -->
 	<script src="js/app.module.js"></script>
+    <!--
 	<script src="js/core/core.module.js"></script>
 	<script src="js/spot-detector/spot-detector.module.js"></script>
 	<script src="js/spot-detector/spot-detector.component.js"></script>
@@ -44,26 +47,20 @@
 	<script src="js/viewer/viewer.module.js"></script>
 	<script src="js/viewer/viewer.component.js"></script>
 	<script src="js/viewer/viewer.directive.js"></script>
+    -->
 </head>
 
-<body ng-app='aligner' ng-strict-di='true'>
+<body ng-app='st-spots' ng-strict-di='true'>
+    <!--
     <div id='main-container' class='container-fluid'>
         <button-bar></button-bar>
         <spot-detector></spot-detector>
         <spot-adjuster></spot-adjuster>
         <spot-color></spot-color>
     </div>
-        <viewer></viewer>
+    <viewer></viewer>
+    -->
 </body>
     <script>
-        
-/*
-    var $canvasDiv = $('#canvasdiv');
-    console.log('hej');
-
-    var canvas = document.getElementById("mycanvas");
-    canvas.height = $canvasDiv.innerHeight();
-    canvas.width = $canvasDiv.innerWidth();
-    */
     </script>
 </html>
