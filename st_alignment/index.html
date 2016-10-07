@@ -1,61 +1,94 @@
 <!doctype html>
 
-<html lang="en">
+<html lang='en'>
 <head>
-	<meta charset="utf-8">
+	<meta charset='utf-8'>
 	<title>ST Spot Alignment</title>
-	<meta name="description" content="Spatial Transcriptomics Alignment Web Tool">
+	<meta name='description' content='Spatial Transcriptomics Alignment Web Tool'>
 
     <!-- library css -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css" />
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+	<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css' />
+	<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css' />
 
     <!-- project css -->
-	<link rel="stylesheet" href="css/stylesheet.css">
+	<link rel='stylesheet' href='css/stylesheet.css'>
 
     <!-- library js -->
-    <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js"</script>
-	<script src="js/util/vec2.js"></script>
+    <script src='https://code.jquery.com/jquery-3.1.0.js'></script>
+    <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
+    <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js'</script>
+	<script src='js/util/vec2.js'></script>
 
     <!-- project js -->
-	<script src="js/app.module.js"></script>
-	<script src="js/main.controller.js"></script>
+	<script src='js/app.module.js'></script>
+	<script src='js/main.controller.js'></script>
     <!--
-	<script src="js/core/core.module.js"></script>
-	<script src="js/spot-detector/spot-detector.module.js"></script>
-	<script src="js/spot-detector/spot-detector.component.js"></script>
-	<script src="js/spot-adjuster/spot-adjuster.module.js"></script>
-	<script src="js/spot-adjuster/spot-adjuster.component.js"></script>
-	<script src="js/spot-color/spot-color.module.js"></script>
-	<script src="js/spot-color/spot-color.component.js"></script>
-	<script src="js/button-bar/button-bar.module.js"></script>
-	<script src="js/button-bar/button-bar.component.js"></script>
-	<script src="js/button-bar/image-upload.directive.js"></script>
-	<script src="js/button-bar/export-spots.directive.js"></script>
-	<script src="js/viewer/rendering/scale-manager.js"></script>
-	<script src="js/viewer/rendering/tilemap.js"></script>
-	<script src="js/viewer/rendering/camera.js"></script>
-	<script src="js/viewer/rendering/renderer.js"></script>
-	<script src="js/viewer/rendering/spots.js"></script>
-	<script src="js/viewer/logic/calibrator.js"></script>
-	<script src="js/viewer/logic/keycodes.js"></script>
-	<script src="js/viewer/logic/event-handler.js"></script>
-	<script src="js/viewer/logic/logic-handler.js"></script>
-	<script src="js/viewer/logic/spot-selector.js"></script>
-	<script src="js/viewer/logic/spot-adjuster.js"></script>
-	<script src="js/viewer/viewer.module.js"></script>
-	<script src="js/viewer/viewer.component.js"></script>
-	<script src="js/viewer/viewer.directive.js"></script>
+	<script src='js/core/core.module.js'></script>
+	<script src='js/spot-detector/spot-detector.module.js'></script>
+	<script src='js/spot-detector/spot-detector.component.js'></script>
+	<script src='js/spot-adjuster/spot-adjuster.module.js'></script>
+	<script src='js/spot-adjuster/spot-adjuster.component.js'></script>
+	<script src='js/spot-color/spot-color.module.js'></script>
+	<script src='js/spot-color/spot-color.component.js'></script>
+	<script src='js/button-bar/button-bar.module.js'></script>
+	<script src='js/button-bar/button-bar.component.js'></script>
+	<script src='js/button-bar/image-upload.directive.js'></script>
+	<script src='js/button-bar/export-spots.directive.js'></script>
+	<script src='js/viewer/rendering/scale-manager.js'></script>
+	<script src='js/viewer/rendering/tilemap.js'></script>
+	<script src='js/viewer/rendering/camera.js'></script>
+	<script src='js/viewer/rendering/renderer.js'></script>
+	<script src='js/viewer/rendering/spots.js'></script>
+	<script src='js/viewer/logic/calibrator.js'></script>
+	<script src='js/viewer/logic/keycodes.js'></script>
+	<script src='js/viewer/logic/event-handler.js'></script>
+	<script src='js/viewer/logic/logic-handler.js'></script>
+	<script src='js/viewer/logic/spot-selector.js'></script>
+	<script src='js/viewer/logic/spot-adjuster.js'></script>
+	<script src='js/viewer/viewer.module.js'></script>
+	<script src='js/viewer/viewer.component.js'></script>
+	<script src='js/viewer/viewer.directive.js'></script>
     -->
 </head>
 
 <body ng-app='stSpots' ng-strict-di='true'>
     <div ng-controller='MainController'>
-        {{ state }}
-        <br>
-        Two times <input ng-model='num'> equals {{ double(num) }}
+        <div class='menu-wrapper'>
+            <!-- Menu Bar -->
+            <div class='menu-bar btn-group btn-group-vertical' role='group'>
+                <!-- Uploader -->
+                <label class='btn btn-default btn-lg'>
+                    <span class='glyphicon glyphicon-picture'></span>
+                    <input image-upload type='file' accept='image/jpg, image/jpeg' style='display:none;'>
+                </label>
+                <!-- Detector -->
+                <!--<button export-spots type='button' class='btn btn-default btn-lg'>-->
+                <button type='button' class='btn btn-default btn-lg disabled'>
+                    <span class='glyphicon glyphicon-eye-open'></span>
+                </button>
+                <!-- Adjuster -->
+                <button type='button' class='btn btn-default btn-lg disabled'>
+                    <span class='glyphicon glyphicon-record'></span>
+                </button>
+                <!-- Exporter -->
+                <button type='button' class='btn btn-default btn-lg disabled'>
+                    <span class='glyphicon glyphicon-save'></span>
+                </button>
+                <!-- Help -->
+                <button ng-click='helpButton()' type='button' class='btn btn-default btn-lg'>
+                    <span class='glyphicon glyphicon-question-sign'></span>
+                </button>
+                <!-- Info -->
+                <!-- This opens in a new tab to avoid an in-progress application being aborted -->
+                <a target='_blank' href='https://github.com/SpatialTranscriptomicsResearch/st_aligner/blob/master/README.md' type='button' class='btn btn-default btn-lg'>
+                    <span class='glyphicon glyphicon-info-sign'></span>
+                </a>
+            </div>
+            <!-- Menu Bar Panel -->
+            <div class='panel menu-bar-panel' ng-show='menuBarPanelVisibility'>
+                {{ getPanelText(state, button) }}
+            </div>
+        </div>
     </div>
     <!--
     <div id='main-container' class='container-fluid'>
