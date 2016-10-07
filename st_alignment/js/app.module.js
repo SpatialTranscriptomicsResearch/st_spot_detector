@@ -1,2 +1,4 @@
-angular.module('st-spots', [
+'use strict';
+
+angular.module('stSpots', [
 ]);

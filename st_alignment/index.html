@@ -21,6 +21,7 @@
 
     <!-- project js -->
 	<script src="js/app.module.js"></script>
+	<script src="js/main.controller.js"></script>
     <!--
 	<script src="js/core/core.module.js"></script>
 	<script src="js/spot-detector/spot-detector.module.js"></script>
@@ -50,7 +51,12 @@
     -->
 </head>
 
-<body ng-app='st-spots' ng-strict-di='true'>
+<body ng-app='stSpots' ng-strict-di='true'>
+    <div ng-controller='MainController'>
+        {{ state }}
+        <br>
+        Two times <input ng-model='num'> equals {{ double(num) }}
+    </div>
     <!--
     <div id='main-container' class='container-fluid'>
         <button-bar></button-bar>
