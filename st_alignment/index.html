@@ -88,7 +88,7 @@
             </div>
             <!-- Menu Bar Panel -->
             <div ng-show='visibility.menuBarPanel' class='panel menu-bar-panel'>
-                {{ getPanelText(things) }}
+                {{ getPanelText(data.button, data.state) }}
             </div>
         </div>
         <div class='spinner' ng-show='visibility.spinner'>
@@ -106,7 +106,7 @@
                 <div class="sk-circle11 sk-circle"></div>
                 <div class="sk-circle12 sk-circle"></div>
             </div>
-            Processing image. This may take a few minutes.
+            {{ getSpinnerText(data.state) }}
         </div>
     </div>
     <!--

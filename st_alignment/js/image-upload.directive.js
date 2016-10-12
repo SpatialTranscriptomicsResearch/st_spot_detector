@@ -24,11 +24,9 @@ angular.module('stSpots')
 
                         // function which runs after loading
                         reader.addEventListener('load', function() {
-                            var imageData = reader.result;
-                            var data = {
-                                image: imageData
-                            };
-                            //$rootScope.$broadcast('clientValid', data);
+                            scope.$apply(function() {
+                                scope.data.image = reader.result;
+                            });
                         }, false);
                         if(img) {
                             reader.readAsDataURL(img);

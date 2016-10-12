@@ -3,7 +3,8 @@
 angular.module('stSpots')
     .controller('MainController', [
         '$scope',
-        function($scope) {
+        '$http',
+        function($scope, $http) {
             const helpTexts = {
                 'state_start':        "Click on the picture icon to select and upload a Cy3 fluorescence image.",
                 'state_upload':       "",
@@ -12,15 +13,20 @@ angular.module('stSpots')
                 'state_detection':    "",
                 'state_adjustment':   "Right click to select spots. Hold in shift to add to a selection."
             };
+            const spinnerTexts = {
+                'state_start':        "",
+                'state_upload':       "Processing image. This may take a few minutes.",
+                'state_predetection': "",
+                'state_detection':    "Detecting spots. This may take a few minutes.",
+                'state_adjustment':   ""
+            };
 
-            $scope.things = {
+            $scope.data = {
                 state: 'state_start',
-                button: 'button_help'
+                button: 'button_help',
+                sessionId: '',
+                image: ''
             }
-            /*
-            $scope.state = 'state_start';
-            $scope.button = "button_help";
-            */
 
             // visibility bools
             $scope.visibility = {
@@ -29,32 +35,81 @@ angular.module('stSpots')
                 spinner: false
             }
 
-            $scope.toggleMenuBarVisibility = function() {
+            var toggleMenuBarPanelVisibility = function() {
                 $scope.visibility.menuBarPanel = !$scope.visibility.menuBarPanel;
-            };
-            $scope.toggleSpinnerVisibility = function() {
-                $scope.visibility.spinner = !$scope.visibility.spinner;
             };
 
             $scope.updateState = function(new_state) {
-                $scope.things.state = new_state;
-                if($scope.things.state === 'state_upload') {
-                    $scope.visibility.menuBar = false;
-                    $scope.visibility.spinner = true;
+                $scope.data.state = new_state;
+                if($scope.data.state === 'state_start') {
+                    // reinitialise things
+                }
+                else if($scope.data.state === 'state_upload') {
+                    doUploadingThings();
+                }
+                else if($scope.data.state === 'state_predetection') {
+                    $scope.visibility.menuBar = true;
+                    $scope.visibility.spinner = false;
                 }
             };
 
             $scope.helpButton = function() {
-                $scope.toggleMenuBarVisibility();
-                $scope.things.button = "button_help";
+                toggleMenuBarPanelVisibility();
+                $scope.data.button = "button_help";
             };
 
-            $scope.getPanelText = function(things) {
+            $scope.getPanelText = function(button, state) {
                 var text = "";
-                if(things.button == "button_help") {
-                    text = helpTexts[things.state];
+                if(button == "button_help") {
+                    text = helpTexts[state];
                 }
                 return text;
             };
+
+            $scope.getSpinnerText = function(state) {
+                return spinnerTexts[state];
+            };
+
+            var doUploadingThings = function() {
+                $scope.visibility.menuBar = false;
+                $scope.visibility.spinner = true;
+
+                var getTileData = function() {
+                    var tileSuccessCallback = function(response) {
+
+                        //tilemap.loadTilemap(response.data);
+                        //scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
+                        //tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
+                        //images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
+
+                        //logicHandler.currentState = logicHandler.state.calibrate;
+                        //getThumbnail();
+                        //updateCanvas();
+                        $scope.updateState('state_predetection');
+                    };
+                    var tileErrorCallback = function(response) {
+                        console.error(response.data);
+                        //$rootScope.$broadcast('imageLoadingError', response.data);
+                    };
+                    $http.post('../tiles', {image: $scope.data.image, session_id: $scope.data.sessionId})
+                        .then(tileSuccessCallback, tileErrorCallback);
+                };
+
+                var getSessionId = function() {
+                    var sessionSuccessCallback = function(response) {
+                        $scope.data.sessionId = response.data;
+                        console.log("My session ID is " + $scope.data.sessionId);
+                        getTileData();
+                    };
+                    var sessionErrorCallback = function(response) {
+                        console.error(response.data);
+                        //$rootScope.$broadcast('imageLoadingError', response.data);
+                    };
+                    $http.get('../session_id')
+                        .then(sessionSuccessCallback, sessionErrorCallback);
+                };
+                getSessionId();
+            };
         }
     ]);
+
