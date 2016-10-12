@@ -4,13 +4,6 @@ angular.module('stSpots')
     .controller('MainController', [
         '$scope',
         function($scope) {
-            const states = {
-                'state_start':        "state_start",
-                'state_upload':       "state_upload",
-                'state_predetection': "state_predetection",
-                'state_detection':    "state_detection",
-                'state_adjustment':   "state_adjustment"
-            };
             const helpTexts = {
                 'state_start':        "Click on the picture icon to select and upload a Cy3 fluorescence image.",
                 'state_upload':       "",
@@ -20,11 +13,21 @@ angular.module('stSpots')
                 'state_adjustment':   "Right click to select spots. Hold in shift to add to a selection."
             };
 
-            $scope.state = states.state_start;
+            $scope.state = 'state_start';
             $scope.button = "button_help";
-            $scope.menuBarPanelVisibility = true;
+
+            $scope.menuBarVisibility = true;
+            $scope.menuBarPanelVisibility = false;
+
+            $scope.toggleMenuBarVisibility = function() {
+                $scope.menuBarPanelVisibility = !$scope.menuBarPanelVisibility;
+            };
+            $scope.updateState = function(new_state) {
+                $scope.state = new_state;
+            };
 
             $scope.helpButton = function() {
+                $scope.toggleMenuBarVisibility();
                 $scope.button = "button_help";
             };
 

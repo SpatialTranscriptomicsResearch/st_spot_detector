@@ -22,6 +22,7 @@
     <!-- project js -->
 	<script src='js/app.module.js'></script>
 	<script src='js/main.controller.js'></script>
+	<script src='js/image-upload.directive.js'></script>
     <!--
 	<script src='js/core/core.module.js'></script>
 	<script src='js/spot-detector/spot-detector.module.js'></script>
@@ -55,7 +56,7 @@
     <div ng-controller='MainController'>
         <div class='menu-wrapper'>
             <!-- Menu Bar -->
-            <div class='menu-bar btn-group btn-group-vertical' role='group'>
+            <div ng-show='menuBarVisibility' class='menu-bar btn-group btn-group-vertical' role='group'>
                 <!-- Uploader -->
                 <label class='btn btn-default btn-lg'>
                     <span class='glyphicon glyphicon-picture'></span>
@@ -85,7 +86,7 @@
                 </a>
             </div>
             <!-- Menu Bar Panel -->
-            <div class='panel menu-bar-panel' ng-show='menuBarPanelVisibility'>
+            <div ng-show='menuBarPanelVisibility' class='panel menu-bar-panel'>
                 {{ getPanelText(state, button) }}
             </div>
         </div>
