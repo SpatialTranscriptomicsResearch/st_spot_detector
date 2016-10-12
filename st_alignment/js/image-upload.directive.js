@@ -14,7 +14,11 @@ angular.module('stSpots')
                 elem.bind('change', function(event) {
                     // checks that it hasn't gone from file to empty
                     if(event.target.files.length != 0) {
-                        scope.updateState('state_upload');
+                        scope.$apply(
+                            // $apply is required here because this function is executed
+                            // outside of the normal AngularJS context, i.e. elem.bind()
+                            scope.updateState('state_upload')
+                        );
                         var img = event.target.files[0];
                         var reader = new FileReader();
 

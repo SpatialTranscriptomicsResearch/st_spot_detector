@@ -13,28 +13,51 @@ angular.module('stSpots')
                 'state_adjustment':   "Right click to select spots. Hold in shift to add to a selection."
             };
 
+            $scope.things = {
+                state: 'state_start',
+                button: 'button_help'
+            }
+            /*
             $scope.state = 'state_start';
             $scope.button = "button_help";
+            */
 
-            $scope.menuBarVisibility = true;
-            $scope.menuBarPanelVisibility = false;
+            // visibility bools
+            $scope.visibility = {
+                menuBar: true,
+                menuBarPanel: false,
+                spinner: false
+            }
 
             $scope.toggleMenuBarVisibility = function() {
-                $scope.menuBarPanelVisibility = !$scope.menuBarPanelVisibility;
+                $scope.visibility.menuBarPanel = !$scope.visibility.menuBarPanel;
             };
+            $scope.toggleSpinnerVisibility = function() {
+                $scope.visibility.spinner = !$scope.visibility.spinner;
+            };
+
             $scope.updateState = function(new_state) {
-                $scope.state = new_state;
+                $scope.things.state = new_state;
+                console.log("thes state is now: " + $scope.things.state);
+                if($scope.things.state === 'state_upload') {
+                    $scope.visibility.menuBar = false;
+                    $scope.visibility.spinner = true;
+                    /*
+                    console.log($scope.visibility.menuBar);
+                    console.log($scope.visibility.spinner);
+                    */
+                }
             };
 
             $scope.helpButton = function() {
                 $scope.toggleMenuBarVisibility();
-                $scope.button = "button_help";
+                $scope.things.button = "button_help";
             };
 
-            $scope.getPanelText = function(state, button) {
+            $scope.getPanelText = function(things) {
                 var text = "";
-                if(button == "button_help") {
-                    text = helpTexts[state];
+                if(things.button == "button_help") {
+                    text = helpTexts[things.state];
                 }
                 return text;
             };
