@@ -12,6 +12,12 @@ button-bar {
     /*top: 5px;*/
 }
 
+.spinner {
+    width: 600px;
+    margin: 200px auto;
+    text-align: center;
+}
+
 /*
 canvas {
     cursor: -webkit-grab;

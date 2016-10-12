@@ -38,14 +38,9 @@ angular.module('stSpots')
 
             $scope.updateState = function(new_state) {
                 $scope.things.state = new_state;
-                console.log("thes state is now: " + $scope.things.state);
                 if($scope.things.state === 'state_upload') {
                     $scope.visibility.menuBar = false;
                     $scope.visibility.spinner = true;
-                    /*
-                    console.log($scope.visibility.menuBar);
-                    console.log($scope.visibility.spinner);
-                    */
                 }
             };
 
