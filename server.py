@@ -56,7 +56,9 @@ def get_spots():
         return spots.wrap_spots()
     else:
         response.status = 400
-        return 'Session ID expired. Please try again.'
+        error_message = 'Session ID expired. Please try again.'
+        print(session_id[:20] + ": Error. " + error_message)
+        return error_message
     
 @get('/thumbnail')
 def process_thumbnail():
@@ -77,7 +79,9 @@ def process_thumbnail():
         }
     else:
         response.status = 400
-        return 'Session ID expired. Please try again.'
+        error_message = 'Session ID expired. Please try again.'
+        print(session_id[:20] + ": Error. " + error_message)
+        return error_message
     return thumbnail_dictionary
 
 @post('/tiles')
@@ -109,10 +113,14 @@ def get_tiles():
             print(session_id[:20] + ": Image tiling complete.")
         else:
             response.status = 400
-            return 'Invalid image. Please upload a jpeg image.'
+            error_message = 'Invalid image. Please upload a jpeg image.'
+            print(session_id[:20] + ": Error. " + error_message)
+            return error_message
     else:
         response.status = 400
-        return 'Session ID expired. Please try again.'
+        error_message = 'Session ID expired. Please try again.'
+        print(session_id[:20] + ": Error. " + error_message)
+        return error_message
 
     return tiles.wrapped_tiles()
 
