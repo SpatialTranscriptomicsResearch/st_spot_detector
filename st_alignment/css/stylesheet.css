@@ -1,3 +1,10 @@
+html {
+    /*
+    height: 100%;
+    width: 100%;
+    */
+}
+
 body {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -6,6 +13,10 @@ body {
     -ms-user-select: none;
     user-select: none;
     background-color: #eeeeee;
+    /*
+    height: 100%;
+    width: 100%;
+    */
 }
 
 button-bar {
@@ -18,18 +29,22 @@ button-bar {
     text-align: center;
 }
 
-/*
 canvas {
+    /*
     cursor: -webkit-grab;
     cursor:-moz-grab;
-    background-color: white;
-    margin: 10px 20px;
+    */
+    background-color: pink;
+    display: block;
 }
 canvas:active {
+    /*
     cursor: -webkit-grabbing;
     cursor:-moz-grabbing;
+    */
 }
 
+/*
 .spotExample {
     margin: 10px;
     width: 70px;
