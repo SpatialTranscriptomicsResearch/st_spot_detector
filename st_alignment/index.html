@@ -108,6 +108,9 @@
             </div>
             {{ getSpinnerText(data.state) }}
         </div>
+        <div class='error-text' ng-show='visibility.errorText'>
+            An error occured! {{ data.errorText }}
+        </div>
     </div>
     <!--
     <div id='main-container' class='container-fluid'>

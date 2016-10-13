@@ -8,31 +8,36 @@ angular.module('stSpots')
             const helpTexts = {
                 'state_start':        "Click on the picture icon to select and upload a Cy3 fluorescence image.",
                 'state_upload':       "",
-                'state_predetection': "Position the frame to align with the outermost spots. Adjust brightness and contrast for optimal spot detection."
+                'state_predetection': "Position the frame to align with the outermost spots.\n"
+                                      + "Adjust brightness and contrast for optimal spot detection.\n"
                                       + "Click on detect to begin spot detection.",
                 'state_detection':    "",
-                'state_adjustment':   "Right click to select spots. Hold in shift to add to a selection."
+                'state_adjustment':   "Right click to select spots. Hold in shift to add to a selection.",
+                'state_error':        "An error occured. Please try again."
             };
             const spinnerTexts = {
                 'state_start':        "",
                 'state_upload':       "Processing image. This may take a few minutes.",
                 'state_predetection': "",
                 'state_detection':    "Detecting spots. This may take a few minutes.",
-                'state_adjustment':   ""
+                'state_adjustment':   "",
+                'state_error':        ""
             };
 
             $scope.data = {
                 state: 'state_start',
                 button: 'button_help',
                 sessionId: '',
-                image: ''
+                image: '',
+                errorText: ''
             }
 
             // visibility bools
             $scope.visibility = {
                 menuBar: true,
                 menuBarPanel: false,
-                spinner: false
+                spinner: false,
+                error: false
             }
 
             var toggleMenuBarPanelVisibility = function() {
@@ -50,6 +55,12 @@ angular.module('stSpots')
                 else if($scope.data.state === 'state_predetection') {
                     $scope.visibility.menuBar = true;
                     $scope.visibility.spinner = false;
+                    $scope.visibility.errorText = false;
+                }
+                else if($scope.data.state === 'state_error') {
+                    $scope.visibility.menuBar = true;
+                    $scope.visibility.spinner = false;
+                    $scope.visibility.errorText = true;
                 }
             };
 
@@ -73,6 +84,7 @@ angular.module('stSpots')
             var doUploadingThings = function() {
                 $scope.visibility.menuBar = false;
                 $scope.visibility.spinner = true;
+                $scope.visibility.errorText = false;
 
                 var getTileData = function() {
                     var tileSuccessCallback = function(response) {
@@ -88,8 +100,9 @@ angular.module('stSpots')
                         $scope.updateState('state_predetection');
                     };
                     var tileErrorCallback = function(response) {
+                        $scope.data.errorText = response.data;
                         console.error(response.data);
-                        //$rootScope.$broadcast('imageLoadingError', response.data);
+                        $scope.updateState('state_error');
                     };
                     $http.post('../tiles', {image: $scope.data.image, session_id: $scope.data.sessionId})
                         .then(tileSuccessCallback, tileErrorCallback);
@@ -102,8 +115,9 @@ angular.module('stSpots')
                         getTileData();
                     };
                     var sessionErrorCallback = function(response) {
+                        $scope.data.errorText = response.data;
                         console.error(response.data);
-                        //$rootScope.$broadcast('imageLoadingError', response.data);
+                        $scope.updateState('state_error');
                     };
                     $http.get('../session_id')
                         .then(sessionSuccessCallback, sessionErrorCallback);

@@ -12,7 +12,7 @@ button-bar {
     /*top: 5px;*/
 }
 
-.spinner {
+.spinner, .error-text {
     width: 600px;
     margin: 200px auto;
     text-align: center;
