@@ -50,7 +50,9 @@ angular.module('stSpots')
                     // reinitialise things
                 }
                 else if($scope.data.state === 'state_upload') {
-                    doUploadingThings();
+                    $scope.visibility.menuBar = false;
+                    $scope.visibility.spinner = true;
+                    $scope.visibility.errorText = false;
                 }
                 else if($scope.data.state === 'state_predetection') {
                     $scope.visibility.menuBar = true;
@@ -81,11 +83,7 @@ angular.module('stSpots')
                 return spinnerTexts[state];
             };
 
-            var doUploadingThings = function() {
-                $scope.visibility.menuBar = false;
-                $scope.visibility.spinner = true;
-                $scope.visibility.errorText = false;
-
+            $scope.uploadImage = function() {
                 var getTileData = function() {
                     var tileSuccessCallback = function(response) {
 
@@ -104,6 +102,7 @@ angular.module('stSpots')
                         console.error(response.data);
                         $scope.updateState('state_error');
                     };
+                    console.log('now I am sending data');
                     $http.post('../tiles', {image: $scope.data.image, session_id: $scope.data.sessionId})
                         .then(tileSuccessCallback, tileErrorCallback);
                 };

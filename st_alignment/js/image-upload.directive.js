@@ -24,8 +24,10 @@ angular.module('stSpots')
 
                         // function which runs after loading
                         reader.addEventListener('load', function() {
+                            console.log('finished loading');
                             scope.$apply(function() {
                                 scope.data.image = reader.result;
+                                scope.uploadImage();
                             });
                         }, false);
                         if(img) {
