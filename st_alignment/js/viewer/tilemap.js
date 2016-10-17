@@ -2,9 +2,12 @@
 
 (function() {
     var self;
-    var Tilemap = function(tilemapLevels) {
+    var Tilemap = function() {
         self = this;
-        self.loadTilemap = function(tilemap) {
+    };
+
+    Tilemap.prototype = {
+        loadTilemap: function(tilemap) {
             self.tilemapLevels = tilemap.tilemapLevels;
             self.tilesize = Vec2.Vec2(tilemap.tileWidth, tilemap.tileHeight);
             self.tilemaps = {};
@@ -23,11 +26,7 @@
                     self.tilemaps[tilemapLevel] = newTilemap;
                 } 
             }
-
-        }
-    };
-
-    Tilemap.prototype = {
+        },
         getRenderableImages: function(tilePosition, tilemapLevel, radius) {
             radius = radius || 3;
             var tilePositions = self.getSurroundingTilePositions(tilePosition, tilemapLevel, radius);

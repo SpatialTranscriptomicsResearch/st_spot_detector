@@ -140,14 +140,7 @@ angular.module('stSpots')
                 var getTileData = function() {
                     var tileSuccessCallback = function(response) {
 
-                        //tilemap.loadTilemap(response.data);
-                        //scaleManager = new ScaleManager(tilemap.tilemapLevels, tilemapLevel);
-                        //tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
-                        //images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
-
-                        //logicHandler.currentState = logicHandler.state.calibrate;
-                        //getThumbnail();
-                        //updateCanvas();
+                        $scope.receiveTilemap(response.data);
                         $scope.updateState('state_predetection');
                     };
                     var tileErrorCallback = function(response) {

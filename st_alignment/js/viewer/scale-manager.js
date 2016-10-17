@@ -1,16 +1,17 @@
 'use strict';
 
 (function() {
-  
-    var ScaleManager = function(tilemapLevels, tilemapLevel) {
-        this.scaleLevels = this.getScaleLevels(tilemapLevels);
-
-        /* the scale checkpoint level at which everything is rendered and scaled
-           scaled around but is *not* necessarily the same as the camera scale   */
-        this.currentScaleLevel = 1 / tilemapLevel;
+    var ScaleManager = function() {
     };
   
     ScaleManager.prototype = {
+        setTilemapLevels: function(tilemapLevels, tilemapLevel) {
+            this.scaleLevels = this.getScaleLevels(tilemapLevels);
+
+            /* the scale checkpoint level at which everything is rendered and scaled
+               scaled around but is *not* necessarily the same as the camera scale */
+            this.currentScaleLevel = 1 / tilemapLevel;
+        },
         getScaleLevels: function(tilemapLevels) {
             /* the possible scale levels based on the tilemap levels; i.e.
                the scales at which the various tilemaps should be rendered */
