@@ -10,8 +10,8 @@ angular.module('stSpots')
             const helpTexts = {
                 'state_start':        "Click on the picture icon to select and upload a Cy3 fluorescence image.",
                 'state_upload':       "",
-                'state_predetection': "Position the frame to align with the outermost spots.\n"
-                                      + "Adjust brightness and contrast for optimal spot detection.\n"
+                'state_predetection': "Position the frame to align with the outermost spots.<br>"
+                                      + "Adjust brightness and contrast for optimal spot detection.<br>"
                                       + "Click on detect to begin spot detection.",
                 'state_detection':    "",
                 'state_adjustment':   "Right click to select spots. Hold in shift to add to a selection.",
@@ -48,7 +48,7 @@ angular.module('stSpots')
             // strings which determine the clickable state of the menu bar buttons 
             $scope.menuButtonDisabled = {
                 uploader: '',
-                detector: 'disabled',
+                detector: '',
                 adjuster: 'disabled',
                 exporter: 'disabled',
                 help: '',
@@ -128,7 +128,14 @@ angular.module('stSpots')
                     text = helpTexts[state];
                 }
                 else if(button == "button_detector") {
-                    text = "Detection mode.";
+                    text = "<form name='spotDetectorForm'>"
+                         +     "<div class='input-group'>"
+                         +         "<span class='input-group-addon'>Array size</span>"
+                         +         "<input type='number' min='0' step='1'/>"
+                         +         "<input type='number' min='0' step='1'/>"
+                         +     "</div>"
+                         +     "<button>Submit and detect</button>"
+                         + "</form>"
                 }
                 text = $sce.trustAsHtml(text);
                 return text;
