@@ -32,6 +32,8 @@
 	<script src='js/main.controller.js'></script>
 	<script src='js/image-upload.directive.js'></script>
 	<script src='js/viewer.directive.js'></script>
+	<script src='js/viewer/logic/calibrator.js'></script>
+
     <!--
 	<script src='js/core/core.module.js'></script>
 	<script src='js/spot-detector/spot-detector.module.js'></script>
@@ -99,8 +101,7 @@
                 </a>
             </div>
             <!-- Menu Bar Panel -->
-            <div ng-show='visible.menuBarPanel' class='panel menu-bar-panel'>
-                {{ getPanelText(data.button, data.state) }}
+            <div ng-show='visible.menuBarPanel' ng-bind-html='getPanelText(data.button, data.state)' class='panel menu-bar-panel'>
             </div>
         </div>
         <div class='spinner' ng-show='visible.spinner'>

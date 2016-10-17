@@ -4,7 +4,8 @@ angular.module('stSpots')
     .controller('MainController', [
         '$scope',
         '$http',
-        function($scope, $http) {
+        '$sce',
+        function($scope, $http, $sce) {
             // texts to display in the menu bar panel when clicking the help button
             const helpTexts = {
                 'state_start':        "Click on the picture icon to select and upload a Cy3 fluorescence image.",
@@ -129,6 +130,7 @@ angular.module('stSpots')
                 else if(button == "button_detector") {
                     text = "Detection mode.";
                 }
+                text = $sce.trustAsHtml(text);
                 return text;
             };
 

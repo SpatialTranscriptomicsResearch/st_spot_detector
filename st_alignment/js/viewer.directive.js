@@ -21,10 +21,14 @@ angular.module('stSpots')
 
                     var tilemapLevel = 20;
                     var tilePosition;
+                    // TODO: take into account canvas size, in order to centre the image
+                    // (as opposed to having it in the top left corner)
                     var cameraPosition = {x: (ctx.canvas.width  / 2) * tilemapLevel,
                                           y: (ctx.canvas.height / 2) * tilemapLevel};
                     var camera = new Camera(ctx, cameraPosition, 1 / tilemapLevel);
                     var renderer = new Renderer(ctx, camera);
+
+                    var calibrator = new Calibrator(camera);
 
                     var images = {
                         images: '',
@@ -43,7 +47,6 @@ angular.module('stSpots')
                     }
 
                     function renderCalibrationState() {
-                        console.log('hejjj');
                         renderer.clearCanvas();
 
                         scaleManager.updateScaleLevel(camera.scale);
@@ -52,7 +55,7 @@ angular.module('stSpots')
                         images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
                         renderer.renderImages(images.images); 
 
-                        //renderer.renderCalibrationPoints(calibrator.calibrationData);
+                        renderer.renderCalibrationPoints(calibrator.calibrationData);
                         //$rootScope.$broadcast('calibratorAdjusted', calibrator.calibrationData);
                     }
 
