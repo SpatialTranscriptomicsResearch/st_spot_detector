@@ -18,12 +18,19 @@
     <script src='https://code.jquery.com/jquery-3.1.0.js'></script>
     <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
     <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js'</script>
-	<script src='js/util/vec2.js'></script>
 
     <!-- project js -->
+    <!-- viewer utility classes -->
+	<script src='js/viewer/scale-manager.js'></script>
+	<script src='js/viewer/tilemap.js'></script>
+	<script src='js/viewer/camera.js'></script>
+	<script src='js/viewer/renderer.js'></script>
+
+    <!-- angular app files -->
 	<script src='js/app.module.js'></script>
 	<script src='js/main.controller.js'></script>
 	<script src='js/image-upload.directive.js'></script>
+	<script src='js/viewer.directive.js'></script>
     <!--
 	<script src='js/core/core.module.js'></script>
 	<script src='js/spot-detector/spot-detector.module.js'></script>
@@ -56,10 +63,10 @@
 <body ng-app='stSpots' ng-strict-di='true'>
     <div ng-controller='MainController'>
         <!--<canvas id='my-canvas' viewer-canvas ng-keypress='changed($event)' width=100% height=100%>-->
-        <canvas viewer width=100% height=100%>
+        <canvas viewer ng-show='visible.canvas'>
             If you're seeing this message, then either HTML5 canvasses are not supported in your browser, or you have JavaScript disabled.
         </canvas>
-        <div ng-show='visibility.menuBar' class='menu-wrapper'>
+        <div ng-show='visible.menuBar' class='menu-wrapper'>
             <!-- Menu Bar -->
             <div class='menu-bar btn-group btn-group-vertical' role='group'>
                 <!-- Uploader -->
@@ -69,19 +76,19 @@
                 </label>
                 <!-- Detector -->
                 <!--<button export-spots type='button' class='btn btn-default btn-lg'>-->
-                <button type='button' class='btn btn-default btn-lg disabled'>
+                <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='menuButtonDisabled.detector' class='btn btn-default btn-lg'>
                     <span class='glyphicon glyphicon-eye-open'></span>
                 </button>
                 <!-- Adjuster -->
-                <button type='button' class='btn btn-default btn-lg disabled'>
+                <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='menuButtonDisabled.adjuster' class='btn btn-default btn-lg'>
                     <span class='glyphicon glyphicon-record'></span>
                 </button>
                 <!-- Exporter -->
-                <button type='button' class='btn btn-default btn-lg disabled'>
+                <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='menuButtonDisabled.exporter' class='btn btn-default btn-lg'>
                     <span class='glyphicon glyphicon-save'></span>
                 </button>
                 <!-- Help -->
-                <button ng-click='helpButton()' type='button' class='btn btn-default btn-lg'>
+                <button ng-click='menuButtonClick("button_help")' type='button' class='btn btn-default btn-lg'>
                     <span class='glyphicon glyphicon-question-sign'></span>
                 </button>
                 <!-- Info -->
@@ -91,11 +98,11 @@
                 </a>
             </div>
             <!-- Menu Bar Panel -->
-            <div ng-show='visibility.menuBarPanel' class='panel menu-bar-panel'>
+            <div ng-show='visible.menuBarPanel' class='panel menu-bar-panel'>
                 {{ getPanelText(data.button, data.state) }}
             </div>
         </div>
-        <div class='spinner' ng-show='visibility.spinner'>
+        <div class='spinner' ng-show='visible.spinner'>
             <div class="sk-fading-circle">
                 <div class="sk-circle1  sk-circle"></div>
                 <div class="sk-circle2  sk-circle"></div>
@@ -112,7 +119,7 @@
             </div>
             {{ getSpinnerText(data.state) }}
         </div>
-        <div class='error-text' ng-show='visibility.errorText'>
+        <div class='error-text' ng-show='visible.errorText'>
             An error occured! {{ data.errorText }}
         </div>
     </div>

@@ -5,9 +5,7 @@
 
 angular.module('stSpots')
     .directive('imageUpload', [
-        '$rootScope',
-        '$http',
-        function($http) {
+        function() {
             var link = function(scope, elem, attrs) {
                 // this is triggered when the state of the input button is changed;
                 // e.g. it was empty but then a file has been selected
@@ -24,7 +22,6 @@ angular.module('stSpots')
 
                         // function which runs after loading
                         reader.addEventListener('load', function() {
-                            console.log('finished loading');
                             scope.$apply(function() {
                                 scope.data.image = reader.result;
                                 scope.uploadImage();
@@ -38,7 +35,7 @@ angular.module('stSpots')
             };
             return {
                 restrict: 'A',
-                scope: true,
+                scope: false,
                 link: link
             };
         }

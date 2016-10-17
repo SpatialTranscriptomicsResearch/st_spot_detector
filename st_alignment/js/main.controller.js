@@ -5,6 +5,7 @@ angular.module('stSpots')
         '$scope',
         '$http',
         function($scope, $http) {
+            // texts to display in the menu bar panel when clicking the help button
             const helpTexts = {
                 'state_start':        "Click on the picture icon to select and upload a Cy3 fluorescence image.",
                 'state_upload':       "",
@@ -15,6 +16,8 @@ angular.module('stSpots')
                 'state_adjustment':   "Right click to select spots. Hold in shift to add to a selection.",
                 'state_error':        "An error occured. Please try again."
             };
+
+            // texts to display underneath the spinner while loading
             const spinnerTexts = {
                 'state_start':        "",
                 'state_upload':       "Processing image. This may take a few minutes.",
@@ -30,18 +33,36 @@ angular.module('stSpots')
                 sessionId: '',
                 image: '',
                 errorText: ''
-            }
+            };
 
-            // visibility bools
-            $scope.visibility = {
+            // visible bools
+            $scope.visible = {
                 menuBar: true,
                 menuBarPanel: false,
                 spinner: false,
+                canvas: true,
                 error: false
-            }
+            };
 
-            var toggleMenuBarPanelVisibility = function() {
-                $scope.visibility.menuBarPanel = !$scope.visibility.menuBarPanel;
+            // strings which determine the clickable state of the menu bar buttons 
+            $scope.menuButtonDisabled = {
+                uploader: '',
+                detector: 'disabled',
+                adjuster: 'disabled',
+                exporter: 'disabled',
+                help: '',
+                info: ''
+            };
+
+            var toggleMenuBarPanelVisibility = function(previousButton, thisButton) {
+                // the panel is closed if the same button is pressed again
+                // but stays open otherwise
+                if(previousButton != thisButton) {
+                    $scope.visible.menuBarPanel = true;
+                }
+                else {
+                    $scope.visible.menuBarPanel = !$scope.visible.menuBarPanel;
+                }
             };
 
             $scope.updateState = function(new_state) {
@@ -50,31 +71,63 @@ angular.module('stSpots')
                     // reinitialise things
                 }
                 else if($scope.data.state === 'state_upload') {
-                    $scope.visibility.menuBar = false;
-                    $scope.visibility.spinner = true;
-                    $scope.visibility.errorText = false;
+                    $scope.visible.menuBar = false;
+                    $scope.visible.spinner = true;
+                    $scope.visible.canvas = false;
+                    $scope.visible.errorText = false;
                 }
                 else if($scope.data.state === 'state_predetection') {
-                    $scope.visibility.menuBar = true;
-                    $scope.visibility.spinner = false;
-                    $scope.visibility.errorText = false;
+                    $scope.visible.menuBar = true;
+                    $scope.visible.spinner = false;
+                    $scope.visible.canvas = true;
+                    $scope.visible.errorText = false;
+
+                    $scope.menuButtonDisabled.detector = '';
+                    $scope.data.button = "button_detector";
+                    toggleMenuBarPanelVisibility();
                 }
                 else if($scope.data.state === 'state_error') {
-                    $scope.visibility.menuBar = true;
-                    $scope.visibility.spinner = false;
-                    $scope.visibility.errorText = true;
+                    $scope.visible.menuBar = true;
+                    $scope.visible.spinner = false;
+                    $scope.visible.canvas = false;
+                    $scope.visible.errorText = true;
                 }
             };
 
-            $scope.helpButton = function() {
-                toggleMenuBarPanelVisibility();
-                $scope.data.button = "button_help";
+            $scope.checkDisabled = function(state) {
+                if(state === 'state_start') {
+                    // reinitialise things
+                }
+                else if(state === 'state_upload') {
+                    $scope.visible.menuBar = false;
+                    $scope.visible.spinner = true;
+                    $scope.visible.errorText = false;
+                }
+                else if(state === 'state_predetection') {
+                    $scope.visible.menuBar = true;
+                    $scope.visible.spinner = false;
+                    $scope.visible.errorText = false;
+                    // set 
+                }
+                else if(state === 'state_error') {
+                    $scope.visible.menuBar = true;
+                    $scope.visible.spinner = false;
+                    $scope.visible.errorText = true;
+                }
+            };
+
+            $scope.menuButtonClick = function(button) {
+                toggleMenuBarPanelVisibility($scope.data.button, button);
+                $scope.data.button = button;
             };
 
             $scope.getPanelText = function(button, state) {
                 var text = "";
                 if(button == "button_help") {
                     text = helpTexts[state];
+                }
+                else if(button == "button_detector") {
+                    text = "Detection mode.";
                 }
                 return text;
             };
@@ -102,7 +155,6 @@ angular.module('stSpots')
                         console.error(response.data);
                         $scope.updateState('state_error');
                     };
-                    console.log('now I am sending data');
                     $http.post('../tiles', {image: $scope.data.image, session_id: $scope.data.sessionId})
                         .then(tileSuccessCallback, tileErrorCallback);
                 };
@@ -110,7 +162,6 @@ angular.module('stSpots')
                 var getSessionId = function() {
                     var sessionSuccessCallback = function(response) {
                         $scope.data.sessionId = response.data;
-                        console.log("My session ID is " + $scope.data.sessionId);
                         getTileData();
                     };
                     var sessionErrorCallback = function(response) {

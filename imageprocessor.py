@@ -22,9 +22,6 @@ class ImageProcessor:
 
     def validate_jpeg_URI(self, jpeg_URI):
         """Checks that it is a valid base64-encoded jpeg URI."""
-        print(self.URI_header)
-        print('hej')
-        print(jpeg_URI)
         valid = (jpeg_URI.find(self.URI_header) == 0)
         return valid
 
