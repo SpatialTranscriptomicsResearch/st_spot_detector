@@ -19,46 +19,22 @@
             TL: 'cyan',
             BR: 'orange'
         }
+        self.calibrationLineWidth = 60.0;
+        self.calibrationLineWidthHighlighted = 10.0;
         self.spotSize = 110;
         self.spotCentreSize = 4;
     };
   
     Renderer.prototype = {
+        clearCanvas: function() {
+            self.ctx.fillStyle = self.bgColor;
+            self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
+        },
         renderText: function(text) {
             self.ctx.fillStyle = self.fontColor;
             self.ctx.strokeStyle = self.fontOutlineColor;
             self.ctx.fillText(text, self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
             self.ctx.strokeText(text, self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
-        },
-        clearCanvas: function() {
-            self.ctx.fillStyle = self.bgColor;
-            self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
-        },
-        renderStartScreen: function() {
-            self.renderText("Upload a Cy3 image to get started.");
-        },
-        renderLoadingScreen: function() {
-            self.ctx.strokeStyle = self.fontOutlineColor;
-            self.ctx.fillStyle = self.fontColor;
-            self.ctx.fillText("Loading...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
-            self.ctx.strokeText("Loading...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
-        },
-        renderErrorScreen: function() {
-            self.ctx.fillStyle = self.fontColor;
-            self.ctx.strokeStyle = self.fontOutlineColor;
-            self.ctx.fillText("Error! Please select and upload a valid jpeg image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
-            self.ctx.strokeText("Error! Please select and upload a valid jpeg image.", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
-        },
-        renderDetectingScreen: function() {
-            self.ctx.fillStyle = self.fontColor;
-            self.ctx.strokeStyle = self.fontOutlineColor;
-            self.ctx.fillText("Detecting...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
-            self.ctx.strokeText("Detecting...", self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
-        },
-        renderThumbnail: function(thumbnail) {
-            self.camera.begin();
-                self.ctx.drawImage(thumbnail, 0, 0, thumbnail.width * 20, thumbnail.height * 20);
-            self.camera.end();
         },
         renderImages: function(images) {
             self.camera.begin();
@@ -101,26 +77,28 @@
             self.camera.end();
         },
         renderCalibrationPoints: function(data) {
+            function drawLine(x1, y1, x2, y2, highlighted) {
+                if(highlighted) {
+                    self.ctx.lineWidth = self.calibrationLineWidthHighlighted;
+                }
+                else {
+                    self.ctx.lineWidth = self.calibrationLineWidth;
+                }
+                self.ctx.beginPath();
+                self.ctx.moveTo(x1, y1);
+                self.ctx.lineTo(x2, y2);
+                self.ctx.stroke();
+                self.ctx.closePath();
+
+            };
             self.camera.begin();
                 self.ctx.strokeStyle = self.calibrationColor.TL;
-                self.ctx.lineWidth = 20.0;
-                // TL
-                self.ctx.beginPath();
-                self.ctx.moveTo(data.TL.x, 0);
-                self.ctx.lineTo(data.TL.x, 20000);
-                self.ctx.moveTo(0, data.TL.y);
-                self.ctx.lineTo(20000, data.TL.y);
-                self.ctx.stroke();
-                self.ctx.closePath();
-                // BR
+                drawLine(        0, data.TL.y,     20000, data.TL.y, data.highlighted.includes('T'));
+                drawLine(data.TL.x,         0, data.TL.x,     20000, data.highlighted.includes('L'));
+
                 self.ctx.strokeStyle = self.calibrationColor.BR;
-                self.ctx.beginPath();
-                self.ctx.moveTo(data.BR.x, 0);
-                self.ctx.lineTo(data.BR.x, 20000);
-                self.ctx.moveTo(0, data.BR.y);
-                self.ctx.lineTo(20000, data.BR.y);
-                self.ctx.stroke();
-                self.ctx.closePath();
+                drawLine(        0, data.BR.y,     20000, data.BR.y, data.highlighted.includes('B'));
+                drawLine(data.BR.x,         0, data.BR.x,     20000, data.highlighted.includes('R'));
             self.camera.end();
         },
         renderSpotSelection: function(rectCoords) {

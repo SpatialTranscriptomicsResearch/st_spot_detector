@@ -22,13 +22,11 @@
             "adjust_spots": 6,
             "add_spots": 7
         });
-
-        self.currentState = self.state.upload_ready;
     };
   
     LogicHandler.prototype = {
-        processKeydownEvent: function(keyEvent, eventData) {
-            if(self.currentState == self.state.adjust_spots) {
+        processKeydownEvent: function(state, keyEvent) {
+            if(state == 'state_adjustment') {
                 if(keyEvent == keyevents.shift) {
                     self.spotSelector.toggleShift(true);
                 }
@@ -43,27 +41,24 @@
             }
             self.refreshCanvas();
         },
-        processKeyupEvent: function(keyEvent, eventData) {
-            if(self.currentState == self.state.adjust_spots) {
+        processKeyupEvent: function(state, keyEvent) {
+            if(state == 'state_adjustment') {
                 self.spotSelector.toggleShift(false);
             }
-            else if(self.currentState == self.state.add_spots) {
+            /*
+            else if(state == self.state.add_spots) {
                 self.spotAdjuster.finishAddSpots(false);
             }
+            */
             self.refreshCanvas();
         },
-        processMouseEvent: function(mouseEvent, eventData) {
-            // upload ready state
-            if(self.currentState == self.state.upload_ready) {
-                if(mouseEvent == self.mouseEvent.up) {
-                    // load image
-                }
-            }
+        processMouseEvent: function(state, mouseEvent, eventData) {
             // calibrate state
-            else if(self.currentState == self.state.calibrate) {
-                if(self.calibrator.selected) {
+            if(state == 'state_predetection') {
+                // if at least one line has been selected
+                if(self.calibrator.selected.length != 0) {
                     if(mouseEvent == self.mouseEvent.drag) {
-                        self.calibrator.moveSpot(eventData.position);
+                        self.calibrator.moveLine(eventData.position);
                     }
                 }
                 else {
@@ -73,10 +68,14 @@
                         self.camera.pan(eventData.difference);
                     }
                     else if(mouseEvent == self.mouseEvent.wheel) {
-                        self.camera.navigate(eventData);
+                        self.camera.navigate(eventData.direction);
                     }
                 }
-                if(mouseEvent == self.mouseEvent.down) {
+                if(mouseEvent == self.mouseEvent.move) {
+                    self.calibrator.detectHighlight(eventData.position);
+                }
+                else if(mouseEvent == self.mouseEvent.down) {
+                    console.log('hej');
                     self.calibrator.detectSelection(eventData.position);
                 }
                 else if(mouseEvent == self.mouseEvent.up) {
@@ -84,7 +83,7 @@
                 }
             }
             // adjusting spots state
-            else if(self.currentState == self.state.adjust_spots) {
+            else if(state == 'state_adjustment') {
                 if(eventData.button == self.mouseButton.left) {
                     // LMB, moving canvas or spots
                     if(mouseEvent == self.mouseEvent.down) {
@@ -116,12 +115,13 @@
                 }
                 if(mouseEvent == self.mouseEvent.wheel) {
                     // scrolling
-                    self.camera.navigate(eventData);
+                    self.camera.navigate(eventData.direction);
                 }
             }
             // add spots state
             // copies lots of code from adjust_state; please fix (DRY)
-            else if(self.currentState == self.state.add_spots) {
+            /*
+            else if(state == self.state.add_spots) {
                 if(eventData.button == self.mouseButton.left) {
                     // LMB, moving canvas or spots
                     if(mouseEvent == self.mouseEvent.down) {
@@ -150,9 +150,10 @@
                 }
                 else if(mouseEvent == self.mouseEvent.wheel) {
                     // scrolling
-                    self.camera.navigate(eventData);
+                    self.camera.navigate(eventData.direction);
                 }
             }
+            */
             self.refreshCanvas();
         }
     };

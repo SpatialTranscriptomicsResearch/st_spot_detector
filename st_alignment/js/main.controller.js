@@ -28,6 +28,8 @@ angular.module('stSpots')
                 'state_error':        ""
             };
 
+            // variables which hold more "global" important information, some shared between
+            // other controllers/directives
             $scope.data = {
                 state: 'state_start',
                 button: 'button_help',
@@ -36,7 +38,7 @@ angular.module('stSpots')
                 errorText: ''
             };
 
-            // visible bools
+            // bools which control the visibilty of various elements on the page
             $scope.visible = {
                 menuBar: true,
                 menuBarPanel: false,

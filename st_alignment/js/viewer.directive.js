@@ -30,10 +30,33 @@ angular.module('stSpots')
 
                     var calibrator = new Calibrator(camera);
 
+                    var spots = new SpotManager();
+                    var spotSelector = new SpotSelector(camera, spots);
+                    var spotAdjuster = new SpotAdjuster(camera, spots, calibrator.calibrationData);
+                    var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, calibrator, refreshCanvas);
+                    var eventHandler = new EventHandler(scope.data, canvas, camera, logicHandler);
+
                     var images = {
                         images: '',
                         thumbnail: new Image()
                     };
+
+                    function refreshCanvas() {
+                        renderer.clearCanvas();
+
+                        scaleManager.updateScaleLevel(camera.scale);
+                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
+                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
+                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+
+                        renderer.renderImages(images.images); 
+
+                        if(scope.data.state == 'state_predetection') {
+                            renderer.renderCalibrationPoints(calibrator.calibrationData);
+                        }
+                        else if(scope.data.state == 'state_adjustment') {
+                        }
+                    }
 
                     scope.receiveTilemap = function(tilemapData) {
                         tilemap.loadTilemap(tilemapData);
@@ -41,36 +64,9 @@ angular.module('stSpots')
                         tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
                         images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
 
-                        //logicHandler.currentState = logicHandler.state.calibrate;
-                        //updateCanvas();
-                        renderCalibrationState();
+                        refreshCanvas();
                     }
-
-                    function renderCalibrationState() {
-                        renderer.clearCanvas();
-
-                        scaleManager.updateScaleLevel(camera.scale);
-                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
-                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
-                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        renderer.renderImages(images.images); 
-
-                        renderer.renderCalibrationPoints(calibrator.calibrationData);
-                        //$rootScope.$broadcast('calibratorAdjusted', calibrator.calibrationData);
-                    }
-
-                    function renderText() {
-                        renderer.clearCanvas();
-                        renderer.renderText('hi');
-                    }
-                    renderText();
-
+                    
                 }
-                /*
-                controller: function($scope) {
-                    const vm = this;
-                },
-                controllerAs: 'viewerController'
-                */
             };
         });
