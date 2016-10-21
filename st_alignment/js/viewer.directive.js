@@ -73,14 +73,31 @@ angular.module('stSpots')
                         else if(scope.data.state == 'state_adjustment') {
                             renderer.renderSpots(spots.spots)
                             renderer.renderSpotSelection(spotSelector.renderingRect)
+                            if(logicHandler.addingSpots) {
+                                renderer.renderSpotToAdd(spots.spotToAdd);
+                            }
                         }
                     }
 
                     scope.addSpots = function() {
-
+                        logicHandler.addingSpots = true;
+                        scope.visible.spotAdjuster.button_addSpots       = false;
+                        scope.visible.spotAdjuster.button_finishAddSpots = true;
+                        scope.visible.spotAdjuster.button_deleteSpots    = false;
+                        refreshCanvas();
                     };
 
                     scope.finishAddSpots = function() {
+                        logicHandler.addingSpots = false;
+                        scope.visible.spotAdjuster.button_addSpots       = true;
+                        scope.visible.spotAdjuster.button_finishAddSpots = false;
+                        scope.visible.spotAdjuster.button_deleteSpots    = true;
+                        refreshCanvas();
+                    };
+
+                    scope.deleteSpots = function() {
+                        spotAdjuster.deleteSelectedSpots();
+                        refreshCanvas();
                     };
 
                     scope.receiveTilemap = function(tilemapData) {

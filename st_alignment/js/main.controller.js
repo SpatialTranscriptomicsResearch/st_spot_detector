@@ -51,6 +51,11 @@ angular.module('stSpots')
                     button_adjuster: false,
                     button_exporter: false,
                     button_help: false
+                },
+                spotAdjuster: {
+                    button_addSpots: true,
+                    button_finishAddSpots: false,
+                    button_deleteSpots: true
                 }
             };
             

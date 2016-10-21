@@ -75,55 +75,53 @@
             }
             // adjusting spots state
             else if(state == 'state_adjustment') {
-                if(self.addingSpots) {
-                    // left click moves canvas or spots
-                    if(eventData.button == self.mouseButton.left) {
+                // left click moves canvas or spots
+                if(eventData.button == self.mouseButton.left) {
+                    if(mouseEvent == self.mouseEvent.down) {
+                        self.spotAdjuster.moving = self.spotAdjuster.atSelectedSpots(eventData.position);
+                    }
+                    else if(mouseEvent == self.mouseEvent.up) {
+                        self.spotAdjuster.moving = false;
+                    }
+                    else if(mouseEvent == self.mouseEvent.drag) {
+                        if(self.spotAdjuster.moving) {
+                            self.spotAdjuster.dragSpots(eventData.difference);
+                        }
+                        else {
+                            self.camera.pan(eventData.difference);
+                        }
+                    }
+                }
+                else if(eventData.button == self.mouseButton.right) {
+                    // in adding state, right click serves to add a new spot
+                    if(self.addingSpots) {
+                        if(mouseEvent == self.mouseEvent.up) {
+                            self.spotAdjuster.addSpot(eventData.position);
+                        }
+                    }
+                    // but in selection state, right click to make a selection
+                    else {
                         if(mouseEvent == self.mouseEvent.down) {
-                            self.spotAdjuster.moving = self.spotAdjuster.atSelectedSpots(eventData.position);
+                            self.spotSelector.beginSelection(eventData.position);
                         }
                         else if(mouseEvent == self.mouseEvent.up) {
-                            self.spotAdjuster.moving = false;
+                            self.spotSelector.endSelection();
                         }
                         else if(mouseEvent == self.mouseEvent.drag) {
-                            if(self.spotAdjuster.moving) {
-                                self.spotAdjuster.dragSpots(eventData.difference);
-                            }
-                            else {
-                                self.camera.pan(eventData.difference);
-                            }
+                            self.spotSelector.updateSelection(eventData.position);
                         }
                     }
-                    else if(eventData.button == self.mouseButton.right) {
-                        // in adding state, right click serves to add a new spot
-                        if(self.addingSpots) {
-                            if(mouseEvent == self.mouseEvent.up) {
-                                self.spotAdjuster.addSpot(eventData.position);
-                            }
-                        }
-                        // but in selection state, right click to make a selection
-                        else {
-                            if(mouseEvent == self.mouseEvent.down) {
-                                self.spotSelector.beginSelection(eventData.position);
-                            }
-                            else if(mouseEvent == self.mouseEvent.up) {
-                                self.spotSelector.endSelection();
-                            }
-                            else if(mouseEvent == self.mouseEvent.drag) {
-                                self.spotSelector.updateSelection(eventData.position);
-                            }
-                        }
-                    }
-                    if(mouseEvent == self.mouseEvent.move) {
-                        self.spotAdjuster.updateSpotToAdd(eventData.position);
-                    }
-                    else if(mouseEvent == self.mouseEvent.wheel) {
-                        // scrolling
-                        self.camera.navigate(eventData.direction);
-                    }
-                    if(mouseEvent == self.mouseEvent.wheel) {
-                        // scrolling
-                        self.camera.navigate(eventData.direction);
-                    }
+                }
+                if(mouseEvent == self.mouseEvent.move) {
+                    self.spotAdjuster.updateSpotToAdd(eventData.position);
+                }
+                else if(mouseEvent == self.mouseEvent.wheel) {
+                    // scrolling
+                    self.camera.navigate(eventData.direction);
+                }
+                if(mouseEvent == self.mouseEvent.wheel) {
+                    // scrolling
+                    self.camera.navigate(eventData.direction);
                 }
             }
             self.refreshCanvas();
