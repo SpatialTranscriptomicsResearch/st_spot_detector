@@ -41,6 +41,22 @@ angular.module('stSpots')
                         thumbnail: new Image()
                     };
 
+                    scope.loadSpots = function(spotData) {
+                        spots.loadSpots(spotData);
+                        refreshCanvas();
+                    };
+
+                    scope.getCalibrationData = function() {
+                        return {
+                            TL:         calibrator.calibrationData.TL,
+                            BR:         calibrator.calibrationData.BR,
+                            array_size: calibrator.calibrationData.arraySize,
+                            brightness: calibrator.calibrationData.brightness,
+                            contrast:   calibrator.calibrationData.contrast,
+                            threshold:  calibrator.calibrationData.threshold,
+                        }
+                    };
+
                     function refreshCanvas() {
                         renderer.clearCanvas();
 
@@ -55,8 +71,17 @@ angular.module('stSpots')
                             renderer.renderCalibrationPoints(calibrator.calibrationData);
                         }
                         else if(scope.data.state == 'state_adjustment') {
+                            renderer.renderSpots(spots.spots)
+                            renderer.renderSpotSelection(spotSelector.renderingRect)
                         }
                     }
+
+                    scope.addSpots = function() {
+
+                    };
+
+                    scope.finishAddSpots = function() {
+                    };
 
                     scope.receiveTilemap = function(tilemapData) {
                         tilemap.loadTilemap(tilemapData);

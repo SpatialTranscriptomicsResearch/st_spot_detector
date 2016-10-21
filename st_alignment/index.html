@@ -16,8 +16,9 @@
 
     <!-- library js -->
     <script src='https://code.jquery.com/jquery-3.1.0.js'></script>
-    <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
     <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js'></script>
+    <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.5.8/angular-sanitize.js'></script>
 
     <!-- project js -->
     <!-- viewer utility classes -->
@@ -86,15 +87,15 @@
                 </label>
                 <!-- Detector -->
                 <!--<button export-spots type='button' class='btn btn-default btn-lg'>-->
-                <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='menuButtonDisabled.detector' class='btn btn-default btn-lg'>
+                <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='menuButtonDisabled.button_detector' class='btn btn-default btn-lg'>
                     <span class='glyphicon glyphicon-eye-open'></span>
                 </button>
                 <!-- Adjuster -->
-                <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='menuButtonDisabled.adjuster' class='btn btn-default btn-lg'>
+                <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='menuButtonDisabled.button_adjuster' class='btn btn-default btn-lg'>
                     <span class='glyphicon glyphicon-record'></span>
                 </button>
                 <!-- Exporter -->
-                <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='menuButtonDisabled.exporter' class='btn btn-default btn-lg'>
+                <button ng-click='menuButtonClick("button_exporter")' type='button' ng-class='menuButtonDisabled.button_exporter' class='btn btn-default btn-lg'>
                     <span class='glyphicon glyphicon-save'></span>
                 </button>
                 <!-- Help -->
@@ -108,7 +109,46 @@
                 </a>
             </div>
             <!-- Menu Bar Panel -->
-            <div ng-show='visible.menuBarPanel' ng-bind-html='getPanelText(data.button, data.state)' class='panel menu-bar-panel'>
+            <div ng-show='visible.menuBarPanel' class='panel menu-bar-panel'>
+                <!-- Menu Bar Panel Button-based HTMLs -->
+                <div ng-show='visible.panel.button_help'>
+                    {{ getHelpTexts(data.state) }}
+                </div>
+                <div ng-show='visible.panel.button_detector'>
+                    <form name='spotDetectorForm' ng-submit='detectSpots()'>
+                       <div class='input-group'>
+                           <span class='input-group-addon'>Array size</span>
+                           <input type='number' min='0' step='1'/>
+                           <input type='number' min='0' step='1'/>
+                       </div>
+                       <a class='btn btn-default btn-lg' ng-click='detectSpots()'>Submit and detect</a>
+                    </form>
+                </div>
+                <div ng-show='visible.panel.button_adjuster'>
+                    <div class='btn-group' role='group' aria-label='add spots'>
+                        <!--
+                        <button ng-click='addSpots()'       ng-show='addSpotsVisible'       type='button' class='btn btn-default'>Add spots</button>
+                        <button ng-click='finishAddSpots()' ng-show='finishAddSpotsVisible' type='button' class='btn btn-default'>Finish adding spots</button>
+                        -->
+                        <button ng-click='addSpots()'       type='button' class='btn btn-default'>Add spots</button>
+                        <button ng-click='finishAddSpots()' type='button' class='btn btn-default'>Finish adding spots</button>
+                    </div>
+                    <div class='btn-group' role='group' aria-label='delete spots'>
+                        <button ng-click='deleteSpots()'    type='button' class='btn btn-default'>Delete selected spots</button>
+                        <!--<button ng-click='deleteSpots()'    ng-show='deleteSpotsVisible'    type='button' class='btn btn-default'>Delete selected spots</button>-->
+                    </div>
+                </div>
+                <div ng-show='visible.panel.button_exporter'>
+                    <div class='btn-group' aria-label='export spots'>
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export spots <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <!-- radio button here to choose between these two -->
+                            <li><button class='btn btn-default' ng-click='exportSpots("adjustedArray")'>Adjusted Array Coordinates</button></li>
+                            <li><button class='btn btn-default' ng-click='exportSpots("pixel")'>Pixel Coordinates</button></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
         <div class='spinner' ng-show='visible.spinner'>

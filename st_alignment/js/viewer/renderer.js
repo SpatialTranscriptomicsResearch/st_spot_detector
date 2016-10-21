@@ -7,7 +7,7 @@
         self = this;
         self.ctx = context;
         self.camera = camera;
-        self.bgColor = 'pink';
+        self.bgColor = 'black';
         self.spotColor = 'hsla(0, 100%, 50%, 0.5)'; // red
         self.selectedSpotColor = 'hsla(120, 100%, 50%, 0.5)'; // green
         self.spotMiddleColor = 'black';
@@ -19,6 +19,7 @@
             TL: 'cyan',
             BR: 'orange'
         }
+        self.spotSelectionColor = "rgba(150, 150, 150, 0.9)";
         self.calibrationLineWidth = 60.0;
         self.calibrationLineWidthHighlighted = 10.0;
         self.spotSize = 110;
@@ -102,7 +103,7 @@
             self.camera.end();
         },
         renderSpotSelection: function(rectCoords) {
-            self.ctx.strokeStyle = "rgba(30, 30, 30, 0.9)";
+            self.ctx.strokeStyle = self.spotSelectionColor;
             self.ctx.setLineDash([4, 3]);
             self.ctx.strokeRect(rectCoords.TL.x, rectCoords.TL.y, rectCoords.WH.x, rectCoords.WH.y);
         }

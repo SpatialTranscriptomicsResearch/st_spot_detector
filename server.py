@@ -46,7 +46,7 @@ def get_spots():
                                                         threshold, True)
         keypoints = image_processor.detect_keypoints(session_cache.image)
         spots = Spots(TL_coords, BR_coords, array_size)
-        spots.create_spots_from_keypoints(keypoints)
+        spots.create_spots_from_keypoints(keypoints, session_cache.image)
 
         # all is said and done; we can now safely remove the session cache
         print(session_id[:20] + ": Spot detection finished.")

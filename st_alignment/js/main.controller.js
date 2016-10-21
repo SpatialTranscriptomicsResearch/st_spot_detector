@@ -5,27 +5,28 @@ angular.module('stSpots')
         '$scope',
         '$http',
         '$sce',
-        function($scope, $http, $sce) {
+        '$compile',
+        function($scope, $http, $sce, $compile) {
             // texts to display in the menu bar panel when clicking the help button
             const helpTexts = {
-                'state_start':        "Click on the picture icon to select and upload a Cy3 fluorescence image.",
-                'state_upload':       "",
-                'state_predetection': "Position the frame to align with the outermost spots.<br>"
+                state_start:        "Click on the picture icon to select and upload a Cy3 fluorescence image.",
+                state_upload:       "",
+                state_predetection: "Position the frame to align with the outermost spots.<br>"
                                       + "Adjust brightness and contrast for optimal spot detection.<br>"
                                       + "Click on detect to begin spot detection.",
-                'state_detection':    "",
-                'state_adjustment':   "Right click to select spots. Hold in shift to add to a selection.",
-                'state_error':        "An error occured. Please try again."
+                state_detection:    "",
+                state_adjustment:    "Right click to select spots. Hold in shift to add to a selection.",
+                state_error:        "An error occured. Please try again."
             };
 
             // texts to display underneath the spinner while loading
             const spinnerTexts = {
-                'state_start':        "",
-                'state_upload':       "Processing image. This may take a few minutes.",
-                'state_predetection': "",
-                'state_detection':    "Detecting spots. This may take a few minutes.",
-                'state_adjustment':   "",
-                'state_error':        ""
+                state_start:        "",
+                state_upload:       "Processing image. This may take a few minutes.",
+                state_predetection: "",
+                state_detection:    "Detecting spots. This may take a few minutes.",
+                state_adjustment:    "",
+                state_error:        ""
             };
 
             // variables which hold more "global" important information, some shared between
@@ -43,18 +44,24 @@ angular.module('stSpots')
                 menuBar: true,
                 menuBarPanel: false,
                 spinner: false,
-                canvas: true,
-                error: false
+                canvas: false,
+                error: false,
+                panel: {
+                    button_detector: false,
+                    button_adjuster: false,
+                    button_exporter: false,
+                    button_help: false
+                }
             };
-
+            
             // strings which determine the clickable state of the menu bar buttons 
             $scope.menuButtonDisabled = {
-                uploader: '',
-                detector: '',
-                adjuster: 'disabled',
-                exporter: 'disabled',
-                help: '',
-                info: ''
+                button_uploader: '',
+                button_detector: 'disabled',
+                button_adjuster: 'disabled',
+                button_exporter: 'disabled',
+                button_help: '',
+                button_info: ''
             };
 
             var toggleMenuBarPanelVisibility = function(previousButton, thisButton) {
@@ -85,9 +92,22 @@ angular.module('stSpots')
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
 
-                    $scope.menuButtonDisabled.detector = '';
-                    $scope.data.button = "button_detector";
-                    toggleMenuBarPanelVisibility();
+                    openPanel('button_detector');
+                }
+                else if($scope.data.state === 'state_detection') {
+                    $scope.visible.menuBar = false;
+                    $scope.visible.spinner = true;
+                    $scope.visible.canvas = false;
+                    $scope.visible.errorText = false;
+                }
+                else if($scope.data.state === 'state_adjustment') {
+                    $scope.visible.menuBar = true;
+                    $scope.visible.spinner = false;
+                    $scope.visible.canvas = true;
+                    $scope.visible.errorText = false;
+
+                    openPanel('button_exporter');
+                    openPanel('button_adjuster');
                 }
                 else if($scope.data.state === 'state_error') {
                     $scope.visible.menuBar = true;
@@ -97,50 +117,56 @@ angular.module('stSpots')
                 }
             };
 
-            $scope.checkDisabled = function(state) {
-                if(state === 'state_start') {
-                    // reinitialise things
-                }
-                else if(state === 'state_upload') {
-                    $scope.visible.menuBar = false;
-                    $scope.visible.spinner = true;
-                    $scope.visible.errorText = false;
-                }
-                else if(state === 'state_predetection') {
-                    $scope.visible.menuBar = true;
-                    $scope.visible.spinner = false;
-                    $scope.visible.errorText = false;
-                    // set 
-                }
-                else if(state === 'state_error') {
-                    $scope.visible.menuBar = true;
-                    $scope.visible.spinner = false;
-                    $scope.visible.errorText = true;
-                }
-            };
+            function openPanel(button) {
+                $scope.menuButtonDisabled[button] = '';
+                $scope.data.button = button;
+                $scope.menuButtonClick(button);
+            }
 
             $scope.menuButtonClick = function(button) {
+                // switch off all the panel visibilities
+                for(var panel in $scope.visible.panel) {
+                    $scope.visible.panel[panel] = false;
+                }
+                // except for the one we just selected
+                $scope.visible.panel[button] = true;
                 toggleMenuBarPanelVisibility($scope.data.button, button);
                 $scope.data.button = button;
             };
 
-            $scope.getPanelText = function(button, state) {
-                var text = "";
-                if(button == "button_help") {
-                    text = helpTexts[state];
-                }
-                else if(button == "button_detector") {
-                    text = "<form name='spotDetectorForm'>"
-                         +     "<div class='input-group'>"
-                         +         "<span class='input-group-addon'>Array size</span>"
-                         +         "<input type='number' min='0' step='1'/>"
-                         +         "<input type='number' min='0' step='1'/>"
-                         +     "</div>"
-                         +     "<button>Submit and detect</button>"
-                         + "</form>"
-                }
-                text = $sce.trustAsHtml(text);
-                return text;
+            $scope.detectSpots = function() {
+                $scope.updateState('state_detection');
+
+                var getSpotData = function() {
+                    var successCallback = function(response) {
+                        $scope.loadSpots(response.data); // defined in the viewer directive
+                        $scope.updateState('state_adjustment');
+                    };
+                    var errorCallback = function(response) {
+                        $scope.data.errorText = response.data;
+                        console.error(response.data);
+                        $scope.updateState('state_error');
+                    };
+
+                    // we want to send the calibration data to the server,
+                    // so we retrieve it from the viewer directive
+                    var calibrationData = $scope.getCalibrationData();
+                    // append the session id to this data so the server knows
+                    // who we are
+                    calibrationData.session_id = $scope.data.sessionId;
+
+                    var config = {
+                        params: calibrationData
+                    };
+                    console.log(config);
+                    $http.get('../detect_spots', config)
+                        .then(successCallback, errorCallback);
+                };
+                getSpotData();
+            };
+
+            $scope.getHelpTexts = function(state) {
+                return helpTexts[state];
             };
 
             $scope.getSpinnerText = function(state) {
@@ -150,8 +176,7 @@ angular.module('stSpots')
             $scope.uploadImage = function() {
                 var getTileData = function() {
                     var tileSuccessCallback = function(response) {
-
-                        $scope.receiveTilemap(response.data);
+                        $scope.receiveTilemap(response.data); // defined in the viewer directive
                         $scope.updateState('state_predetection');
                     };
                     var tileErrorCallback = function(response) {

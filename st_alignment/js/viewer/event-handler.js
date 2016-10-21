@@ -25,10 +25,10 @@
                 }
                 else if(evt.type == 'key') {
                     if(evt.keyDirection == 'down') {
-                        self.logicHandler.processKeyDownEvent(self.scopeData.state, evt.keyEvent);
+                        self.logicHandler.processKeydownEvent(self.scopeData.state, evt.keyEvent);
                     }
                     else if(evt.keyDirection == 'up') {
-                        self.logicHandler.processKeyUpEvent(self.scopeData.state, evt.keyEvent);
+                        self.logicHandler.processKeyupEvent(self.scopeData.state, evt.keyEvent);
                     }
                 }
             }
@@ -102,17 +102,18 @@
                 self.passEventToLogicHandler(mouseEvent);
             };
             canvas.onmousewheel = function(e) {
+                var direction;
                 if(e.deltaY < 0) {
-                    self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.wheel, keyevents.zin);
+                    direction = keyevents.zin;
                 }
                 else if(e.deltaY > 0) {
-                    self.logicHandler.processMouseEvent(self.logicHandler.mouseEvent.wheel, keyevents.zout);
+                    direction = keyevents.zout;
                 }
                 var mouseEvent = {
                     type: 'mouse',
                     eventType: self.logicHandler.mouseEvent.wheel,
                     data: {
-                        direction: keyevents.zin
+                        direction: direction
                     }
 
                 }

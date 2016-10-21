@@ -49,7 +49,6 @@
             else if(Math.abs(position.y - self.calibrationData.BR.y) < self.thresholdSelectionDistance) {
                 self.selected.push('B');
             }
-            console.log(self.selected);
         },
         endSelection: function() {
             self.selected = false;
