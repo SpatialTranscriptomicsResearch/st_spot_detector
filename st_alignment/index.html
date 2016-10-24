@@ -103,6 +103,24 @@
                 </div>
                 <div ng-show='visible.panel.button_exporter'>
                     <div class='btn-group' aria-label='export spots'>
+						<div class="btn-group" data-toggle="buttons">
+							<label class="btn btn-primary active">
+								<input type="radio" autocomplete="off" checked> All
+							</label>
+							<label class="btn btn-primary">
+								<input type="radio" autocomplete="off"> Selection Only
+							</label>
+						</div>
+						<br>
+						<div class="btn-group" data-toggle="buttons">
+							<label class="btn btn-primary active">
+								<input type="radio" autocomplete="off" checked> Adjusted Array Coordinates
+							</label>
+							<label class="btn btn-primary">
+								<input type="radio" autocomplete="off"> Pixel Coordinates
+							</label>
+						</div>
+						<br>
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export spots <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu">

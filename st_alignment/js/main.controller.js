@@ -64,7 +64,7 @@ angular.module('stSpots')
                 button_uploader: '',
                 button_detector: 'disabled',
                 button_adjuster: 'disabled',
-                button_exporter: 'disabled',
+                button_exporter: '',
                 button_help: '',
                 button_info: ''
             };
