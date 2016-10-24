@@ -51,7 +51,7 @@
         </canvas>
         <div ng-show='visible.menuBar' class='menu-wrapper'>
             <!-- Menu Bar -->
-            <div class='menu-bar btn-group btn-group-vertical' role='group'>
+            <div class='menu-bar btn-group btn-group-vertical ' role='group'>
                 <!-- Uploader -->
                 <label class='btn btn-default btn-lg'>
                     <span class='glyphicon glyphicon-picture'></span>
@@ -81,7 +81,12 @@
                 </a>
             </div>
             <!-- Menu Bar Panel -->
+            <!--
             <div ng-show='visible.menuBarPanel' class='panel menu-bar-panel'>
+            -->
+            <div class='menu-bar-panel'>
+                <h4 class=''>{{ getPanelTitle(data.button) }}</h4>
+                <hr>
                 <!-- Menu Bar Panel Button-based HTMLs -->
                 <div ng-show='visible.panel.button_help'>
                     {{ getHelpTexts(data.state) }}

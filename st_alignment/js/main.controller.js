@@ -29,6 +29,16 @@ angular.module('stSpots')
                 state_error:        ""
             };
 
+            // texts to display as a title on the menu bar panel
+            const panelTitles = {
+                button_uploader: '',
+                button_detector: 'Detection Parameters',
+                button_adjuster: 'Spot adjustment',
+                button_exporter: 'Spot export',
+                button_help: 'Help',
+                button_info: ''
+            };
+
             // variables which hold more "global" important information, some shared between
             // other controllers/directives
             $scope.data = {
@@ -62,8 +72,8 @@ angular.module('stSpots')
             // strings which determine the clickable state of the menu bar buttons 
             $scope.menuButtonDisabled = {
                 button_uploader: '',
-                button_detector: 'disabled',
-                button_adjuster: 'disabled',
+                button_detector: '',
+                button_adjuster: '',
                 button_exporter: '',
                 button_help: '',
                 button_info: ''
@@ -168,6 +178,10 @@ angular.module('stSpots')
                         .then(successCallback, errorCallback);
                 };
                 getSpotData();
+            };
+
+            $scope.getPanelTitle = function(button) {
+                return panelTitles[button];
             };
 
             $scope.getHelpTexts = function(state) {
