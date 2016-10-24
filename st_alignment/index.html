@@ -18,7 +18,6 @@
     <script src='https://code.jquery.com/jquery-3.1.0.js'></script>
     <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js'></script>
     <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.5.8/angular-sanitize.js'></script>
 
     <!-- project js -->
     <!-- viewer utility classes -->
@@ -81,11 +80,11 @@
                 </a>
             </div>
             <!-- Menu Bar Panel -->
-            <!--
             <div ng-show='visible.menuBarPanel' class='panel menu-bar-panel'>
-            -->
+            <!--
             <div class='menu-bar-panel'>
-                <h4 class=''>{{ getPanelTitle(data.button) }}</h4>
+            -->
+                <h4 class='menu-bar-panel-title'>{{ getPanelTitle(data.button) }}</h4>
                 <hr>
                 <!-- Menu Bar Panel Button-based HTMLs -->
                 <div ng-show='visible.panel.button_help'>
@@ -108,31 +107,28 @@
                 </div>
                 <div ng-show='visible.panel.button_exporter'>
                     <div class='btn-group' aria-label='export spots'>
+                        <form ng-submit='exportSpots(exportForm.coordinateType, exportForm.selection)'>
 						<div class="btn-group" data-toggle="buttons">
 							<label class="btn btn-primary active">
-								<input type="radio" autocomplete="off" checked> All
+								<input type="radio" value='false' ng-model='exportForm.selection' checked> All spots
 							</label>
 							<label class="btn btn-primary">
-								<input type="radio" autocomplete="off"> Selection Only
+								<input type="radio" value='true' ng-model='exportForm.selection'> Selection Only
 							</label>
 						</div>
 						<br>
 						<div class="btn-group" data-toggle="buttons">
 							<label class="btn btn-primary active">
-								<input type="radio" autocomplete="off" checked> Adjusted Array Coordinates
+								<input type="radio" value='adjustedArray' ng-model='exportForm.coordinateType' checked> Adjusted Array Coordinates
 							</label>
 							<label class="btn btn-primary">
-								<input type="radio" autocomplete="off"> Pixel Coordinates
+								<input type="radio" value='pixel' ng-model='exportForm.coordinateType'> Pixel Coordinates
 							</label>
 						</div>
 						<br>
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export spots <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <!-- radio button here to choose between these two -->
-                            <li><button class='btn btn-default' ng-click='exportSpots("adjustedArray")'>Adjusted Array Coordinates</button></li>
-                            <li><button class='btn btn-default' ng-click='exportSpots("pixel")'>Pixel Coordinates</button></li>
-                        </ul>
+                        <input class='btn btn-default' type='submit' value='Export'/>
+                        </form>
+                        ksjdlkjsd {{ exportForm.selection }} and {{ exportForm.coordinateType }} YEAHHLD
                     </div>
                 </div>
             </div>

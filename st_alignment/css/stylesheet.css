@@ -82,6 +82,12 @@ spot-adjuster {
     height: 271px
 }
 
-.panel-title {
-    margin-left: 5px;
+.menu-bar-panel-title {
+    margin-left: 10px;
+    margin-bottom: 5px;
+}
+
+hr {
+    margin-top: 2px;
+    margin-bottom: 2px;
 }

@@ -109,8 +109,9 @@ angular.module('stSpots')
                         refreshCanvas();
                     }
 
-                    scope.exportSpots = function(format, selection) {
-                        var spotDataString = spots.exportSpots(format, selection);
+                    scope.exportSpots = function(type, selection) {
+                        console.log("It is " + type + " and " + selection);
+                        var spotDataString = spots.exportSpots(type, selection);
 
                         var blob = new Blob([spotDataString]);
                         var filename = "spot_data-" + new Date().toISOString().slice(0, 10) + ".tsv";

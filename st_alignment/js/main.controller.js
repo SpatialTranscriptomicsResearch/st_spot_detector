@@ -49,10 +49,15 @@ angular.module('stSpots')
                 errorText: ''
             };
 
+            $scope.exportForm = {
+                selection: false,
+                coordinateType: 'adjustedArray'
+            };
+
             // bools which control the visibilty of various elements on the page
             $scope.visible = {
                 menuBar: true,
-                menuBarPanel: false,
+                menuBarPanel: true,
                 spinner: false,
                 canvas: false,
                 error: false,
@@ -68,6 +73,8 @@ angular.module('stSpots')
                     button_deleteSpots: true
                 }
             };
+
+            $scope.kalle = 'HAHAHA';
             
             // strings which determine the clickable state of the menu bar buttons 
             $scope.menuButtonDisabled = {
