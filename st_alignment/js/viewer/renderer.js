@@ -8,34 +8,19 @@
         self.ctx = context;
         self.camera = camera;
         self.bgColor = 'black';
-        self.spotColor = 'hsla(0, 100%, 50%, 0.5)'; // red
-        self.selectedSpotColor = 'hsla(120, 100%, 50%, 0.5)'; // green
-        self.spotMiddleColor = 'black';
-        self.ctx.textAlign = "center";
-        self.ctx.font = "bold 48px Courier";
-        self.fontColor = 'lightgray';
-        self.fontOutlineColor = 'black';
-        self.calibrationColor = {
-            TL: 'cyan',
-            BR: 'orange'
-        }
-        self.spotSelectionColor = "rgba(150, 150, 150, 0.9)";
+        self.spotColor =          'hsla(  6, 63%, 46%, 0.50)'; // red
+        self.selectedSpotColor =  'hsla(140, 63%, 42%, 0.50)'; // green
+        self.calibrationColor =   'hsla(204, 64%, 44%, 0.95)'; // blue
+        self.spotSelectionColor = 'rgba(150, 150, 150, 0.95)'; // grey
         self.calibrationLineWidth = 60.0;
         self.calibrationLineWidthHighlighted = 10.0;
         self.spotSize = 110;
-        self.spotCentreSize = 4;
     };
   
     Renderer.prototype = {
         clearCanvas: function() {
             self.ctx.fillStyle = self.bgColor;
             self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
-        },
-        renderText: function(text) {
-            self.ctx.fillStyle = self.fontColor;
-            self.ctx.strokeStyle = self.fontOutlineColor;
-            self.ctx.fillText(text, self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
-            self.ctx.strokeText(text, self.ctx.canvas.width / 2, self.ctx.canvas.height / 2);
         },
         renderImages: function(images) {
             self.camera.begin();
@@ -57,12 +42,6 @@
                             self.ctx.fillStyle = self.spotColor;
                         }
                         self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotSize, 0, Math.PI * 2);
-                    self.ctx.closePath();
-                    self.ctx.fill();
-
-                    self.ctx.beginPath();
-                        self.ctx.fillStyle = self.spotMiddleColor;
-                        self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotCentreSize, 0, Math.PI * 2);
                     self.ctx.closePath();
                     self.ctx.fill();
                 }
@@ -93,11 +72,9 @@
 
             };
             self.camera.begin();
-                self.ctx.strokeStyle = self.calibrationColor.TL;
+                self.ctx.strokeStyle = self.calibrationColor;
                 drawLine(        0, data.TL.y,     20000, data.TL.y, data.highlighted.includes('T'));
                 drawLine(data.TL.x,         0, data.TL.x,     20000, data.highlighted.includes('L'));
-
-                self.ctx.strokeStyle = self.calibrationColor.BR;
                 drawLine(        0, data.BR.y,     20000, data.BR.y, data.highlighted.includes('B'));
                 drawLine(data.BR.x,         0, data.BR.x,     20000, data.highlighted.includes('R'));
             self.camera.end();

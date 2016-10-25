@@ -77,9 +77,9 @@ angular.module('stSpots')
             // strings which determine the clickable state of the menu bar buttons 
             $scope.menuButtonDisabled = {
                 button_uploader: '',
-                button_detector: '',
-                button_adjuster: '',
-                button_exporter: '',
+                button_detector: 'disabled',
+                button_adjuster: 'disabled',
+                button_exporter: 'disabled',
                 button_help: '',
                 button_info: ''
             };
@@ -92,6 +92,35 @@ angular.module('stSpots')
                 }
                 else {
                     $scope.visible.menuBarPanel = !$scope.visible.menuBarPanel;
+                }
+            };
+
+            function toast() {
+                if($scope.data.state === 'state_start') {
+                }
+                else if($scope.data.state === 'state_upload') {
+                    toastr.clear();
+                }
+                else if($scope.data.state === 'state_predetection') {
+                    toastr["info"](
+                        "Adjust the lines to align on top of the outermost spot frame.<br>" +
+                        "Click DETECT SPOTS to begin automatic spot detection."
+                    );
+                }
+                else if($scope.data.state === 'state_detection') {
+                    toastr.clear();
+                }
+                else if($scope.data.state === 'state_adjustment') {
+                    toastr["info"](
+                        "Detected spots are shown in red.<br>" +
+                        "Right click to select spots. Holding in Shift adds to the selection.<br>" +
+                        "Left click to move selected spots or navigate the canvas.<br>" +
+                        "Click DELETE SPOTS to deleted selected spots.<br>" +
+                        "Click ADD SPOTS to add additional spots.<br>"
+                    );
+                }
+                else if($scope.data.state === 'state_error') {
+                    toastr.clear();
                 }
             };
 
@@ -135,6 +164,7 @@ angular.module('stSpots')
                     $scope.visible.canvas = false;
                     $scope.visible.errorText = true;
                 }
+                toast();
             };
 
             function openPanel(button) {
@@ -226,6 +256,26 @@ angular.module('stSpots')
                 };
                 getSessionId();
             };
+
+            toastr.options = {
+                "closeButton": false,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": false,
+                "positionClass": "toast-top-center",
+                "preventDuplicates": true,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "30000",
+                "extendedTimeOut": "10000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+            toastr["info"]("Welcome to the Spatial Transcriptomics Spot Detection Tool. Begin by clicking the top-most icon to upload a Cy3 fluorescence image.", "");
+
         }
     ]);
 

@@ -9,7 +9,8 @@
     <!-- library css -->
 	<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css' />
 	<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css' />
-	<link rel='stylesheet' href='css/spinkit/spinners/10-fading-circle.css'>
+	<link rel='stylesheet' href='css/spinkit/spinners/10-fading-circle.css' />
+	<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.css' />
 
     <!-- project css -->
 	<link rel='stylesheet' href='css/stylesheet.css'>
@@ -17,6 +18,7 @@
     <!-- library js -->
     <script src='https://code.jquery.com/jquery-3.1.0.js'></script>
     <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js'></script>
 
     <!-- project js -->
     <!-- viewer utility classes -->
@@ -93,7 +95,7 @@
                            <input type='number' min='0' step='1'/>
                            <input type='number' min='0' step='1'/>
                        </div>
-                       <a class='btn btn-default btn-sm' ng-click='detectSpots()'>Submit and detect</a>
+                       <a class='btn btn-default btn-sm' ng-click='detectSpots()'>DETECT SPOTS</a>
                     </form>
                 </div>
                 <div ng-show='visible.panel.button_adjuster'>
