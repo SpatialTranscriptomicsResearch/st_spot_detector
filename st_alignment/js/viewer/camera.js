@@ -7,7 +7,7 @@
         self = this;
         self.context = ctx;
         self.position = initialPosition || Vec2.Vec2(0, 0);
-        self.scale = initialScale || 1.0;
+        self.scale = initialScale || 0.05;
         self.positionOffset = self.calculateOffset();
         self.viewport = {
             l: 0, r: 0,
@@ -40,6 +40,7 @@
         applyTranslation: function() {
             // move offset code to updateViewport() function
             self.context.translate(-self.viewport.l + self.positionOffset.x, -self.viewport.t + self.positionOffset.y);
+            //self.context.translate(-self.viewport.l, -self.viewport.t);
         },
         updateViewport: function() {
             self.clampValues();

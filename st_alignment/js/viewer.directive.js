@@ -21,11 +21,7 @@ angular.module('stSpots')
 
                     var tilemapLevel = 20;
                     var tilePosition;
-                    // TODO: take into account canvas size, in order to centre the image
-                    // (as opposed to having it in the top left corner)
-                    var cameraPosition = {x: (ctx.canvas.width  / 2) * tilemapLevel,
-                                          y: (ctx.canvas.height / 2) * tilemapLevel};
-                    var camera = new Camera(ctx, cameraPosition, 1 / tilemapLevel);
+                    var camera = new Camera(ctx);
                     var renderer = new Renderer(ctx, camera);
 
                     var calibrator = new Calibrator(camera);
@@ -103,14 +99,19 @@ angular.module('stSpots')
                     scope.receiveTilemap = function(tilemapData) {
                         tilemap.loadTilemap(tilemapData);
                         scaleManager.setTilemapLevels(tilemap.tilemapLevels, tilemapLevel);
-                        tilePosition = tilemap.getTilePosition(cameraPosition, tilemapLevel);
+                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel);
                         images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
+                        var largeImageWidth  = tilemap.tilemaps[1][0][0].width;
+                        var largeImageHeight = tilemap.tilemaps[1][0][0].height;
+                        camera.position = {x: (largeImageWidth  / 2) * tilemapLevel,
+                                           y: (largeImageHeight / 2) * tilemapLevel};
+                        camera.scale = 1 / tilemapLevel;
+                        camera.updateViewport();
 
                         refreshCanvas();
                     }
 
                     scope.exportSpots = function(type, selection) {
-                        console.log("It is " + type + " and " + selection);
                         var spotDataString = spots.exportSpots(type, selection);
 
                         var blob = new Blob([spotDataString]);

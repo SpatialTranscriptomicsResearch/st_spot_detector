@@ -159,8 +159,8 @@ angular.module('stSpots')
 
                 var getSpotData = function() {
                     var successCallback = function(response) {
-                        $scope.loadSpots(response.data); // defined in the viewer directive
                         $scope.updateState('state_adjustment');
+                        $scope.loadSpots(response.data); // defined in the viewer directive
                     };
                     var errorCallback = function(response) {
                         $scope.data.errorText = response.data;
@@ -199,8 +199,8 @@ angular.module('stSpots')
             $scope.uploadImage = function() {
                 var getTileData = function() {
                     var tileSuccessCallback = function(response) {
-                        $scope.receiveTilemap(response.data); // defined in the viewer directive
                         $scope.updateState('state_predetection');
+                        $scope.receiveTilemap(response.data); // defined in the viewer directive
                     };
                     var tileErrorCallback = function(response) {
                         $scope.data.errorText = response.data;

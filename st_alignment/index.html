@@ -49,40 +49,37 @@
         </canvas>
         <div ng-show='visible.menuBar' class='menu-wrapper'>
             <!-- Menu Bar -->
-            <div class='menu-bar btn-group btn-group-vertical ' role='group'>
+            <div class='menu-bar btn-group btn-group-vertical' role='group'>
                 <!-- Uploader -->
-                <label class='btn btn-default btn-lg'>
+                <label class='btn btn-default '>
                     <span class='glyphicon glyphicon-picture'></span>
                     <input image-upload type='file' accept='image/jpg, image/jpeg' style='display:none;'>
                 </label>
                 <!-- Detector -->
-                <!--<button export-spots type='button' class='btn btn-default btn-lg'>-->
-                <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='menuButtonDisabled.button_detector' class='btn btn-default btn-lg'>
+                <!--<button export-spots type='button' class='btn btn-default '>-->
+                <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='menuButtonDisabled.button_detector' class='btn btn-default'>
                     <span class='glyphicon glyphicon-eye-open'></span>
                 </button>
                 <!-- Adjuster -->
-                <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='menuButtonDisabled.button_adjuster' class='btn btn-default btn-lg'>
+                <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='menuButtonDisabled.button_adjuster' class='btn btn-default'>
                     <span class='glyphicon glyphicon-record'></span>
                 </button>
                 <!-- Exporter -->
-                <button ng-click='menuButtonClick("button_exporter")' type='button' ng-class='menuButtonDisabled.button_exporter' class='btn btn-default btn-lg'>
+                <button ng-click='menuButtonClick("button_exporter")' type='button' ng-class='menuButtonDisabled.button_exporter' class='btn btn-default'>
                     <span class='glyphicon glyphicon-save'></span>
                 </button>
                 <!-- Help -->
-                <button ng-click='menuButtonClick("button_help")' type='button' class='btn btn-default btn-lg'>
+                <button ng-click='menuButtonClick("button_help")' type='button' class='btn btn-default'>
                     <span class='glyphicon glyphicon-question-sign'></span>
                 </button>
                 <!-- Info -->
                 <!-- This opens in a new tab to avoid an in-progress application being aborted -->
-                <a target='_blank' href='https://github.com/SpatialTranscriptomicsResearch/st_aligner/blob/master/README.md' type='button' class='btn btn-default btn-lg'>
+                <a target='_blank' href='https://github.com/SpatialTranscriptomicsResearch/st_aligner/blob/master/README.md' type='button' class='btn btn-default'>
                     <span class='glyphicon glyphicon-info-sign'></span>
                 </a>
             </div>
             <!-- Menu Bar Panel -->
             <div ng-show='visible.menuBarPanel' class='panel menu-bar-panel'>
-            <!--
-            <div class='menu-bar-panel'>
-            -->
                 <h4 class='menu-bar-panel-title'>{{ getPanelTitle(data.button) }}</h4>
                 <hr>
                 <!-- Menu Bar Panel Button-based HTMLs -->
@@ -91,41 +88,41 @@
                 </div>
                 <div ng-show='visible.panel.button_detector'>
                     <form name='spotDetectorForm' ng-submit='detectSpots()'>
-                       <div class='input-group'>
+                       <div class='input-group-sm'>
                            <span class='input-group-addon'>Array size</span>
                            <input type='number' min='0' step='1'/>
                            <input type='number' min='0' step='1'/>
                        </div>
-                       <a class='btn btn-default btn-lg' ng-click='detectSpots()'>Submit and detect</a>
+                       <a class='btn btn-default btn-sm' ng-click='detectSpots()'>Submit and detect</a>
                     </form>
                 </div>
                 <div ng-show='visible.panel.button_adjuster'>
-                    <button ng-click='addSpots()'       ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-default'>Add spots</button>
-                    <button ng-click='finishAddSpots()' ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-default'>Finish adding spots</button>
-                    <button ng-click='deleteSpots()'    ng-show='visible.spotAdjuster.button_deleteSpots'    type='button' class='btn btn-default'>Delete selected spots</button>
+                    <button ng-click='addSpots()'       ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-default btn-sm'>Add spots</button>
+                    <button ng-click='finishAddSpots()' ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-default btn-sm'>Finish adding spots</button>
+                    <button ng-click='deleteSpots()'    ng-show='visible.spotAdjuster.button_deleteSpots'    type='button' class='btn btn-default btn-sm'>Delete selected spots</button>
                 </div>
                 <div ng-show='visible.panel.button_exporter'>
                     <div class='btn-group' aria-label='export spots'>
                         <form ng-submit='exportSpots(exportForm.coordinateType, exportForm.selection)'>
 						<div class="btn-group" data-toggle="buttons">
-							<label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-primary">
+							<label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-default btn-sm">
 								<input type="radio" value='all' ng-model='exportForm.selection'> All Spots
 							</label>
-							<label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-primary">
+							<label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-default btn-sm">
 								<input type="radio" value='selection' ng-model='exportForm.selection' checked> Selection Only
 							</label>
 						</div>
 						<br>
 						<div class="btn-group" data-toggle="buttons">
-                            <label ng-class="{active: exportForm.coordinateType == 'array'}" class="btn btn-primary active">
+                            <label ng-class="{active: exportForm.coordinateType == 'array'}" class="btn btn-default btn-sm">
 								<input type="radio" value='array' ng-model='exportForm.coordinateType' checked> Array Coordinates
 							</label>
-                            <label ng-class="{active: exportForm.coordinateType == 'pixel'}" class="btn btn-primary">
+                            <label ng-class="{active: exportForm.coordinateType == 'pixel'}" class="btn btn-default btn-sm">
 								<input type="radio" value='pixel' ng-model='exportForm.coordinateType'> Pixel Coordinates
 							</label>
 						</div>
 						<br>
-                        <input class='btn btn-default' type='submit' value='Export'/>
+                        <input class='btn btn-default btn-sm' type='submit' value='Export'/>
                         </form>
                     </div>
                 </div>
