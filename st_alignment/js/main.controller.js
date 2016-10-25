@@ -50,14 +50,14 @@ angular.module('stSpots')
             };
 
             $scope.exportForm = {
-                selection: false,
-                coordinateType: 'adjustedArray'
+                selection: 'selection',
+                coordinateType: 'array'
             };
 
             // bools which control the visibilty of various elements on the page
             $scope.visible = {
                 menuBar: true,
-                menuBarPanel: true,
+                menuBarPanel: false,
                 spinner: false,
                 canvas: false,
                 error: false,
@@ -74,8 +74,6 @@ angular.module('stSpots')
                 }
             };
 
-            $scope.kalle = 'HAHAHA';
-            
             // strings which determine the clickable state of the menu bar buttons 
             $scope.menuButtonDisabled = {
                 button_uploader: '',
@@ -180,7 +178,6 @@ angular.module('stSpots')
                     var config = {
                         params: calibrationData
                     };
-                    console.log(config);
                     $http.get('../detect_spots', config)
                         .then(successCallback, errorCallback);
                 };

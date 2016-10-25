@@ -45,21 +45,27 @@
             self.refreshCanvas();
         },
         processMouseEvent: function(state, mouseEvent, eventData) {
+            console.log('1121');
             // calibrate state
             if(state == 'state_predetection') {
+                console.log('blopp');
                 // if at least one line has been selected
                 if(self.calibrator.selected.length != 0) {
+                    console.log(self.calibrator.selected);
                     if(mouseEvent == self.mouseEvent.drag) {
                         self.calibrator.moveLine(eventData.position);
                     }
                 }
                 else {
+                    console.log(self.calibrator.selected);
+                    console.log('yeee');
                     // moving the canvas normally
                     if(mouseEvent == self.mouseEvent.drag) {
                         // maybe this should take the position rather than the difference
                         self.camera.pan(eventData.difference);
                     }
                     else if(mouseEvent == self.mouseEvent.wheel) {
+                        console.log('hej');
                         self.camera.navigate(eventData.direction);
                     }
                 }

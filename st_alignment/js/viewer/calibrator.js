@@ -14,7 +14,7 @@
             threshold: 50,
             highlighted: []
         };
-        self.selected = false;
+        self.selected = [];
         self.thresholdSelectionDistance = 500;
     };
     Calibrator.prototype = {
@@ -51,7 +51,7 @@
             }
         },
         endSelection: function() {
-            self.selected = false;
+            self.selected = [];
         },
         moveLine: function(position) {
             position = self.camera.mouseToCameraPosition(position);
