@@ -8,9 +8,9 @@
         self.ctx = context;
         self.camera = camera;
         self.bgColor = 'black';
-        self.spotColor =          'hsla(  6, 63%, 46%, 0.50)'; // red
-        self.selectedSpotColor =  'hsla(140, 63%, 42%, 0.50)'; // green
-        self.calibrationColor =   'hsla(204, 64%, 44%, 0.95)'; // blue
+        self.spotColor          = 'hsla(  6, 63%, 46%, 0.50)'; // red
+        self.selectedSpotColor  = 'hsla(140, 63%, 42%, 0.50)'; // green
+        self.calibrationColor   = 'hsla(204, 64%, 44%, 0.95)'; // blue
         self.spotSelectionColor = 'rgba(150, 150, 150, 0.95)'; // grey
         self.calibrationLineWidth = 60.0;
         self.calibrationLineWidthHighlighted = 10.0;

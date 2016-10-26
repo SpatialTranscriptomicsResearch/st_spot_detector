@@ -62,7 +62,6 @@
                 }
                 self.passEventToLogicHandler(mouseEvent);
             };
-
             canvas.onmouseout = function(e) {
                 self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 self.mouseDown = false;
@@ -77,7 +76,6 @@
                 }
                 self.passEventToLogicHandler(mouseEvent);
             };
-
             canvas.onmousemove = function(e) {
                 var distanceMoved = Vec2.Vec2(self.mousePos.x - e.layerX, self.mousePos.y - e.layerY);
                 self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
@@ -124,13 +122,10 @@
             document.onkeydown = function(event) {
                 event = event || window.event;
                 var keyName;
-                // iterating through the keycodes
-                for(var key in keycodes) {
-                    // only counts as a key if it's in a direct property
-                    if(keycodes.hasOwnProperty(key)) {
-                        // does the event exist in this key?
-                        if(keycodes[key].includes(event.which)) {
-                            // then that's the key we want
+                for(var key in keycodes) { // iterating through the possible keycodes
+                    if(keycodes.hasOwnProperty(key)) { // only counts as a key if it's in a direct property
+                        if(keycodes[key].includes(event.which)) { // is the event one of the keys?
+                            // then that's the key we want!
                             keyName = key;
                         }
                     }
@@ -140,7 +135,7 @@
                     var keyEvent = {
                         type: 'key',
                         keyDirection: 'down',
-                        keyEvent: keyName
+                        keyEvent: keyevents[keyName]
                     };
                     self.passEventToLogicHandler(keyEvent);
                 }
