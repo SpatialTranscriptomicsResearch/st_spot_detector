@@ -28,11 +28,12 @@ body {
 canvas {
     /*
     cursor: -webkit-grab;
-    cursor:-moz-grab;
+    cursor: -moz-grab;
     */
-    background-color: pink;
+    background-color: black;
     display: block;
 }
+
 canvas:active {
     /*
     cursor: -webkit-grabbing;
@@ -50,11 +51,6 @@ canvas:active {
     -webkit-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
     -moz-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
     box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
-    /*
-    -webkit-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.3);
-    -moz-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.3);
-    box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.3);
-    */
 }
 
 .menu-bar-panel {
