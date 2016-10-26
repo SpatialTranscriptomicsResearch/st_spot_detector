@@ -42,7 +42,8 @@
                     eventType: self.logicHandler.mouseEvent.down,
                     data: {
                         position: self.mousePos,
-                        button: e.button
+                        button: e.button,
+                        ctrl: e.ctrlKey
                     }
 
                 }
@@ -56,21 +57,8 @@
                     eventType: self.logicHandler.mouseEvent.up,
                     data: {
                         position: self.mousePos,
-                        button: e.button
-                    }
-
-                }
-                self.passEventToLogicHandler(mouseEvent);
-            };
-            canvas.onmouseout = function(e) {
-                self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
-                self.mouseDown = false;
-                var mouseEvent = {
-                    type: 'mouse',
-                    eventType: self.logicHandler.mouseEvent.out,
-                    data: {
-                        position: self.mousePos,
-                        button: e.button
+                        button: e.button,
+                        ctrl: e.ctrlKey
                     }
 
                 }
@@ -93,7 +81,8 @@
                     data: {
                         position: self.mousePos,
                         difference: distanceMoved,
-                        button: e.button
+                        button: e.button,
+                        ctrl: e.ctrlKey
                     }
 
                 }
@@ -142,16 +131,23 @@
             };
             document.onkeyup = function(event) {
                 event = event || window.event;
-                if(keycodes.shift.includes(event.which)) {
-                    self.logicHandler.processKeyupEvent(keyevents.shift);
+                var keyName;
+                for(var key in keycodes) { // iterating through the possible keycodes
+                    if(keycodes.hasOwnProperty(key)) { // only counts as a key if it's in a direct property
+                        if(keycodes[key].includes(event.which)) { // is the event one of the keys?
+                            // then that's the key we want!
+                            keyName = key;
+                        }
+                    }
                 }
-                else if(keycodes.esc.includes(event.which)) {
-                    // escape
-                    self.logicHandler.processKeydownEvent(keyevents.esc);
-                }
-                else if(keycodes.del.includes(event.which)) {
-                    // delete
-                    self.logicHandler.processKeydownEvent(keyevents.del);
+                // send it to the logic handler if not undefined
+                if(keyName) {
+                    var keyEvent = {
+                        type: 'key',
+                        keyDirection: 'up',
+                        keyEvent: keyevents[keyName]
+                    };
+                    self.passEventToLogicHandler(keyEvent);
                 }
             }
         }

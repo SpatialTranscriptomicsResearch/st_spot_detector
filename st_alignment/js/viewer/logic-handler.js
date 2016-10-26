@@ -36,10 +36,13 @@
         processKeyupEvent: function(state, keyEvent) {
             if(state == 'state_adjustment') {
                 if(self.addingSpots) {
+                    console.log("I shouldn't be here");
                     self.spotAdjuster.finishAddSpots(false);
                 }
                 else {
-                    self.spotSelector.toggleShift(false);
+                    if(keyEvent == keyevents.shift) {
+                        self.spotSelector.toggleShift(false);
+                    }
                 }
             }
             self.refreshCanvas();
@@ -76,7 +79,8 @@
             // adjusting spots state
             else if(state == 'state_adjustment') {
                 // left click moves canvas or spots
-                if(eventData.button == self.mouseButton.left) {
+                if(eventData.button == self.mouseButton.left &&
+                   eventData.ctrl == false) {
                     if(mouseEvent == self.mouseEvent.down) {
                         self.spotAdjuster.moving = self.spotAdjuster.atSelectedSpots(eventData.position);
                     }
@@ -92,8 +96,9 @@
                         }
                     }
                 }
-                // right click adds or selects spots
-                else if(eventData.button == self.mouseButton.right) {
+                // right click or ctrl+click adds or selects spots
+                else if(eventData.button == self.mouseButton.right ||
+                        eventData.ctrl == true) {
                     // in adding state, right click serves to add a new spot
                     if(self.addingSpots) {
                         if(mouseEvent == self.mouseEvent.up) {
