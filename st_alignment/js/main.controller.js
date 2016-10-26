@@ -94,6 +94,25 @@ angular.module('stSpots')
                     $scope.visible.menuBarPanel = !$scope.visible.menuBarPanel;
                 }
             };
+            
+            function displayToasts(toastTexts) {
+                // triggers the chain of recursion
+                chainToast(toastTexts, 0);
+            }
+
+            function chainToast(toastTexts, toastIndex) {
+                // recursive function for displaying several toasts in a row
+                // if last toast in list of toasts
+                if(toastTexts.length == toastIndex + 1) { 
+                    // do nothing, end recursion
+                }
+                else {
+                    toastr.options.onHidden = function() {
+                        chainToast(toastTexts, toastIndex + 1);
+                    };
+                    toastr["info"](toastTexts[toastIndex]);
+                }
+            }
 
             function toast() {
                 if($scope.data.state === 'state_start') {
@@ -111,18 +130,20 @@ angular.module('stSpots')
                     toastr.clear();
                 }
                 else if($scope.data.state === 'state_adjustment') {
-                    toastr["info"](
-                        "Detected spots are shown in red.<br>" +
-                        "Right click to select spots. Holding in Shift adds to the selection.<br>" +
-                        "Left click to move selected spots or navigate the canvas.<br>" +
-                        "Click DELETE SPOTS to deleted selected spots.<br>" +
-                        "Click ADD SPOTS to add additional spots.<br>"
-                    );
+                    toastr.options.timeOut = "7000";
+                    var toasts = [
+                        "Detected spots are shown in red.",
+                        "Right click or Ctrl+click to select spots. Holding in Shift adds to the selection.<br>" +
+                        "Left click to move selected spots or navigate the canvas.",
+                        "Click DELETE SPOTS to deleted selected spots.<br>" + 
+                        "Click ADD SPOTS to add additional spots."
+                    ];
+                    displayToasts(toasts);
                 }
                 else if($scope.data.state === 'state_error') {
                     toastr.clear();
                 }
-            };
+            }
 
             $scope.updateState = function(new_state) {
                 $scope.data.state = new_state;

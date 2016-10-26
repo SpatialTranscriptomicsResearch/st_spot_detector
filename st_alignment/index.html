@@ -90,12 +90,14 @@
                 </div>
                 <div ng-show='visible.panel.button_detector'>
                     <form name='spotDetectorForm' ng-submit='detectSpots()'>
-                       <div class='input-group-sm'>
-                           <span class='input-group-addon'>Array size</span>
-                           <input type='number' min='0' step='1'/>
-                           <input type='number' min='0' step='1'/>
-                       </div>
-                       <a class='btn btn-default btn-sm' ng-click='detectSpots()'>DETECT SPOTS</a>
+                        <!--
+                        <div class='input-group-sm'>
+                            <span class='input-group-addon'>Array size</span>
+                            <input type='number' min='0' step='1'/>
+                            <input type='number' min='0' step='1'/>
+                        </div>
+                        -->
+                        <a class='btn btn-default btn-sm' ng-click='detectSpots()'>DETECT SPOTS</a>
                     </form>
                 </div>
                 <div ng-show='visible.panel.button_adjuster'>
