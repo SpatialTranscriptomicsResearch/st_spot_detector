@@ -105,7 +105,7 @@ angular.module('stSpots')
             function chainToast(toastTexts, toastIndex) {
                 // recursive function for displaying several toasts in a row
                 // if last toast in list of toasts
-                if(toastTexts.length == toastIndex + 1) { 
+                if(toastTexts.length == toastIndex) { 
                     // do nothing, end recursion
                 }
                 else {
@@ -310,7 +310,6 @@ angular.module('stSpots')
                 "hideMethod": "fadeOut"
             };
             toastr["info"]("Welcome to the Spatial Transcriptomics Spot Detection Tool. Begin by clicking the top-most icon to upload a Cy3 fluorescence image.", "");
-
         }
     ]);
 
