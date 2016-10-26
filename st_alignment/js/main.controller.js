@@ -7,6 +7,8 @@ angular.module('stSpots')
         '$sce',
         '$compile',
         function($scope, $http, $sce, $compile) {
+            var addSpotsToastsDisplayed = false;
+
             // texts to display in the menu bar panel when clicking the help button
             const helpTexts = {
                 state_start:        "Click on the picture icon to select and upload a Cy3 fluorescence image.",
@@ -113,6 +115,18 @@ angular.module('stSpots')
                     toastr["info"](toastTexts[toastIndex]);
                 }
             }
+
+            $scope.addSpotsToasts = function() {
+                if(!addSpotsToastsDisplayed) {
+                    addSpotsToastsDisplayed = true;
+                    var toasts = [
+                        "Right click or Ctrl+click to add spots.",
+                        "Left click to navigate the canvas.",
+                        "Click FINISH ADDING SPOTS to return to selection mode."
+                    ];
+                    displayToasts(toasts);
+                }
+            };
 
             function toast() {
                 if($scope.data.state === 'state_start') {
