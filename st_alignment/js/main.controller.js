@@ -11,13 +11,16 @@ angular.module('stSpots')
 
             // texts to display in the menu bar panel when clicking the help button
             const helpTexts = {
-                state_start:        "Click on the picture icon to select and upload a Cy3 fluorescence image.",
+                state_start:        "Click on the top-most icon to select and upload a Cy3 fluorescence image.",
                 state_upload:       "",
-                state_predetection: "Position the frame to align with the outermost spots.<br>"
-                                      + "Adjust brightness and contrast for optimal spot detection.<br>"
-                                      + "Click on detect to begin spot detection.",
+                state_predetection: "Adjust the lines to align on top of the outermost spot frame.<br>"
+                                  + "Click on DETECT SPOTS to begin spot detection.",
                 state_detection:    "",
-                state_adjustment:    "Right click to select spots. Hold in shift to add to a selection.",
+                state_adjustment:   "Right click or Ctrl+click to select spots. Hold in shift to add to a selection.<br>"
+                                  + "Left click to move selected spots or navigate the canvas.<br>"
+                                  + "Click DELETE SPOTS to delete selected spots.<br>"
+                                  + "Click ADD SPOTS to change to spot addition mode, then right click or Ctrl+click to add spots.<br>"
+                                  + "Click FINISH ADDING SPOTS to return to selection mode.<br>"
                 state_error:        "An error occured. Please try again."
             };
 
@@ -302,7 +305,7 @@ angular.module('stSpots')
                 "onclick": null,
                 "showDuration": "300",
                 "hideDuration": "1000",
-                "timeOut": "30000",
+                "timeOut": "0",
                 "extendedTimeOut": "10000",
                 "showEasing": "swing",
                 "hideEasing": "linear",
