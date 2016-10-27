@@ -11,6 +11,7 @@
 
         self.mousePos = {};
         self.mouseDown = false;
+        self.mouseButtonDown = 0;
 
         self.setUpMouseEvents(self.canvas, self.camera);
         self.setUpKeyEvents(self.canvas, self.camera);
@@ -19,7 +20,7 @@
     EventHandler.prototype = {
         passEventToLogicHandler: function(evt) {
             // only pass events in these two states
-            if(self.scopeData.state == 'state_predetection' || self.scopeData.state == 'state_adjustment') {
+            //if(self.scopeData.state == 'state_predetection' || self.scopeData.state == 'state_adjustment') {
                 if(evt.type == 'mouse') {
                     self.logicHandler.processMouseEvent(self.scopeData.state, evt.eventType, evt.data);
                 }
@@ -31,12 +32,13 @@
                         self.logicHandler.processKeyupEvent(self.scopeData.state, evt.keyEvent);
                     }
                 }
-            }
+            //}
         },
         setUpMouseEvents: function(canvas, camera) {
             canvas.onmousedown = function(e) {
                 self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 self.mouseDown = true;
+                self.mouseButtonDown = e.button;
                 var mouseEvent = {
                     type: 'mouse',
                     eventType: self.logicHandler.mouseEvent.down,
@@ -68,8 +70,10 @@
                 var distanceMoved = Vec2.Vec2(self.mousePos.x - e.layerX, self.mousePos.y - e.layerY);
                 self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
 
+                var mouseButton = e.button;
                 var thisEventType;
                 if(self.mouseDown) {
+                    mouseButton = self.mouseButtonDown; // required for Firefox, otherwise it attributes all movement to the left button
                     thisEventType = self.logicHandler.mouseEvent.drag;
                 }
                 else {
@@ -81,7 +85,7 @@
                     data: {
                         position: self.mousePos,
                         difference: distanceMoved,
-                        button: e.button,
+                        button: mouseButton,
                         ctrl: e.ctrlKey
                     }
 

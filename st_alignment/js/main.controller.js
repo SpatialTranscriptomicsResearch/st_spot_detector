@@ -64,7 +64,7 @@ angular.module('stSpots')
                 menuBar: true,
                 menuBarPanel: false,
                 spinner: false,
-                canvas: true,
+                canvas: false,
                 error: false,
                 panel: {
                     button_detector: false,

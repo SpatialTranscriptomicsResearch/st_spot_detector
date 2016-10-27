@@ -36,7 +36,6 @@
         processKeyupEvent: function(state, keyEvent) {
             if(state == 'state_adjustment') {
                 if(self.addingSpots) {
-                    console.log("I shouldn't be here");
                     self.spotAdjuster.finishAddSpots(false);
                 }
                 else {
