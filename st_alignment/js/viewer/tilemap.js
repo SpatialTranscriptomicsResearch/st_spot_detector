@@ -7,7 +7,9 @@
     };
 
     Tilemap.prototype = {
-        loadTilemap: function(tilemap) {
+        loadTilemap: function(tilemap, onLoadCallback) {
+            var imageCount = 0;
+            var loadedImageCount = 0;
             self.tilemapLevels = tilemap.tilemapLevels;
             self.tilesize = Vec2.Vec2(tilemap.tileWidth, tilemap.tileHeight);
             self.tilemaps = {};
@@ -17,8 +19,15 @@
                     for(var i = 0; i < tilemap.tilemaps[tilemapLevel].length; ++i) {
                         var imageRow = [];
                         for(var j = 0; j < tilemap.tilemaps[tilemapLevel][i].length; ++j) {
+                            imageCount++;
                             var image = new Image();
-                            image.src = tilemap.tilemaps[tilemapLevel][i][j]; 
+                            image.src = tilemap.tilemaps[tilemapLevel][i][j]; // this loading is asynchronous; therefore we use the image.onload callback to count how many images have been loaded, and call the onLoadCallback (which calls refreshCanvas()) after they are done loading
+                            image.onload = function() {
+                                loadedImageCount++;
+                                if(loadedImageCount == imageCount) {
+                                    onLoadCallback();
+                                }
+                            };
                             imageRow.push(image);
                         }
                         newTilemap.push(imageRow);

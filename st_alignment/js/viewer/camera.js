@@ -1,4 +1,4 @@
-/* very stripped down and modified version of  https://github.com/robashton/camera */
+/* modified version of  https://github.com/robashton/camera */
 
 (function() {
   
@@ -62,7 +62,6 @@
             self.updateViewport();
         },
         navigate: function(dir, zoomCentre) {
-
             var movement = zoomCentre || Vec2.Vec2(0, 0);
             var scaleFactor = 1;
             if(dir === keyevents.left) {

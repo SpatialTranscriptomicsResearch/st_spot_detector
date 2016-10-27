@@ -60,7 +60,6 @@ angular.module('stSpots')
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
                         images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-
                         renderer.renderImages(images.images); 
 
                         if(scope.data.state == 'state_predetection') {
@@ -98,14 +97,12 @@ angular.module('stSpots')
                     };
 
                     scope.receiveTilemap = function(tilemapData) {
-                        tilemap.loadTilemap(tilemapData);
+                        tilemap.loadTilemap(tilemapData, refreshCanvas);
                         scaleManager.setTilemapLevels(tilemap.tilemapLevels, tilemapLevel);
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel);
                         images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
-                        var largeImageWidth  = tilemap.tilemaps[1][0][0].width;
-                        var largeImageHeight = tilemap.tilemaps[1][0][0].height;
-                        camera.position = {x: (largeImageWidth  / 2) * tilemapLevel,
-                                           y: (largeImageHeight / 2) * tilemapLevel};
+                        camera.position = {x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
+                                           y: (1024 / 2) * tilemapLevel};
                         camera.scale = 1 / tilemapLevel;
                         camera.updateViewport();
 
