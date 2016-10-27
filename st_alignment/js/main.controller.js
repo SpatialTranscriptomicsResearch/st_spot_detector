@@ -20,7 +20,7 @@ angular.module('stSpots')
                                   + "Left click to move selected spots or navigate the canvas.<br>"
                                   + "Click DELETE SPOTS to delete selected spots.<br>"
                                   + "Click ADD SPOTS to change to spot addition mode, then right click or Ctrl+click to add spots.<br>"
-                                  + "Click FINISH ADDING SPOTS to return to selection mode.<br>"
+                                  + "Click FINISH ADDING SPOTS to return to selection mode.<br>",
                 state_error:        "An error occured. Please try again."
             };
 
@@ -64,7 +64,7 @@ angular.module('stSpots')
                 menuBar: true,
                 menuBarPanel: false,
                 spinner: false,
-                canvas: false,
+                canvas: true,
                 error: false,
                 panel: {
                     button_detector: false,

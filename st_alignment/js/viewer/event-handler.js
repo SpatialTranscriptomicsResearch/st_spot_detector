@@ -88,12 +88,12 @@
                 }
                 self.passEventToLogicHandler(mouseEvent);
             };
-            canvas.onmousewheel = function(e) {
+            function wheelCallback(e) {
                 var direction;
-                if(e.deltaY < 0) {
+                if(e.deltaY < 0 || e.detail < 0) {
                     direction = keyevents.zin;
                 }
-                else if(e.deltaY > 0) {
+                else if(e.deltaY > 0 || e.detail > 0) {
                     direction = keyevents.zout;
                 }
                 var mouseEvent = {
@@ -105,7 +105,9 @@
 
                 }
                 self.passEventToLogicHandler(mouseEvent);
-            }
+            };
+            canvas.addEventListener('DOMMouseScroll', wheelCallback, false);
+            canvas.onmousewheel = wheelCallback;
         },
         setUpKeyEvents: function(canvas, camera) {
             document.onkeydown = function(event) {
