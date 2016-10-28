@@ -53,10 +53,15 @@
             <!-- Menu Bar -->
             <div class='menu-bar btn-group btn-group-vertical' role='group'>
                 <!-- Uploader -->
-                <label class='btn btn-default '>
+                <button ng-click='menuButtonClick("button_uploader")' type='button' class='btn btn-default'>
+                    <span class='glyphicon glyphicon-picture'></span>
+                </button>
+                <!--
+                <label class='btn btn-default'>
                     <span class='glyphicon glyphicon-picture'></span>
                     <input image-upload type='file' accept='image/jpg, image/jpeg' style='display:none;'>
                 </label>
+                -->
                 <!-- Detector -->
                 <!--<button export-spots type='button' class='btn btn-default '>-->
                 <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='menuButtonDisabled.button_detector' class='btn btn-default'>
@@ -85,9 +90,19 @@
                 <h4 class='menu-bar-panel-title'>{{ getPanelTitle(data.button) }}</h4>
                 <hr>
                 <!-- Menu Bar Panel Button-based HTMLs -->
-                <div ng-show='visible.panel.button_help'>
-                    {{ getHelpTexts(data.state) }}
+                <!-- Uploader Panel -->
+                <div ng-show='visible.panel.button_uploader'>
+                    <form image-upload name='imageUploaderForm' ng-submit='uploadImage()'>
+						<label class='cy3-upload-button'>
+							<span class='btn btn-default btn-sm'>Choose file</span>
+							<input id='cy3-upload' type='file' accept='image/jpg, image/jpeg' style='display:none;' required>
+						</label>
+						<p class='upload-filename' id='cy3-upload-filename'>No file selected.</p>
+                        <br><small>Please make sure that the image is a Cy3 fluorescent image in .jpg format. The image may be cropped as long as the outer frame is intact, but it may not be scaled.</small><br>
+						<button class='btn btn-default btn-sm' type='submit'>Upload</button>
+					</form>
                 </div>
+                <!-- Detector Panel -->
                 <div ng-show='visible.panel.button_detector'>
                     <form name='spotDetectorForm' ng-submit='detectSpots()'>
                         <!--
@@ -100,11 +115,13 @@
                         <a class='btn btn-default btn-sm' ng-click='detectSpots()'>DETECT SPOTS</a>
                     </form>
                 </div>
+                <!-- Adjuster Panel -->
                 <div ng-show='visible.panel.button_adjuster'>
                     <button ng-click='addSpots()'       ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-default btn-sm'>Add spots</button>
                     <button ng-click='finishAddSpots()' ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-default btn-sm'>Finish adding spots</button>
                     <button ng-click='deleteSpots()'    ng-show='visible.spotAdjuster.button_deleteSpots'    type='button' class='btn btn-default btn-sm'>Delete selected spots</button>
                 </div>
+                <!-- Exporter Panel -->
                 <div ng-show='visible.panel.button_exporter'>
                     <div class='btn-group' aria-label='export spots'>
                         <form ng-submit='exportSpots(exportForm.coordinateType, exportForm.selection)'>
@@ -130,6 +147,26 @@
                         </form>
                     </div>
                 </div>
+                <!-- Help Panel -->
+                <div ng-show='visible.panel.button_help'>
+                    {{ getHelpTexts(data.state) }}
+                </div>
+                <!-- Info Panel -->
+                <div ng-show='visible.panel.button_info'>
+                </div>
+            </div>
+        </div>
+        <div ng-show='visible.zoomBar' class='zoom-wrapper'>
+            <!-- Zoom Bar -->
+            <div class='zoom-bar btn-group btn-group-vertical' role='group'>
+                <!-- In -->
+                <button ng-click='zoomButtonClick("zin")' type='button' class='btn btn-default'>
+                    <span class='glyphicon glyphicon-zoom-in'></span>
+                </button>
+                <!-- Out -->
+                <button ng-click='zoomButtonClick("zout")' type='button' class='btn btn-default'>
+                    <span class='glyphicon glyphicon-zoom-out'></span>
+                </button>
             </div>
         </div>
         <div class='spinner' ng-show='visible.spinner'>

@@ -36,21 +36,21 @@ angular.module('stSpots')
 
             // texts to display as a title on the menu bar panel
             const panelTitles = {
-                button_uploader: '',
+                button_uploader: 'Uploader',
                 button_detector: 'Detection Parameters',
                 button_adjuster: 'Spot adjustment',
                 button_exporter: 'Spot export',
                 button_help: 'Help',
-                button_info: ''
+                button_info: 'Info'
             };
 
             // variables which hold more "global" important information, some shared between
             // other controllers/directives
             $scope.data = {
                 state: 'state_start',
-                button: 'button_help',
+                button: 'button_uploader',
                 sessionId: '',
-                image: '',
+                cy3Image: '',
                 errorText: ''
             };
 
@@ -62,15 +62,18 @@ angular.module('stSpots')
             // bools which control the visibilty of various elements on the page
             $scope.visible = {
                 menuBar: true,
-                menuBarPanel: false,
+                menuBarPanel: true,
+                zoomBar: false,
                 spinner: false,
                 canvas: false,
                 error: false,
                 panel: {
+                    button_uploader: true,
                     button_detector: false,
                     button_adjuster: false,
                     button_exporter: false,
-                    button_help: false
+                    button_help: false,
+                    button_info: false
                 },
                 spotAdjuster: {
                     button_addSpots: true,
@@ -169,12 +172,14 @@ angular.module('stSpots')
                 }
                 else if($scope.data.state === 'state_upload') {
                     $scope.visible.menuBar = false;
+                    $scope.visible.zoomBar = false;
                     $scope.visible.spinner = true;
                     $scope.visible.canvas = false;
                     $scope.visible.errorText = false;
                 }
                 else if($scope.data.state === 'state_predetection') {
                     $scope.visible.menuBar = true;
+                    $scope.visible.zoomBar = true;
                     $scope.visible.spinner = false;
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
@@ -183,12 +188,14 @@ angular.module('stSpots')
                 }
                 else if($scope.data.state === 'state_detection') {
                     $scope.visible.menuBar = false;
+                    $scope.visible.zoomBar = false;
                     $scope.visible.spinner = true;
                     $scope.visible.canvas = false;
                     $scope.visible.errorText = false;
                 }
                 else if($scope.data.state === 'state_adjustment') {
                     $scope.visible.menuBar = true;
+                    $scope.visible.zoomBar = true;
                     $scope.visible.spinner = false;
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
@@ -198,6 +205,7 @@ angular.module('stSpots')
                 }
                 else if($scope.data.state === 'state_error') {
                     $scope.visible.menuBar = true;
+                    $scope.visible.zoomBar = false;
                     $scope.visible.spinner = false;
                     $scope.visible.canvas = false;
                     $scope.visible.errorText = true;
@@ -210,6 +218,10 @@ angular.module('stSpots')
                 $scope.data.button = button;
                 $scope.menuButtonClick(button);
             }
+
+            $scope.zoomButtonClick = function(direction) {
+                $scope.zoom(direction); // defined in the viewer directive
+            };
 
             $scope.menuButtonClick = function(button) {
                 // switch off all the panel visibilities
@@ -265,34 +277,37 @@ angular.module('stSpots')
             };
 
             $scope.uploadImage = function() {
-                var getTileData = function() {
-                    var tileSuccessCallback = function(response) {
-                        $scope.updateState('state_predetection');
-                        $scope.receiveTilemap(response.data); // defined in the viewer directive
+                if($scope.data.cy3Image != '') {
+                    $scope.updateState('state_upload');
+                    var getTileData = function() {
+                        var tileSuccessCallback = function(response) {
+                            $scope.updateState('state_predetection');
+                            $scope.receiveTilemap(response.data); // defined in the viewer directive
+                        };
+                        var tileErrorCallback = function(response) {
+                            $scope.data.errorText = response.data;
+                            console.error(response.data);
+                            $scope.updateState('state_error');
+                        };
+                        $http.post('../tiles', {image: $scope.data.cy3Image, session_id: $scope.data.sessionId})
+                            .then(tileSuccessCallback, tileErrorCallback);
                     };
-                    var tileErrorCallback = function(response) {
-                        $scope.data.errorText = response.data;
-                        console.error(response.data);
-                        $scope.updateState('state_error');
-                    };
-                    $http.post('../tiles', {image: $scope.data.image, session_id: $scope.data.sessionId})
-                        .then(tileSuccessCallback, tileErrorCallback);
-                };
 
-                var getSessionId = function() {
-                    var sessionSuccessCallback = function(response) {
-                        $scope.data.sessionId = response.data;
-                        getTileData();
+                    var getSessionId = function() {
+                        var sessionSuccessCallback = function(response) {
+                            $scope.data.sessionId = response.data;
+                            getTileData();
+                        };
+                        var sessionErrorCallback = function(response) {
+                            $scope.data.errorText = response.data;
+                            console.error(response.data);
+                            $scope.updateState('state_error');
+                        };
+                        $http.get('../session_id')
+                            .then(sessionSuccessCallback, sessionErrorCallback);
                     };
-                    var sessionErrorCallback = function(response) {
-                        $scope.data.errorText = response.data;
-                        console.error(response.data);
-                        $scope.updateState('state_error');
-                    };
-                    $http.get('../session_id')
-                        .then(sessionSuccessCallback, sessionErrorCallback);
-                };
-                getSessionId();
+                    getSessionId();
+                }
             };
 
             toastr.options = {
@@ -312,7 +327,7 @@ angular.module('stSpots')
                 "showMethod": "fadeIn",
                 "hideMethod": "fadeOut"
             };
-            toastr["info"]("Welcome to the Spatial Transcriptomics Spot Detection Tool. Begin by clicking the top-most icon to upload a Cy3 fluorescence image.", "");
+            toastr["info"]("Welcome to the Spatial Transcriptomics Spot Detection Tool. Begin by uploading a Cy3 fluorescence image.", "");
         }
     ]);
 

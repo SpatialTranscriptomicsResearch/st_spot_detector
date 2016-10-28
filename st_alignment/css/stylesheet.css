@@ -53,12 +53,24 @@ canvas:active {
     box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
 }
 
+.zoom-wrapper {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+.zoom-bar {
+    -webkit-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+    -moz-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+    box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+}
+
 .menu-bar-panel {
     background-color: white;
     position: absolute;
     top: 0px;
     left: 40px;
-    width: 250px;
+    width: 400px;
     height: 199px;
     -webkit-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
     -moz-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
@@ -68,6 +80,10 @@ canvas:active {
 .menu-bar-panel-title {
     margin-left: 10px;
     margin-bottom: 5px;
+}
+
+.upload-filename {
+    display: inline-block;
 }
 
 hr {

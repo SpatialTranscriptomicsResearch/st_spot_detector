@@ -107,7 +107,12 @@ angular.module('stSpots')
                         camera.updateViewport();
 
                         refreshCanvas();
-                    }
+                    };
+
+                    scope.zoom = function(direction) {
+                        camera.navigate(keyevents[direction]);
+                        refreshCanvas();
+                    };
 
                     scope.exportSpots = function(type, selection) {
                         var spotDataString = spots.exportSpots(type, selection);
@@ -127,7 +132,7 @@ angular.module('stSpots')
                             a.click();  // IE: "Access is denied"; see: https://connect.microsoft.com/IE/feedback/details/797361/ie-10-treats-blob-url-as-cross-origin-and-denies-access
                             document.body.removeChild(a);
                         }
-                    }
+                    };
                     
                 }
             };
