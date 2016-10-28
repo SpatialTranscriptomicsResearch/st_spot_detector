@@ -112,6 +112,11 @@ canvas:active {
     right: 5px;
 }
 
+#button-zoom-in {
+    /* not sure why it isn't this already */
+    border-top-right-radius: 4px;
+}
+
 hr {
     margin: 0px;
 }
