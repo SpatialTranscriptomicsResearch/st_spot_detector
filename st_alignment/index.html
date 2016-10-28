@@ -105,7 +105,7 @@
                             <p class='upload-filename' id='bf-upload-filename'>No file selected.</p>
                             <br><small>Please make sure that the image is a bright field image in .jpg format. The image may be cropped, but it may not be scaled.</small><br>
                             -->
-                            <button class='btn btn-default btn-sm' type='submit'>Upload</button>
+                            <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Image</button>
                         </form>
                     </div>
                     <!-- Detector Panel -->
@@ -118,7 +118,7 @@
                                 <input type='number' min='0' step='1'/>
                             </div>
                             -->
-                            <a class='btn btn-default btn-sm' ng-click='detectSpots()'>DETECT SPOTS</a>
+                            <a class='btn btn-primary btn-sm submit-button' ng-click='detectSpots()'>Detect Spots</a>
                         </form>
                     </div>
                     <!-- Adjuster Panel -->
@@ -129,29 +129,27 @@
                     </div>
                     <!-- Exporter Panel -->
                     <div ng-show='visible.panel.button_exporter'>
-                        <div class='btn-group' aria-label='export spots'>
-                            <form ng-submit='exportSpots(exportForm.coordinateType, exportForm.selection)'>
-                            <div class="btn-group" data-toggle="buttons">
-                                <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-default btn-sm">
-                                    <input type="radio" value='all' ng-model='exportForm.selection'> All Spots
-                                </label>
-                                <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-default btn-sm">
-                                    <input type="radio" value='selection' ng-model='exportForm.selection' checked> Selection Only
-                                </label>
-                            </div>
-                            <br>
-                            <div class="btn-group" data-toggle="buttons">
-                                <label ng-class="{active: exportForm.coordinateType == 'array'}" class="btn btn-default btn-sm">
-                                    <input type="radio" value='array' ng-model='exportForm.coordinateType' checked> Array Coordinates
-                                </label>
-                                <label ng-class="{active: exportForm.coordinateType == 'pixel'}" class="btn btn-default btn-sm">
-                                    <input type="radio" value='pixel' ng-model='exportForm.coordinateType'> Pixel Coordinates
-                                </label>
-                            </div>
-                            <br>
-                            <input class='btn btn-default btn-sm' type='submit' value='Export'/>
-                            </form>
+                        <form ng-submit='exportSpots(exportForm.coordinateType, exportForm.selection)'>
+                        <div class="btn-group" data-toggle="buttons">
+                            <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-default btn-sm">
+                                <input type="radio" value='all' ng-model='exportForm.selection'> All Spots
+                            </label>
+                            <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-default btn-sm">
+                                <input type="radio" value='selection' ng-model='exportForm.selection' checked> Selection Only
+                            </label>
                         </div>
+                        <br>
+                        <div class="btn-group" data-toggle="buttons">
+                            <label ng-class="{active: exportForm.coordinateType == 'array'}" class="btn btn-default btn-sm">
+                                <input type="radio" value='array' ng-model='exportForm.coordinateType' checked> Array Coordinates
+                            </label>
+                            <label ng-class="{active: exportForm.coordinateType == 'pixel'}" class="btn btn-default btn-sm">
+                                <input type="radio" value='pixel' ng-model='exportForm.coordinateType'> Pixel Coordinates
+                            </label>
+                        </div>
+                        <br>
+                        <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Image</button>
+                        </form>
                     </div>
                     <!-- Help Panel -->
                     <div ng-show='visible.panel.button_help'>

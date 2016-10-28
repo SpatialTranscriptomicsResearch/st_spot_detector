@@ -106,6 +106,12 @@ canvas:active {
     display: inline-block;
 }
 
+.submit-button {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}
+
 hr {
     margin: 0px;
 }
