@@ -201,7 +201,6 @@ angular.module('stSpots')
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
 
-                    openPanel('button_exporter');
                     openPanel('button_adjuster');
                 }
                 else if($scope.data.state === 'state_error') {
