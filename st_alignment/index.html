@@ -93,12 +93,23 @@
                 <!-- Uploader Panel -->
                 <div ng-show='visible.panel.button_uploader'>
                     <form image-upload name='imageUploaderForm' ng-submit='uploadImage()'>
+						<p>Cy3 Image</p>
 						<label class='cy3-upload-button'>
 							<span class='btn btn-default btn-sm'>Choose file</span>
 							<input id='cy3-upload' type='file' accept='image/jpg, image/jpeg' style='display:none;' required>
 						</label>
 						<p class='upload-filename' id='cy3-upload-filename'>No file selected.</p>
                         <br><small>Please make sure that the image is a Cy3 fluorescent image in .jpg format. The image may be cropped as long as the outer frame is intact, but it may not be scaled.</small><br>
+
+                        <!--
+						<p>Bright Field Image</p>
+						<label class='bf-upload-button'>
+							<span class='btn btn-default btn-sm'>Choose file</span>
+							<input id='bf-upload' type='file' accept='image/jpg, image/jpeg' style='display:none;'>
+						</label>
+						<p class='upload-filename' id='bf-upload-filename'>No file selected.</p>
+                        <br><small>Please make sure that the image is a bright field image in .jpg format. The image may be cropped, but it may not be scaled.</small><br>
+                        -->
 						<button class='btn btn-default btn-sm' type='submit'>Upload</button>
 					</form>
                 </div>

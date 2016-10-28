@@ -51,6 +51,7 @@ angular.module('stSpots')
                 button: 'button_uploader',
                 sessionId: '',
                 cy3Image: '',
+                bfImage: '',
                 errorText: ''
             };
 
