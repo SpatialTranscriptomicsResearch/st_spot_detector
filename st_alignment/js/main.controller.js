@@ -16,8 +16,8 @@ angular.module('stSpots')
                 state_predetection: "Adjust the lines to align on top of the outermost spot frame.<br>"
                                   + "Click on DETECT SPOTS to begin spot detection.",
                 state_detection:    "",
-                state_adjustment:   "Right click or Ctrl+click to select spots. Hold in shift to add to a selection.<br>"
-                                  + "Left click to move selected spots or navigate the canvas.<br>"
+                state_adjustment:   "Left click or Ctrl+click to select spots. Hold in shift to add to a selection.<br>"
+                                  + "Right click to move selected spots or navigate the canvas.<br>"
                                   + "Click DELETE SPOTS to delete selected spots.<br>"
                                   + "Click ADD SPOTS to change to spot addition mode, then right click or Ctrl+click to add spots.<br>"
                                   + "Click FINISH ADDING SPOTS to return to selection mode.<br>",
@@ -154,8 +154,8 @@ angular.module('stSpots')
                     toastr.options.timeOut = "7000";
                     var toasts = [
                         "Detected spots are shown in red.",
-                        "Right click or Ctrl+click to select spots. Holding in Shift adds to the selection.<br>" +
-                        "Left click to move selected spots or navigate the canvas.",
+                        "Left click or Ctrl+click to select spots. Holding in Shift adds to the selection.<br>" +
+                        "Right click to move selected spots or navigate the canvas.",
                         "Click DELETE SPOTS to deleted selected spots.<br>" + 
                         "Click ADD SPOTS to add additional spots."
                     ];

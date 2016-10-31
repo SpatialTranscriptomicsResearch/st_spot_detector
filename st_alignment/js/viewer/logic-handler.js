@@ -77,8 +77,8 @@
             }
             // adjusting spots state
             else if(state == 'state_adjustment') {
-                // left click moves canvas or spots
-                if(eventData.button == self.mouseButton.left &&
+                // right click moves canvas or spots
+                if(eventData.button == self.mouseButton.right &&
                    eventData.ctrl == false) {
                     if(mouseEvent == self.mouseEvent.down) {
                         self.spotAdjuster.moving = self.spotAdjuster.atSelectedSpots(eventData.position);
@@ -95,16 +95,16 @@
                         }
                     }
                 }
-                // right click or ctrl+click adds or selects spots
-                else if(eventData.button == self.mouseButton.right ||
+                // left click or ctrl+click adds or selects spots
+                else if(eventData.button == self.mouseButton.left ||
                         eventData.ctrl == true) {
-                    // in adding state, right click serves to add a new spot
+                    // in adding state, left click serves to add a new spot
                     if(self.addingSpots) {
                         if(mouseEvent == self.mouseEvent.up) {
                             self.spotAdjuster.addSpot(eventData.position);
                         }
                     }
-                    // but in selection state, right click to make a selection
+                    // but in selection state, left click to make a selection
                     else {
                         if(mouseEvent == self.mouseEvent.down) {
                             self.spotSelector.beginSelection(eventData.position);
