@@ -17,7 +17,6 @@
             scale: Vec2.Vec2(1, 1)
         };
         self.navFactor = 60;
-        self.panFactor = 5;
         self.scaleFactor = 0.95; 
         self.minScale = 0.03;
         self.maxScale = 1.00;
@@ -85,13 +84,14 @@
             self.pan(movement);
             self.zoom(scaleFactor);
         },
-        pan: function(direction) {
+        pan: function(movement) {
             // takes an object {x, y} and moves the camera with that distance //
-            direction = Vec2.scale(direction, self.panFactor);
-            self.position = Vec2.add(self.position, direction);
+            movement = Vec2.scale(movement, 1 / self.scale);
+            self.position = Vec2.add(self.position, movement);
             self.updateViewport();
         },
         zoom: function(scaleFactor) {
+            console.log(1 / self.scale + ", " + self.scale);
             self.scale *= scaleFactor;
             self.updateViewport();
         },
