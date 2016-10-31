@@ -61,9 +61,6 @@
                         // maybe this should take the position rather than the difference
                         self.camera.pan(eventData.difference);
                     }
-                    else if(mouseEvent == self.mouseEvent.wheel) {
-                        self.camera.navigate(eventData.direction);
-                    }
                 }
                 if(mouseEvent == self.mouseEvent.move) {
                     self.calibrator.detectHighlight(eventData.position);
@@ -73,6 +70,9 @@
                 }
                 else if(mouseEvent == self.mouseEvent.up) {
                     self.calibrator.endSelection();
+                }
+                else if(mouseEvent == self.mouseEvent.wheel) {
+                    self.camera.navigate(eventData.direction, eventData.position);
                 }
             }
             // adjusting spots state
@@ -117,16 +117,12 @@
                         }
                     }
                 }
-                if(mouseEvent == self.mouseEvent.move) {
+                else if(mouseEvent == self.mouseEvent.move) {
                     self.spotAdjuster.updateSpotToAdd(eventData.position);
                 }
                 else if(mouseEvent == self.mouseEvent.wheel) {
                     // scrolling
-                    self.camera.navigate(eventData.direction);
-                }
-                if(mouseEvent == self.mouseEvent.wheel) {
-                    // scrolling
-                    self.camera.navigate(eventData.direction);
+                    self.camera.navigate(eventData.direction, eventData.position);
                 }
             }
             self.refreshCanvas();

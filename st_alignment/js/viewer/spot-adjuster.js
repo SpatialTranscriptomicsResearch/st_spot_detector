@@ -53,7 +53,7 @@
             }
         },
         dragSpots: function(movement) {
-            movement = self.camera.mouseToCameraDifference(movement);
+            movement = self.camera.mouseToCameraScale(movement);
             movement = Vec2.truncate(movement);
             for(var i = 0; i < self.spots.spots.length; ++i) {
                 if(self.spots.spots[i].selected) {

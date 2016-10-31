@@ -60,8 +60,12 @@
             self.position = pos;
             self.updateViewport();
         },
-        navigate: function(dir, zoomCentre) {
-            var movement = zoomCentre || Vec2.Vec2(0, 0);
+        navigate: function(dir, zoomCenter) {
+            var center = zoomCenter || Vec2.Vec2(0, 0); // the position to which the camera will zoom towards
+            var canvasCenter = Vec2.Vec2(self.context.canvas.width / 2, self.context.canvas.height / 2);
+            var movement = Vec2.subtract(center, canvasCenter); // distance between position and canvas center
+            movement = Vec2.scale(movement, 1 - self.scaleFactor); // scaling it down for slight movement
+
             var scaleFactor = 1;
             if(dir === keyevents.left) {
                 movement.x -= self.navFactor;
@@ -86,12 +90,11 @@
         },
         pan: function(movement) {
             // takes an object {x, y} and moves the camera with that distance //
-            movement = Vec2.scale(movement, 1 / self.scale);
+            movement = self.mouseToCameraScale(movement, 1 / self.scale);
             self.position = Vec2.add(self.position, movement);
             self.updateViewport();
         },
         zoom: function(scaleFactor) {
-            console.log(1 / self.scale + ", " + self.scale);
             self.scale *= scaleFactor;
             self.updateViewport();
         },
@@ -109,10 +112,10 @@
         },
         mouseToCameraPosition: function(position) {
             var cam = Vec2.subtract(self.position, self.positionOffset);
-            var mouse = Vec2.scale(position, 1 / self.scale);
+            var mouse = self.mouseToCameraScale(position, 1 / self.scale);
             return Vec2.add(cam, mouse);
         },
-        mouseToCameraDifference: function(vector) {
+        mouseToCameraScale: function(vector) {
             // this does not take the camera position into account, so it is ideal
             // for use with values such as difference/movement values
             return Vec2.scale(vector, 1 / self.scale);

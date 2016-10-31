@@ -93,6 +93,7 @@
                 self.passEventToLogicHandler(mouseEvent);
             };
             function wheelCallback(e) {
+                self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 var direction;
                 if(e.deltaY < 0 || e.detail < 0) {
                     direction = keyevents.zin;
@@ -104,6 +105,7 @@
                     type: 'mouse',
                     eventType: self.logicHandler.mouseEvent.wheel,
                     data: {
+                        position: self.mousePos,
                         direction: direction
                     }
 
