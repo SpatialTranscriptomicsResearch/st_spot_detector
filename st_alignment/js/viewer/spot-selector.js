@@ -8,6 +8,7 @@
         self.camera = camera;
         self.spotManager = spotManager;
         self.selected = false;
+        self.selectedSpotCounter = 0;
         self.shiftPressed = false;
         self.renderingRect = {TL: Vec2.Vec2(),
                               WH: Vec2.Vec2()}
@@ -19,6 +20,7 @@
         selectSpots: function() {
             // takes two points, the top left and bottom right of a rect, and returns the spots contained within it
             var spots = self.spotManager.spots;
+            self.selectedSpotCounter = 0;
 
             // first we need to check if the user is only clicking on a single spot
             if(self.renderingRect.WH.x < 3 && self.renderingRect.WH.y < 3) // arbitrary 3 values here for a "click"
@@ -32,6 +34,7 @@
                         }
                         else {
                             spots[i].selected = true;
+                            self.selectedSpotCounter++;
                         }
                     }
                     else {
@@ -48,6 +51,7 @@
                     if(pos.x > self.selectionRect.TL.x && pos.x < self.selectionRect.BR.x &&
                        pos.y > self.selectionRect.TL.y && pos.y < self.selectionRect.BR.y) {
                         spots[i].selected = true;
+                        self.selectedSpotCounter++;
                     }
                     else {
                         if(!self.shiftPressed) {
@@ -55,6 +59,9 @@
                         }
                     }
                 }
+            }
+            if(self.selectedSpotCounter == 0) {
+                self.selected = false;
             }
         },
         beginSelection: function(topLeft) {
@@ -71,7 +78,7 @@
             self.selectSpots();
         },
         endSelection: function() {
-            self.selected  = true;
+            self.selected = true;
             self.selectSpots();
             self.renderingRect = {TL: Vec2.Vec2(),
                                   WH: Vec2.Vec2()};

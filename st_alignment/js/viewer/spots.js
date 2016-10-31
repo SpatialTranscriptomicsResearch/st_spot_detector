@@ -15,13 +15,18 @@
             self.spots = spotData.spots;
             self.spacer = spotData.spacer;
         },
-        exportSpots: function(type) {
+        exportSpots: function(type, selection) {
             var dataString = "";
 
             for(var i = 0; i < self.spots.length; ++i) {
                 var spot = self.spots[i];
+                if(selection == 'selection' && spot.selected == false) {
+                    // we want to skip adding the spot if we are only exporting the selection
+                    // and find that the current spot is not selected
+                    continue;
+                }
                 dataString += spot.arrayPosition.x  + "\t" + spot.arrayPosition.y  + "\t";
-                if(type == "adjustedArray") {
+                if(type == "array") {
                     dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y; 
                 }
                 else if(type == "pixel") {

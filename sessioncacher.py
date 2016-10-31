@@ -41,18 +41,6 @@ class SessionCacher:
         self.session_caches.append(new_session_cache)
         return new_session_id
 
-    def set_image(self, session_id, image):
-        for session_cache in self.session_caches:
-            if(session_cache.session_id == session_id):
-                session_cache.image = image
-                break
-
-    def set_thumbnail(self, session_id, thumbnail):
-        for session_cache in self.session_caches:
-            if(session_cache.session_id == session_id):
-                session_cache.thumbnail = thumbnail
-                break
-
     def get_session_cache(self, session_id):
         my_session_cache = None
         for session_cache in self.session_caches:

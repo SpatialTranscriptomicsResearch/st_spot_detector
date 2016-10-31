@@ -2,32 +2,56 @@
 
 (function() {
     var self;
-    var Tilemap = function(tilemapLevels) {
+    var Tilemap = function() {
         self = this;
-        self.loadTilemap = function(tilemap) {
+    };
+
+    Tilemap.prototype = {
+        loadTilemap: function(tilemap, onLoadCallback) {
+            // these two variables are used to check for async image loading status
+            var imageCount = 0;
+            var loadedImageCount = 0;
+
+            // store these variables and hold the tilemaps in an object
             self.tilemapLevels = tilemap.tilemapLevels;
             self.tilesize = Vec2.Vec2(tilemap.tileWidth, tilemap.tileHeight);
             self.tilemaps = {};
+
+            // iterate through all the tilemap levels in the loaded tilemap
             for(var tilemapLevel in tilemap.tilemaps) {
+                // only count them if they are not part of the prototype (JS necessity)
                 if(tilemap.tilemaps.hasOwnProperty(tilemapLevel)) {
+                    // create empty tilemap array to fill with a 2D tilemap
                     var newTilemap = [];
                     for(var i = 0; i < tilemap.tilemaps[tilemapLevel].length; ++i) {
+                        // create empty image array as one row of the tilemap
                         var imageRow = [];
                         for(var j = 0; j < tilemap.tilemaps[tilemapLevel][i].length; ++j) {
+                            // increment the image counter
+                            imageCount++;
                             var image = new Image();
-                            image.src = tilemap.tilemaps[tilemapLevel][i][j]; 
+                            image.src = tilemap.tilemaps[tilemapLevel][i][j]; // this loading is asynchronous; therefore we use the image.onload callback to count how many images have been loaded, and call the onLoadCallback (which calls refreshCanvas()) after they are done loading
+                            // this function is called once image.src has finished loading
+                            image.onload = function() {
+                                // we increment the loaded image count and compare it against the imageCount
+                                // note: it is possible that an image finished loading before all the imageCounts are incremented,
+                                // but this is a non-critical operation and will not break things if this happens
+                                loadedImageCount++;
+                                if(loadedImageCount >= imageCount) {
+                                    // we refresh the canvas once everything is loaded
+                                    onLoadCallback();
+                                }
+                            };
+                            // add the image to the row
                             imageRow.push(image);
                         }
+                        // add the row to the tilemap
                         newTilemap.push(imageRow);
                     }
                     self.tilemaps[tilemapLevel] = newTilemap;
                 } 
             }
-
-        }
-    };
-
-    Tilemap.prototype = {
+        },
         getRenderableImages: function(tilePosition, tilemapLevel, radius) {
             radius = radius || 3;
             var tilePositions = self.getSurroundingTilePositions(tilePosition, tilemapLevel, radius);

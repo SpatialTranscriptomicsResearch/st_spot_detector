@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import ast
@@ -46,7 +45,7 @@ def get_spots():
                                                         threshold, True)
         keypoints = image_processor.detect_keypoints(session_cache.image)
         spots = Spots(TL_coords, BR_coords, array_size)
-        spots.create_spots_from_keypoints(keypoints)
+        spots.create_spots_from_keypoints(keypoints, session_cache.image)
 
         # all is said and done; we can now safely remove the session cache
         print(session_id[:20] + ": Spot detection finished.")
@@ -56,7 +55,9 @@ def get_spots():
         return spots.wrap_spots()
     else:
         response.status = 400
-        return 'Session ID expired. Please try again.'
+        error_message = 'Session ID expired. Please try again.'
+        print(session_id[:20] + ": Error. " + error_message)
+        return error_message
     
 @get('/thumbnail')
 def process_thumbnail():
@@ -77,7 +78,9 @@ def process_thumbnail():
         }
     else:
         response.status = 400
-        return 'Session ID expired. Please try again.'
+        error_message = 'Session ID expired. Please try again.'
+        print(session_id[:20] + ": Error. " + error_message)
+        return error_message
     return thumbnail_dictionary
 
 @post('/tiles')
@@ -96,10 +99,16 @@ def get_tiles():
         if(valid):
             print(session_id[:20] + ": Transforming image.")
             image = image_processor.jpeg_URI_to_Image(image_string)
+
+            # release
             image = image_processor.transform_original_image(image)
             print(session_id[:20] + ": Tiling images.")
             for x in tiles.tilemapLevels:
                 tiles.put_tiles_at(x, image_processor.tile_image(image, x))
+
+            # debug
+            #print(session_id[:20] + ": Tiling images.")
+            #tiles.put_tiles_at(20, image_processor.tile_image(image, 20))
 
             session_cache.image = image
             largest_tile = tiles.tilemapLevels[-1]
@@ -109,10 +118,14 @@ def get_tiles():
             print(session_id[:20] + ": Image tiling complete.")
         else:
             response.status = 400
-            return 'Invalid image. Please upload a jpeg image.'
+            error_message = 'Invalid image. Please upload a jpeg image.'
+            print(session_id[:20] + ": Error. " + error_message)
+            return error_message
     else:
         response.status = 400
-        return 'Session ID expired. Please try again.'
+        error_message = 'Session ID expired. Please try again.'
+        print(session_id[:20] + ": Error. " + error_message)
+        return error_message
 
     return tiles.wrapped_tiles()
 

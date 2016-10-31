@@ -34,7 +34,7 @@ class Spots:
         }
         return spot_dictionary
         
-    def create_spots_from_keypoints(self, keypoints):
+    def create_spots_from_keypoints(self, keypoints, thresholded_image):
         """Takes keypoints generated from opencv spot detection and
         tries to match them to their correct array positions.
         It also tries to fill in "missing spots" by finding which array
@@ -153,7 +153,6 @@ class Spots:
         # reading of pixel values. This is very RAM heavy. Alternatively,
         # one may crop out each surrounding pixel area, and analyse the
         # whiteness of these
-        thresholded_image = Image.open("BCT_image_after.jpg")
         image_pixels = thresholded_image.load()
         filled_in_spots = []
         for spot in missing_spots:
