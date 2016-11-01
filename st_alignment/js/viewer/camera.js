@@ -87,7 +87,7 @@
             }
 
             if((scaleFactor > 1.0 && self.scale == self.maxScale) ||
-               (scaleFactor < 1.0 && self.scale == self.minScale) {
+               (scaleFactor < 1.0 && self.scale == self.minScale)) {
                    // if at min/max boundaries and trying to zoom in/out further, then do nothing
             }
             else {
