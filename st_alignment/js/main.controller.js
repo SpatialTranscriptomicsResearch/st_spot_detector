@@ -143,7 +143,8 @@ angular.module('stSpots')
                 }
                 else if($scope.data.state === 'state_predetection') {
                     toastr["info"](
-                        "Adjust the lines to align on top of the outermost spot frame.<br><img src='images/framealignment.png'/>" +
+                        "Adjust the lines to frame the spots, as shown:.<br>" + 
+                        "<img src='images/framealignment.png'/><br>" +
                         "Click DETECT SPOTS to begin automatic spot detection."
                     );
                 }
