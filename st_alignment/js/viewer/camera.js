@@ -66,7 +66,7 @@
             var movement = Vec2.subtract(center, canvasCenter); // distance between position and canvas center
             movement = Vec2.scale(movement, 1 - self.scaleFactor); // scaling it down for slight movement
 
-            var scaleFactor = 1;
+            var scaleFactor = 1.0;
             if(dir === keyevents.left) {
                 movement.x -= self.navFactor;
             }
@@ -80,13 +80,20 @@
                 movement.y += self.navFactor;
             }
             else if(dir === keyevents.zin) {
-                scaleFactor = 1 / self.scaleFactor;
+                scaleFactor = 1 / self.scaleFactor; // 1.05
             }
             else if(dir === keyevents.zout) {
-                scaleFactor = self.scaleFactor;
+                scaleFactor = self.scaleFactor; // 0.95
             }
-            self.pan(movement);
-            self.zoom(scaleFactor);
+
+            if((scaleFactor > 1.0 && self.scale == self.maxScale) ||
+               (scaleFactor < 1.0 && self.scale == self.minScale) {
+                   // if at min/max boundaries and trying to zoom in/out further, then do nothing
+            }
+            else {
+                self.pan(movement);
+                self.zoom(scaleFactor);
+            }
         },
         pan: function(movement) {
             // takes an object {x, y} and moves the camera with that distance //
