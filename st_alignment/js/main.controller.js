@@ -13,14 +13,14 @@ angular.module('stSpots')
             const helpTexts = {
                 state_start:        "Click on the top-most icon to select and upload a Cy3 fluorescence image.",
                 state_upload:       "",
-                state_predetection: "Adjust the lines to align on top of the outermost spot frame.<br>"
+                state_predetection: "Adjust the lines to align on top of the outermost spot frame.\n"
                                   + "Click on DETECT SPOTS to begin spot detection.",
                 state_detection:    "",
-                state_adjustment:   "Left click or Ctrl+click to select spots. Hold in shift to add to a selection.<br>"
-                                  + "Right click to move selected spots or navigate the canvas.<br>"
-                                  + "Click DELETE SPOTS to delete selected spots.<br>"
-                                  + "Click ADD SPOTS to change to spot addition mode, then right click or Ctrl+click to add spots.<br>"
-                                  + "Click FINISH ADDING SPOTS to return to selection mode.<br>",
+                state_adjustment:   "Left click or Ctrl+click to select spots. Hold in shift to add to a selection.\n"
+                                  + "Right click to move selected spots or navigate the canvas.\n"
+                                  + "Click DELETE SPOTS to delete selected spots.\n"
+                                  + "Click ADD SPOTS to change to spot addition mode, then right click or Ctrl+click to add spots.\n"
+                                  + "Click FINISH ADDING SPOTS to return to selection mode.\n",
                 state_error:        "An error occured. Please try again."
             };
 
