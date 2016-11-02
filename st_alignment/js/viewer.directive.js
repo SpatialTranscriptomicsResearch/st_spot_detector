@@ -26,10 +26,25 @@ angular.module('stSpots')
 
                     var calibrator = new Calibrator(camera);
 
+                    scope.setCanvasCursor = function(cursor) {
+                        scope.$apply(function() {
+                            scope.classes.canvas = cursor;
+                        });
+                        /*
+                        crosshair
+                        ew-resize
+                        ns-resize
+                        nesw-resize
+                        nwse-resize
+                        grabbable
+                        grabbed
+                        */
+                    };
+
                     var spots = new SpotManager();
                     var spotSelector = new SpotSelector(camera, spots);
                     var spotAdjuster = new SpotAdjuster(camera, spots, calibrator.calibrationData);
-                    var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, calibrator, refreshCanvas);
+                    var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, calibrator, refreshCanvas, scope.setCanvasCursor);
                     var eventHandler = new EventHandler(scope.data, canvas, camera, logicHandler);
 
                     var images = {

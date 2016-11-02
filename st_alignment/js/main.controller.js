@@ -55,6 +55,10 @@ angular.module('stSpots')
                 errorText: ''
             };
 
+            $scope.classes = {
+                canvas: "grabbable"
+            };
+
             $scope.exportForm = {
                 selection: 'selection',
                 coordinateType: 'array'
