@@ -36,43 +36,43 @@ canvas:active {
 .crosshair {
     cursor: -webkit-crosshair;
     cursor:    -moz-crosshair;
-    cursor:        -crosshair;
+    cursor:         crosshair;
 }
 
 .ew-resize {
     cursor: -webkit-ew-resize;
     cursor:    -moz-ew-resize;
-    cursor:        -ew-resize;
+    cursor:         ew-resize;
 }
 
 .ns-resize {
     cursor: -webkit-ns-resize;
     cursor:    -moz-ns-resize;
-    cursor:        -ns-resize;
+    cursor:         ns-resize;
 }
 
 .nesw-resize {
     cursor: -webkit-nesw-resize;
     cursor:    -moz-nesw-resize;
-    cursor:        -nesw-resize;
+    cursor:         nesw-resize;
 }
 
 .nwse-resize {
-    cursor: -webkit-nesw-resize;
-    cursor:    -moz-nesw-resize;
-    cursor:        -nesw-resize;
+    cursor: -webkit-nwse-resize;
+    cursor:    -moz-nwse-resize;
+    cursor:         nwse-resize;
 }
 
 .grabbable {
     cursor: -webkit-grab;
     cursor:    -moz-grab;
-    cursor:        -grab;
+    cursor:         grab;
 }
 
 .grabbed {
     cursor: -webkit-grabbing;
     cursor:    -moz-grabbing;
-    cursor:        -grabbing;
+    cursor:         grabbing;
 }
 
 .menu-wrapper {

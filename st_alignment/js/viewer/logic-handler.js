@@ -162,7 +162,6 @@
                 }
             }
             self.refreshCanvas();
-            console.log(cursor);
             self.setCanvasCursor(cursor);
         }
     };
