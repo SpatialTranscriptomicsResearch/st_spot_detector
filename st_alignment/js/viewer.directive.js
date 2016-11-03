@@ -107,16 +107,17 @@ angular.module('stSpots')
                         refreshCanvas();
                     };
 
-                    scope.receiveTilemap = function(tilemapData) {
+                    scope.receiveTilemap = function(tilemapData, resetCamera = true) {
                         tilemap.loadTilemap(tilemapData, refreshCanvas);
                         scaleManager.setTilemapLevels(tilemap.tilemapLevels, tilemapLevel);
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel);
                         images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
-                        camera.position = {x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
-                                           y: (1024 / 2) * tilemapLevel};
-                        camera.scale = 1 / tilemapLevel;
-                        camera.updateViewport();
-
+                        if(resetCamera) {
+                            camera.position = {x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
+                                y: (1024 / 2) * tilemapLevel};
+                            camera.scale = 1 / tilemapLevel;
+                            camera.updateViewport();
+                        }
                         refreshCanvas();
                     };
 

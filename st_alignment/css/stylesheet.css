@@ -97,6 +97,18 @@ canvas:active {
     border-bottom-right-radius: 4px;
 }
 
+.toggle-wrapper {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+}
+
+.toggle-bar {
+    -webkit-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+    -moz-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+    box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+}
+
 .zoom-wrapper {
     position: fixed;
     bottom: 20px;

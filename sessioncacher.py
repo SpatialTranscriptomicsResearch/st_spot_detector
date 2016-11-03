@@ -7,8 +7,8 @@ class SessionCache:
     def __init__(self, session_id):
         self.session_id = session_id
         self.creation_time  = time.time()
-        self.thumbnail = None
-        self.image = None
+        self.image = {'cy3': None, 'bf': None}
+        self.thumbnail = {'cy3': None, 'bf': None}
 
 class SessionCacher:
     """A class for maintaining and caching the sessions on the server.

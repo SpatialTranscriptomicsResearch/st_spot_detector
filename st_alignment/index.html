@@ -96,7 +96,6 @@
                             <p class='upload-filename' id='cy3-upload-filename'>No file selected.</p>
                             <br><small>Please make sure that the image is a Cy3 fluorescent image in .jpg format. The image may be cropped as long as the outer frame is intact, but it may not be scaled.</small><br>
 
-                            <!--
                             <p class='image-upload-title'>Bright Field Image:</p>
                             <label class='bf-upload-button'>
                                 <span class='btn btn-default btn-sm'>Choose file</span>
@@ -105,8 +104,6 @@
                             <p class='upload-filename' id='bf-upload-filename'>No file selected.</p>
                             <br><small>Please make sure that the image is a bright field image in .jpg format. The image may be cropped, but it may not be scaled.</small><br>
                             <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Images</button>
-                            -->
-                            <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Image</button>
                         </form>
                     </div>
                     <!-- Detector Panel -->
@@ -196,6 +193,13 @@
                 <!-- Out -->
                 <button ng-click='zoomButtonClick("zout")' type='button' class='btn btn-default'>
                     <span class='glyphicon glyphicon-zoom-out'></span>
+                </button>
+            </div>
+        </div>
+        <div ng-show='visible.toggleBar' class='toggle-wrapper'>
+            <div class='toggle-bar' role='group'>
+                <button ng-click='toggleButtonClick()' type='button' class='btn btn-default'>
+                    Show {{ getToggleText() }} image
                 </button>
             </div>
         </div>

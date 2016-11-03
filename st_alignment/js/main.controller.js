@@ -52,6 +52,9 @@ angular.module('stSpots')
                 sessionId: '',
                 cy3Image: '',
                 bfImage: '',
+                cy3Tiles: '',
+                bfTiles: '',
+                cy3Active: true,
                 errorText: ''
             };
 
@@ -69,6 +72,7 @@ angular.module('stSpots')
                 menuBar: true,
                 menuBarPanel: true,
                 zoomBar: false,
+                toggleBar: false,
                 spinner: false,
                 canvas: false,
                 error: false,
@@ -221,6 +225,9 @@ angular.module('stSpots')
                     $scope.visible.canvas = false;
                     $scope.visible.errorText = true;
                 }
+                // Toggle bar should always have the same visibility as the zoom bar
+                $scope.visible.toggleBar = $scope.visible.zoomBar;
+
                 toast();
             };
 
@@ -233,6 +240,14 @@ angular.module('stSpots')
 
             $scope.zoomButtonClick = function(direction) {
                 $scope.zoom(direction); // defined in the viewer directive
+            };
+
+            $scope.toggleButtonClick = function() {
+                if($scope.data.cy3Active)
+                    $scope.receiveTilemap($scope.data.bfTiles, false);
+                else
+                    $scope.receiveTilemap($scope.data.cy3Tiles, false);
+                $scope.data.cy3Active ^= 1;
             };
 
             $scope.menuButtonClick = function(button) {
@@ -288,21 +303,36 @@ angular.module('stSpots')
                 return spinnerTexts[state];
             };
 
+            $scope.getToggleText = function(state) {
+                if(this.data.cy3Active)
+                    return "HE";
+                else return "Cy3";
+            };
+
             $scope.uploadImage = function() {
                 if($scope.data.cy3Image != '') {
                     $scope.updateState('state_upload');
                     var getTileData = function() {
                         var tileSuccessCallback = function(response) {
                             $scope.updateState('state_predetection');
-                            $scope.receiveTilemap(response.data); // defined in the viewer directive
+
+                            $scope.data.cy3Tiles = response.data.cy3_tiles;
+                            $scope.data.bfTiles = response.data.bf_tiles;
+
+                            $scope.receiveTilemap($scope.data.cy3Tiles); // defined in the viewer directive
+                            $scope.data.cy3Active = true;
                         };
                         var tileErrorCallback = function(response) {
                             $scope.data.errorText = response.data;
                             console.error(response.data);
                             $scope.updateState('state_error');
                         };
-                        $http.post('../tiles', {image: $scope.data.cy3Image, session_id: $scope.data.sessionId})
-                            .then(tileSuccessCallback, tileErrorCallback);
+
+                        $http.post('../tiles', {
+                            cy3_image: $scope.data.cy3Image,
+                            bf_image: $scope.data.bfImage,
+                            session_id: $scope.data.sessionId
+                        }).then(tileSuccessCallback, tileErrorCallback);
                     };
 
                     var getSessionId = function() {
