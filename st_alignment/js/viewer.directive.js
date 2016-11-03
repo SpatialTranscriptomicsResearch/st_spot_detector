@@ -48,6 +48,10 @@ angular.module('stSpots')
                         refreshCanvas();
                     };
 
+                    scope.getSpots = function() {
+                        return spots.getSpots();
+                    };
+
                     scope.getCalibrationData = function() {
                         return {
                             TL:         calibrator.calibrationData.TL,

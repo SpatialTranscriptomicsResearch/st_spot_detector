@@ -21,6 +21,7 @@ angular.module('stSpots')
                                   + "Click DELETE SPOTS to delete selected spots.\n"
                                   + "Click ADD SPOTS to change to spot addition mode, then right click or Ctrl+click to add spots.\n"
                                   + "Click FINISH ADDING SPOTS to return to selection mode.\n",
+                state_sel_inside:   "",
                 state_error:        "An error occured. Please try again."
             };
 
@@ -30,6 +31,8 @@ angular.module('stSpots')
                 state_upload:       "Processing image. This may take a few minutes.",
                 state_predetection: "",
                 state_detection:    "Detecting spots. This may take a few minutes.",
+                state_sel_inside:   "Running tissue recognition. This may take" +
+                                    " a few minutes.",
                 state_adjustment:    "",
                 state_error:        ""
             };
@@ -52,9 +55,9 @@ angular.module('stSpots')
                 sessionId: '',
                 cy3Image: '',
                 bfImage: '',
-                cy3Tiles: '',
-                bfTiles: '',
-                cy3Active: true,
+                cy3Tiles: null,
+                bfTiles: null,
+                cy3Active: null,
                 errorText: ''
             };
 
@@ -87,7 +90,8 @@ angular.module('stSpots')
                 spotAdjuster: {
                     button_addSpots: true,
                     button_finishAddSpots: false,
-                    button_deleteSpots: true
+                    button_deleteSpots: true,
+                    div_insideTissue: false
                 }
             };
 
@@ -161,8 +165,9 @@ angular.module('stSpots')
                         "Click DETECT SPOTS to begin automatic spot detection."
                     );
                 }
-                else if($scope.data.state === 'state_detection') {
-                    toastr.clear();
+                else if($scope.data.state === 'state_detection'
+                    || $scope.data.state == 'state_sel_inside') {
+                        toastr.clear();
                 }
                 else if($scope.data.state === 'state_adjustment') {
                     toastr.options.timeOut = "10000";
@@ -180,7 +185,7 @@ angular.module('stSpots')
                 }
             }
 
-            $scope.updateState = function(new_state) {
+            $scope.updateState = function(new_state, show_toast = true) {
                 $scope.data.state = new_state;
                 if($scope.data.state === 'state_start') {
                     // reinitialise things
@@ -201,13 +206,14 @@ angular.module('stSpots')
 
                     openPanel('button_detector');
                 }
-                else if($scope.data.state === 'state_detection') {
-                    $scope.visible.menuBar = false;
-                    $scope.visible.zoomBar = false;
-                    $scope.visible.spinner = true;
-                    $scope.visible.canvas = false;
-                    $scope.visible.errorText = false;
-                }
+                else if($scope.data.state === 'state_detection'
+                    || $scope.data.state == 'state_sel_inside') {
+                        $scope.visible.menuBar = false;
+                        $scope.visible.zoomBar = false;
+                        $scope.visible.spinner = true;
+                        $scope.visible.canvas = false;
+                        $scope.visible.errorText = false;
+                    }
                 else if($scope.data.state === 'state_adjustment') {
                     $scope.visible.menuBar = true;
                     $scope.visible.zoomBar = true;
@@ -225,10 +231,15 @@ angular.module('stSpots')
                     $scope.visible.canvas = false;
                     $scope.visible.errorText = true;
                 }
-                // Toggle bar should always have the same visibility as the zoom bar
-                $scope.visible.toggleBar = $scope.visible.zoomBar;
+                if($scope.data.bfTiles != null)
+                    // Toggle bar should always have the same visibility as the
+                    // zoom bar
+                    $scope.visible.toggleBar = $scope.visible.zoomBar;
+                else
+                    $scope.visible.toggleBar = false;
 
-                toast();
+                if(show_toast)
+                    toast();
             };
 
             function openPanel(button) {
@@ -247,7 +258,7 @@ angular.module('stSpots')
                     $scope.receiveTilemap($scope.data.bfTiles, false);
                 else
                     $scope.receiveTilemap($scope.data.cy3Tiles, false);
-                $scope.data.cy3Active ^= 1;
+                $scope.data.cy3Active ^= true;
             };
 
             $scope.menuButtonClick = function(button) {
@@ -291,6 +302,27 @@ angular.module('stSpots')
                 getSpotData();
             };
 
+            $scope.selinsideTissue = function() {
+                $scope.updateState('state_sel_inside');
+
+                var successCallback = function(response) {
+                    $scope.updateState('state_adjustment', false);
+                    $scope.loadSpots(response.data)
+                };
+                var errorCallback = function(response) {
+                    $scope.data.errorText = response.data;
+                    console.error(response.data.spots);
+                    $scope.updateState('state_error');
+                };
+
+                var data = $scope.getSpots();
+                $http.post('../select_spots_inside', {
+                    spots: data.spots,
+                    spacer: data.spacer,
+                    session_id: $scope.data.sessionId
+                }).then(successCallback, errorCallback);
+            };
+
             $scope.getPanelTitle = function(button) {
                 return panelTitles[button];
             };
@@ -314,13 +346,16 @@ angular.module('stSpots')
                     $scope.updateState('state_upload');
                     var getTileData = function() {
                         var tileSuccessCallback = function(response) {
-                            $scope.updateState('state_predetection');
+                            $scope.visible.spotAdjuster.div_insideTissue
+                                = response.data.bf_tiles != null;
 
                             $scope.data.cy3Tiles = response.data.cy3_tiles;
                             $scope.data.bfTiles = response.data.bf_tiles;
 
                             $scope.receiveTilemap($scope.data.cy3Tiles); // defined in the viewer directive
                             $scope.data.cy3Active = true;
+
+                            $scope.updateState('state_predetection');
                         };
                         var tileErrorCallback = function(response) {
                             $scope.data.errorText = response.data;

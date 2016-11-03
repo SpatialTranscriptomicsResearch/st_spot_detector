@@ -3,7 +3,10 @@
 import ast
 import time
 
-from bottle import error, get, post, response, request, route, run, static_file
+import numpy as np
+
+from bottle import BaseRequest, error, get, post, response, request, route, \
+    run, static_file
 
 from imageprocessor import ImageProcessor
 from sessioncacher import SessionCacher
@@ -11,9 +14,15 @@ from spots import Spots
 from tilemap import Tilemap
 from PIL import Image
 
+from tissue_recognition import recognize_tissue, get_binary_mask, free
+
 #######################
 ### ↓ server code ↓ ###
 #######################
+
+# Increases the request limit to 1 MB.
+# Avoids server throwing 403 error when posting to /select_spots_inside.
+BaseRequest.MEMFILE_MAX = 1024 * 1024
 
 session_cacher = SessionCacher()
 image_processor = ImageProcessor()
@@ -54,7 +63,80 @@ def get_spots():
         error_message = 'Session ID expired. Please try again.'
         print(session_id[:20] + ": Error. " + error_message)
         return error_message
-    
+
+@post('/select_spots_inside')
+def select_spots_inside():
+    data = request.json
+
+    spots = data['spots']
+    if spots is None:
+        response.status = 400
+        error_message = 'Could not read spot data.'
+        print(session_id[:20] + ": Error. " + error_message)
+        return error_message
+
+    session_id = data['session_id']
+    session_cache = session_cacher.get_session_cache(session_id)
+    if session_cache is None:
+        response.status = 400
+        error_message = 'Session ID expired. Please try again.'
+        print(session_id[:20] + ": Error. " + error_message)
+        return error_message
+
+    image = session_cache.image['bf']
+    if image is None:
+        response.status = 500
+        error_message = 'Image cache is empty.'
+        print(session_id[:20] + ": Error. " + error_message)
+        return error_message
+
+    # Downsample to max 500x500
+    max_size = np.array([500] * 2, dtype=float)
+    ratio = min(min(max_size / image.size), 1)
+    new_size = [ratio * s for s in image.size]
+
+    image = image.copy()
+    image.thumbnail(new_size, Image.ANTIALIAS)
+
+    # Convert image to numpy matrix and preallocate the mask matrix
+    image = np.array(image, dtype=np.uint8)
+    mask = np.zeros(image.shape[0:2], dtype=np.uint8)
+
+    print(session_id[:20] + ": Running tissue recognition")
+    recognize_tissue(image, mask)
+
+    mask = get_binary_mask(mask)
+
+    def inner_bounds(center, radius):
+        return [int(k * np.floor(radius + k * center)) for k in (-1, 1)]
+
+    def set_selection(spot):
+        # Do not deselect already selected spots
+        if spot['selected']:
+            return
+
+        coords, diam = [[ratio*c for c in coords] for coords in (
+            spot.get('renderPosition').values(), [spot.get('diameter')])]
+        radius = diam[0] / 2
+
+        # Select spot if any pixel within its inner bounds is in the tissue
+        # mask
+        r_min, r_max = inner_bounds(coords[0], radius)
+        for r in range(r_min, r_max + 1):
+            c_min, c_max = inner_bounds(
+                coords[1], np.sqrt(radius ** 2 - (r - coords[0]) ** 2))
+            for c in range(c_min, c_max + 1):
+                if mask[r, c]:
+                    spot['selected'] = True
+                    return
+
+    for spot in spots:
+        set_selection(spot)
+
+    free(mask)
+
+    return {'spots': spots, 'spacer': data.get('spacer')}
+
 @get('/thumbnail')
 def process_thumbnail():
     brightness = float(request.query['brightness'])

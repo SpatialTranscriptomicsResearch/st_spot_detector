@@ -146,6 +146,10 @@
                                 <div class='spot-color' id='spot-color-6'></div>
                             </div>
                         </div>
+
+                        <div ng-show='visible.spotAdjuster.div_insideTissue'>
+                            <button ng-click='selinsideTissue()' type='button' class='btn btn-default btn-sm'>Select spots inside tissue</button>
+                        </div>
                     </div>
                     <!-- Exporter Panel -->
                     <div ng-show='visible.panel.button_exporter'>
