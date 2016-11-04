@@ -154,3 +154,76 @@ canvas:active {
 hr {
     margin: 0px;
 }
+
+.spot-color-selector {
+}
+
+.spot-color-bar {
+    font-size: 0;
+}
+
+.spot-color {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+}
+
+#spot-color-1 {
+    /* red */
+    background-color: #E74C3C;
+}
+
+#spot-color-2 {
+    /* orange */
+    background-color: #E67E22;
+}
+
+#spot-color-3 {
+    /* yellow */
+    background-color: #F1C40F;
+}
+
+#spot-color-4 {
+    /* green */
+    background-color: #2ECC71;
+}
+
+#spot-color-5 {
+    /* blue */
+    background-color: #3498DB;
+}
+
+#spot-color-6 {
+    /* purple */
+    background-color: #9B59B6;
+}
+
+#spot-opacity-1 {
+    /* 100 */
+    background-color: #FFFFFF;
+}
+
+#spot-opacity-2 {
+    /* 80 */
+    background-color: #CCCCCC;
+}
+
+#spot-opacity-3 {
+    /* 60 */
+    background-color: #999999;
+}
+
+#spot-opacity-4 {
+    /* 40 */
+    background-color: #666666;
+}
+
+#spot-opacity-5 {
+    /* 20 */
+    background-color: #333333;
+}
+
+#spot-opacity-6 {
+    /* 0 */
+    background-color: #000000;
+}

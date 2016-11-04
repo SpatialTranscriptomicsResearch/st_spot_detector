@@ -18,6 +18,14 @@
     };
   
     Renderer.prototype = {
+        changeSpotColor: function(color, type) {
+            /*
+             * in index.html, send in the data as hsl or a and then edit the string here
+            renderer.spotColour = 'hsla(' + data['spotColour'] + ', 100%, 50%,' + data['spotOpacity'] + ')';
+            renderer.selectedSpotColour = 'hsla(120, 100%, 50%,' + data['spotOpacity'] + ')';
+            */
+
+        },
         clearCanvas: function() {
             self.ctx.fillStyle = self.bgColor;
             self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);

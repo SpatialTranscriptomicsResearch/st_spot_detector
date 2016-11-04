@@ -30,15 +30,6 @@ angular.module('stSpots')
                         scope.$apply(function() {
                             scope.classes.canvas = cursor;
                         });
-                        /*
-                        crosshair
-                        ew-resize
-                        ns-resize
-                        nesw-resize
-                        nwse-resize
-                        grabbable
-                        grabbed
-                        */
                     };
 
                     var spots = new SpotManager();
@@ -66,6 +57,11 @@ angular.module('stSpots')
                             contrast:   calibrator.calibrationData.contrast,
                             threshold:  calibrator.calibrationData.threshold,
                         }
+                    };
+
+                    scope.clickSpotColor = function(color, type) {
+                        renderer.changeSpotColor(color, type);
+                        refreshCanvas();
                     };
 
                     function refreshCanvas() {

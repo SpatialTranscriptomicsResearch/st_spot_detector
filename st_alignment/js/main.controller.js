@@ -90,9 +90,9 @@ angular.module('stSpots')
             // strings which determine the clickable state of the menu bar buttons 
             $scope.menuButtonDisabled = {
                 button_uploader: '',
-                button_detector: 'disabled',
-                button_adjuster: 'disabled',
-                button_exporter: 'disabled',
+                button_detector: 'false',
+                button_adjuster: 'false',
+                button_exporter: 'false',
                 button_help: '',
                 button_info: ''
             };
@@ -138,6 +138,10 @@ angular.module('stSpots')
                     ];
                     displayToasts(toasts);
                 }
+            };
+
+            $scope.clickSpotColor = function(color, type) {
+                
             };
 
             function toast() {
