@@ -130,9 +130,10 @@ angular.module('stSpots')
             $scope.addSpotsToasts = function() {
                 if(!addSpotsToastsDisplayed) {
                     addSpotsToastsDisplayed = true;
+                    toastr.options.timeOut = "10000";
                     var toasts = [
-                        "Right click or Ctrl+click to add spots.",
-                        "Left click to navigate the canvas.",
+                        "Left click to add spots.",
+                        "Right click or Ctrl+click to navigate the canvas.",
                         "Click FINISH ADDING SPOTS to return to selection mode."
                     ];
                     displayToasts(toasts);
@@ -147,7 +148,7 @@ angular.module('stSpots')
                 }
                 else if($scope.data.state === 'state_predetection') {
                     toastr["info"](
-                        "Adjust the lines to frame the spots, as shown:.<br>" + 
+                        "Adjust the lines to frame the spots, as shown:<br>" + 
                         "<img src='images/framealignment.png'/><br>" +
                         "Click DETECT SPOTS to begin automatic spot detection."
                     );
@@ -156,11 +157,11 @@ angular.module('stSpots')
                     toastr.clear();
                 }
                 else if($scope.data.state === 'state_adjustment') {
-                    toastr.options.timeOut = "7000";
+                    toastr.options.timeOut = "10000";
                     var toasts = [
                         "Detected spots are shown in red.",
-                        "Left click or Ctrl+click to select spots. Holding in Shift adds to the selection.<br>" +
-                        "Right click to move selected spots or navigate the canvas.",
+                        "Left click to select spots.<br>Holding in Shift adds to the selection.",
+                        "Right click or Ctrl+click to move selected spots or navigate the canvas.",
                         "Click DELETE SPOTS to deleted selected spots.<br>" + 
                         "Click ADD SPOTS to add additional spots."
                     ];

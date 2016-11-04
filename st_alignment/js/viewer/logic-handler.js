@@ -32,6 +32,12 @@
                     }
                 }
             }
+            // check for ctrl key down to change cursor
+            if(state == 'state_adjustment') {
+                if(keyEvent == keyevents.ctrl) {
+                    self.setCanvasCursor('grabbable');
+                }
+            }
             self.refreshCanvas();
         },
         processKeyupEvent: function(state, keyEvent) {
@@ -43,6 +49,10 @@
                     if(keyEvent == keyevents.shift) {
                         self.spotSelector.toggleShift(false);
                     }
+                }
+
+                if(keyEvent == keyevents.ctrl) {
+                    self.setCanvasCursor('crosshair');
                 }
             }
             self.refreshCanvas();
@@ -114,10 +124,11 @@
             else if(state == 'state_adjustment') {
                 cursor = 'crosshair';
                 // right click moves canvas or spots
-                if(eventData.button == self.mouseButton.right &&
-                   eventData.ctrl == false) {
+                if(eventData.button == self.mouseButton.right ||
+                   eventData.ctrl == true) {
                     if(mouseEvent == self.mouseEvent.down) {
                         self.spotAdjuster.moving = self.spotAdjuster.atSelectedSpots(eventData.position);
+                        cursor = 'grabbed';
                     }
                     else if(mouseEvent == self.mouseEvent.up) {
                         self.spotAdjuster.moving = false;
@@ -129,11 +140,15 @@
                         else {
                             self.camera.pan(eventData.difference);
                         }
+                        cursor = 'grabbed';
+                    }
+                    else if(mouseEvent == self.mouseEvent.move) {
+                        cursor = 'grabbable';
                     }
                 }
-                // left click or ctrl+click adds or selects spots
-                else if(eventData.button == self.mouseButton.left ||
-                        eventData.ctrl == true) {
+                // left click adds or selects spots
+                else if(eventData.button == self.mouseButton.left &&
+                        eventData.ctrl == false) {
                     // in adding state, left click serves to add a new spot
                     if(self.addingSpots) {
                         if(mouseEvent == self.mouseEvent.up) {
@@ -155,6 +170,7 @@
                 }
                 else if(mouseEvent == self.mouseEvent.move) {
                     self.spotAdjuster.updateSpotToAdd(eventData.position);
+                    cursor = 'crosshair';
                 }
                 else if(mouseEvent == self.mouseEvent.wheel) {
                     // scrolling
