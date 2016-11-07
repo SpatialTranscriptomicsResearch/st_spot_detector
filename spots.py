@@ -72,6 +72,7 @@ class Spots:
             return pixels
 
         # now iterating through the "expected" array positions
+        avg_diam, n_diam = 0, 0
         for i in range(0, self.array_size['y']):
             for j in range(0, self.array_size['x']):
                 spot_detected = False
@@ -115,8 +116,12 @@ class Spots:
                                 'x': int(kp_position['x']),
                                 'y': int(kp_position['y'])
                             },
+                            'diameter': kp.size,
                             'selected': False
                         })
+                        avg_diam = (avg_diam * n_diam + kp.size) / (n_diam + 1)
+                        n_diam = n_diam + 1
+
                         if(not spot_detected):
                             spot_detected = True
                             # the first spot detected at this position is used
@@ -201,6 +206,7 @@ class Spots:
                     'arrayPosition': array_position,
                     'newArrayPosition': new_array_position,
                     'renderPosition': pixel_position,
+                    'diameter': avg_diam,
                     'selected': False
                 })
 

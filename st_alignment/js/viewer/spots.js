@@ -15,6 +15,9 @@
             self.spots = spotData.spots;
             self.spacer = spotData.spacer;
         },
+        getSpots: function() {
+            return {spots: self.spots, spacer: self.spacer};
+        },
         exportSpots: function(type, selection) {
             var dataString = "";
 
