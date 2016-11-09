@@ -11,30 +11,30 @@ angular.module('stSpots')
 
             // texts to display in the menu bar panel when clicking the help button
             const helpTexts = {
-                state_start:        "Click on the top-most icon to select and upload a Cy3 fluorescence image.",
-                state_upload:       "",
-                state_predetection: "Adjust the lines to align on top of the outermost spot frame.\n"
-                                  + "Click on DETECT SPOTS to begin spot detection.",
-                state_detection:    "",
-                state_adjustment:   "Left click or Ctrl+click to select spots. Hold in shift to add to a selection.\n"
-                                  + "Right click to move selected spots or navigate the canvas.\n"
-                                  + "Click DELETE SPOTS to delete selected spots.\n"
-                                  + "Click ADD SPOTS to change to spot addition mode, then right click or Ctrl+click to add spots.\n"
-                                  + "Click FINISH ADDING SPOTS to return to selection mode.\n",
-                state_sel_inside:   "",
-                state_error:        "An error occured. Please try again."
+                state_start:         "Click on the top-most icon to select and upload a Cy3 fluorescence image.",
+                state_upload:        "",
+                state_predetection:  "Adjust the lines to align on top of the outermost spot frame.\n" +
+                                     "Click on DETECT SPOTS to begin spot detection.",
+                state_detection:     "",
+                state_adjustment:    "Left click or Ctrl+click to select spots. Hold in shift to add to a selection.\n" +
+                                     "Right click to move selected spots or navigate the canvas.\n" +
+                                     "Click DELETE SPOTS to delete selected spots.\n" +
+                                     "Click ADD SPOTS to change to spot addition mode, then right click or Ctrl+click to add spots.\n" +
+                                     "Click FINISH ADDING SPOTS to return to selection mode.\n",
+                state_autoselection: "",
+                state_error:         "An error occured. Please try again."
             };
 
             // texts to display underneath the spinner while loading
             const spinnerTexts = {
-                state_start:        "",
-                state_upload:       "Processing image. This may take a few minutes.",
-                state_predetection: "",
-                state_detection:    "Detecting spots. This may take a few minutes.",
-                state_sel_inside:   "Running tissue recognition. This may take" +
-                                    " a few minutes.",
-                state_adjustment:    "",
-                state_error:        ""
+                state_start:         "",
+                state_upload:        "Processing image. This may take a few minutes.",
+                state_predetection:  "",
+                state_detection:     "Detecting spots. This may take a few minutes.",
+                state_autoselection: "Running tissue recognition. This may take" +
+                                     " a few minutes.",
+                state_adjustment:     "",
+                state_error:         ""
             };
 
             // texts to display as a title on the menu bar panel
@@ -162,7 +162,7 @@ angular.module('stSpots')
                     );
                 }
                 else if($scope.data.state === 'state_detection'
-                    || $scope.data.state == 'state_sel_inside') {
+                    || $scope.data.state == 'state_autoselection') {
                         toastr.clear();
                 }
                 else if($scope.data.state === 'state_adjustment') {
@@ -203,7 +203,7 @@ angular.module('stSpots')
                     openPanel('button_detector');
                 }
                 else if($scope.data.state === 'state_detection'
-                    || $scope.data.state == 'state_sel_inside') {
+                    || $scope.data.state == 'state_autoselection') {
                         $scope.visible.menuBar = false;
                         $scope.visible.zoomBar = false;
                         $scope.visible.spinner = true;
@@ -298,8 +298,8 @@ angular.module('stSpots')
                 getSpotData();
             };
 
-            $scope.selinsideTissue = function() {
-                $scope.updateState('state_sel_inside');
+            $scope.selectInsideTissue = function() {
+                $scope.updateState('state_autoselection');
 
                 var successCallback = function(response) {
                     $scope.updateState('state_adjustment', false);

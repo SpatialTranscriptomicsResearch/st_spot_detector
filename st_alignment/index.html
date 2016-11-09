@@ -124,6 +124,9 @@
                         <button ng-click='addSpots()'       ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-default btn-sm'>Add spots</button>
                         <button ng-click='finishAddSpots()' ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-default btn-sm'>Finish adding spots</button>
                         <button ng-click='deleteSpots()'    ng-show='visible.spotAdjuster.button_deleteSpots'    type='button' class='btn btn-default btn-sm'>Delete selected spots</button>
+                        <div ng-show='visible.spotAdjuster.div_insideTissue'>
+                            <button ng-click='selinsideTissue()' type='button' class='btn btn-default btn-sm'>Automatically select spots inside tissue</button>
+                        </div>
                         <div class='spot-color-selector'>
                             Spot Opacity
                             <div class='spot-color-bar'>
@@ -145,10 +148,6 @@
                                 <div class='spot-color' id='spot-color-5' ng-click='clickSpotColor("204, 70%, 53%", "color")'></div>
                                 <div class='spot-color' id='spot-color-6' ng-click='clickSpotColor("283, 39%, 53%", "color")'></div>
                             </div>
-                        </div>
-
-                        <div ng-show='visible.spotAdjuster.div_insideTissue'>
-                            <button ng-click='selinsideTissue()' type='button' class='btn btn-default btn-sm'>Select spots inside tissue</button>
                         </div>
                     </div>
                     <!-- Exporter Panel -->
