@@ -148,10 +148,6 @@ angular.module('stSpots')
                 }
             };
 
-            $scope.clickSpotColor = function(color, type) {
-                
-            };
-
             function toast() {
                 if($scope.data.state === 'state_start') {
                 }

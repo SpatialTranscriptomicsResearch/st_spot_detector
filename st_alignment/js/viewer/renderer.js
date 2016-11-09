@@ -8,7 +8,8 @@
         self.ctx = context;
         self.camera = camera;
         self.bgColor = 'black';
-        self.spotColor          = 'hsla(  6, 63%, 46%, 0.50)'; // red
+        self.spotColorHSL = "6, 78%, 57%"; // red
+        self.spotColorA = "0.60";
         self.selectedSpotColor  = 'hsla(140, 63%, 42%, 0.50)'; // green
         self.calibrationColor   = 'hsla(204, 64%, 44%, 0.95)'; // blue
         self.spotSelectionColor = 'rgba(150, 150, 150, 0.95)'; // grey
@@ -19,12 +20,13 @@
   
     Renderer.prototype = {
         changeSpotColor: function(color, type) {
-            /*
-             * in index.html, send in the data as hsl or a and then edit the string here
-            renderer.spotColour = 'hsla(' + data['spotColour'] + ', 100%, 50%,' + data['spotOpacity'] + ')';
-            renderer.selectedSpotColour = 'hsla(120, 100%, 50%,' + data['spotOpacity'] + ')';
-            */
-
+            var currentColor = self.spotColor;
+            if(type == "color") {
+                self.spotColorHSL = color;
+            }
+            else if(type == "opacity") {
+                self.spotColorA = color;
+            }
         },
         clearCanvas: function() {
             self.ctx.fillStyle = self.bgColor;
@@ -47,7 +49,8 @@
                             self.ctx.fillStyle = self.selectedSpotColor;
                         }
                         else {
-                            self.ctx.fillStyle = self.spotColor;
+                            var spotColor = 'hsla(' + self.spotColorHSL + ',' + self.spotColorA + ')';
+                            self.ctx.fillStyle = spotColor;
                         }
                         self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y, self.spotSize, 0, Math.PI * 2);
                     self.ctx.closePath();
