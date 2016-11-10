@@ -11,16 +11,17 @@ angular.module('stSpots')
 
             // texts to display in the menu bar panel when clicking the help button
             const helpTexts = {
-                state_start:         "Click on the top-most icon to select and upload a Cy3 fluorescence image.",
+                state_start:         "Click on the top-most icon to select and upload image(s).",
                 state_upload:        "",
                 state_predetection:  "Adjust the lines to align on top of the outermost spot frame.\n" +
-                                     "Click on DETECT SPOTS to begin spot detection.",
+                                     "Click on 'Detect spots' to begin spot detection.",
                 state_detection:     "",
                 state_adjustment:    "Left click or Ctrl+click to select spots. Hold in shift to add to a selection.\n" +
                                      "Right click to move selected spots or navigate the canvas.\n" +
-                                     "Click DELETE SPOTS to delete selected spots.\n" +
-                                     "Click ADD SPOTS to change to spot addition mode, then right click or Ctrl+click to add spots.\n" +
-                                     "Click FINISH ADDING SPOTS to return to selection mode.\n",
+                                     "Click 'Delete spots' to delete selected spots.\n" +
+                                     "Click 'Add spots' to change to spot addition mode, then right click or Ctrl+click to add spots.\n" +
+                                     "(HE only) Click 'Select spots within tissue' to automatically select spots within the tissue.\n" +
+                                     "Click 'Finish Adding Spots' to return to selection mode.\n",
                 state_autoselection: "",
                 state_error:         "An error occured. Please try again."
             };
@@ -58,7 +59,11 @@ angular.module('stSpots')
                 cy3Tiles: null,
                 bfTiles: null,
                 cy3Active: null,
-                errorText: ''
+                errorText: '',
+                imageToggleImage: {
+                    Cy3: 'images/imageToggleCy3.png',
+                    HE: 'images/imageToggleHE.png'
+                }
             };
 
             $scope.classes = {
@@ -75,7 +80,7 @@ angular.module('stSpots')
                 menuBar: true,
                 menuBarPanel: true,
                 zoomBar: false,
-                toggleBar: false,
+                imageToggleBar: true,
                 spinner: false,
                 canvas: false,
                 error: false,
@@ -228,8 +233,7 @@ angular.module('stSpots')
                     $scope.visible.errorText = true;
                 }
                 if($scope.data.bfTiles != null)
-                    // Toggle bar should always have the same visibility as the
-                    // zoom bar
+                    // Toggle bar should always have the same visibility as the zoom bar
                     $scope.visible.toggleBar = $scope.visible.zoomBar;
                 else
                     $scope.visible.toggleBar = false;
@@ -249,7 +253,7 @@ angular.module('stSpots')
                 $scope.zoom(direction); // defined in the viewer directive
             };
 
-            $scope.toggleButtonClick = function() {
+            $scope.imageToggleButtonClick = function() {
                 if($scope.data.cy3Active)
                     $scope.receiveTilemap($scope.data.bfTiles, false);
                 else
@@ -331,8 +335,14 @@ angular.module('stSpots')
                 return spinnerTexts[state];
             };
 
-            $scope.getToggleText = function(state) {
-                if(this.data.cy3Active)
+            $scope.getImageToggleImage = function() {
+                if($scope.data.cy3Active)
+                    return $scope.data.imageToggleImage.HE;
+                else return $scope.data.imageToggleImage.Cy3;
+            };
+            
+            $scope.getImageToggleText = function() {
+                if($scope.data.cy3Active)
                     return "HE";
                 else return "Cy3";
             };

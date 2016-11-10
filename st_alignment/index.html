@@ -45,7 +45,6 @@
 
 <body ng-app='stSpots' ng-strict-di='true'>
     <div ng-controller='MainController'>
-        <!--<canvas id='my-canvas' viewer-canvas ng-keypress='changed($event)' width=100% height=100%>-->
         <canvas viewer ng-show='visible.canvas' ng-class='classes.canvas'>
             If you're seeing this message, then either HTML5 canvasses are not supported in your browser, or you have JavaScript disabled.
         </canvas>
@@ -95,13 +94,13 @@
                             </label>
                             <p class='upload-filename' id='cy3-upload-filename'>No file selected.</p>
 
-                            <p class='image-upload-title'>Bright Field Image (optional):</p>
+                            <p class='image-upload-title'>HE Image (optional):</p>
                             <label class='bf-upload-button'>
                                 <span class='btn btn-default btn-sm'>Choose file</span>
                                 <input id='bf-upload' type='file' accept='image/jpg, image/jpeg' style='display:none;'>
                             </label>
                             <p class='upload-filename' id='bf-upload-filename'>No file selected.</p>
-                            <br><small>The image(s) must be in .jpg format. They may be cropped, but not scaled. The bright field image must be already aligned against the Cy3 image.</small><br>
+                            <br><small>The image(s) must be in .jpg format. They may be cropped, but not scaled. The HE image must be already aligned against the Cy3 image.</small><br>
                             <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Images</button>
                         </form>
                     </div>
@@ -198,12 +197,13 @@
                 </button>
             </div>
         </div>
-        <div ng-show='visible.toggleBar' class='toggle-wrapper'>
-            <div class='toggle-bar' role='group'>
-                <button ng-click='toggleButtonClick()' type='button' class='btn btn-default'>
-                    Show {{ getToggleText() }} image
-                </button>
-            </div>
+        <div class='image-toggle-bar'>
+            <a ng-click='imageToggleButtonClick()'>
+                <img ng-src='{{getImageToggleImage()}}'/>
+                <p class='image-toggle-text'>
+                    Show {{ getImageToggleText() }} image
+                </p>
+            </a>
         </div>
         <div class='spinner' ng-show='visible.spinner'>
             <div class="sk-fading-circle">

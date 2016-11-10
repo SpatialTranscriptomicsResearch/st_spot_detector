@@ -4,7 +4,7 @@ A web tool for automatic spot detection and positional adjustments for ST Datase
 
 The arrays used to generate ST Datasets may contain positional variations due to printing artifacts. This web tool aims to detect correct spot positions using the Cy3 using the Cy3 fluorescence image, and then generate a file that can be used to adjust the coordinates of ST data.
 
-NOTE that this software is currently not yet fully functional and in an early stage of development. 
+NOTE: this software is currently not yet fully functional and is in a testing stage of development. 
 
 ## Dependencies
 The server uses Python 2.7 with the libraries OpenCV-Python and Pillow (PIL Fork) for image processing. These can easily be installed within a virtual environment using pip and requirements.txt (see Usage).
@@ -28,8 +28,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
     pip install -r requirements.txt
     ```
 
-3. Install the tissue recognition library
-    Follow the instructions in https://github.com/ludvb/tissue_recognition
+3. Install the tissue recognition library. Follow the instructions [here.](https://github.com/ludvb/tissue_recognition)
 
 4. Run the server (make sure the python command uses Python 2, not Python 3)
 
