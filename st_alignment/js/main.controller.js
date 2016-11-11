@@ -80,7 +80,7 @@ angular.module('stSpots')
                 menuBar: true,
                 menuBarPanel: true,
                 zoomBar: false,
-                imageToggleBar: true,
+                imageToggleBar: false,
                 spinner: false,
                 canvas: false,
                 error: false,

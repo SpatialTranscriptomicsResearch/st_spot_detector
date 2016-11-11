@@ -19,8 +19,7 @@
   
     EventHandler.prototype = {
         passEventToLogicHandler: function(evt) {
-            // only pass events in these two states
-            //if(self.scopeData.state == 'state_predetection' || self.scopeData.state == 'state_adjustment') {
+            if(self.scopeData.state == 'state_predetection' || self.scopeData.state == 'state_adjustment') {
                 if(evt.type == 'mouse') {
                     self.logicHandler.processMouseEvent(self.scopeData.state, evt.eventType, evt.data);
                 }
@@ -32,7 +31,7 @@
                         self.logicHandler.processKeyupEvent(self.scopeData.state, evt.keyEvent);
                     }
                 }
-            //}
+            }
         },
         setUpMouseEvents: function(canvas, camera) {
             canvas.onmousedown = function(e) {

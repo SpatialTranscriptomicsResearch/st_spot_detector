@@ -23,7 +23,8 @@
             self.selectedSpotCounter = 0;
 
             // first we need to check if the user is only clicking on a single spot
-            if(self.renderingRect.WH.x < 3 && self.renderingRect.WH.y < 3) // arbitrary 3 values here for a "click"
+            if(self.renderingRect.WH.x < 3 && self.renderingRect.WH.x >= 0 &&
+               self.renderingRect.WH.y < 3 && self.renderingRect.WH.y >= 0) // arbitrary 3 values here for a "click"
             {
                 for(var i = 0; i < spots.length; ++i) {
                     var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
@@ -46,10 +47,21 @@
             }
             // otherwise, we treat the selection as a rectangle
             else {
+                // separate variable to preserve the value of the first point
+                var selectionTL = Vec2.Vec2(self.selectionRect.TL.x, self.selectionRect.TL.y);
+                // account for "backward" selections
+                if(self.selectionRect.BR.x < self.selectionRect.TL.x) {
+                    selectionTL.x = self.selectionRect.BR.x;
+                    self.selectionRect.BR.x = self.selectionRect.TL.x
+                }
+                if(self.selectionRect.BR.y < self.selectionRect.TL.y) {
+                    selectionTL.y = self.selectionRect.BR.y;
+                    self.selectionRect.BR.y = self.selectionRect.TL.y;
+                }
                 for(var i = 0; i < spots.length; ++i) {
                     var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
-                    if(pos.x > self.selectionRect.TL.x && pos.x < self.selectionRect.BR.x &&
-                       pos.y > self.selectionRect.TL.y && pos.y < self.selectionRect.BR.y) {
+                    if(pos.x > selectionTL.x && pos.x < self.selectionRect.BR.x &&
+                       pos.y > selectionTL.y && pos.y < self.selectionRect.BR.y) {
                         spots[i].selected = true;
                         self.selectedSpotCounter++;
                     }
