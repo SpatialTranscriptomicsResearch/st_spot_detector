@@ -55,9 +55,9 @@ angular.module('stSpots')
                 button: 'button_uploader',
                 sessionId: '',
                 cy3Image: '',
-                bfImage: '',
+                heImage: '',
                 cy3Tiles: null,
-                bfTiles: null,
+                heTiles: null,
                 cy3Active: null,
                 errorText: '',
                 imageToggleImage: {
@@ -232,11 +232,11 @@ angular.module('stSpots')
                     $scope.visible.canvas = false;
                     $scope.visible.errorText = true;
                 }
-                if($scope.data.bfTiles != null)
-                    // Toggle bar should always have the same visibility as the zoom bar
-                    $scope.visible.toggleBar = $scope.visible.zoomBar;
+                if($scope.data.heTiles != null)
+                    // toggle bar should have the same visibility as the zoom bar if HE tiles uploaded
+                    $scope.visible.imageToggleBar = $scope.visible.zoomBar;
                 else
-                    $scope.visible.toggleBar = false;
+                    $scope.visible.imageToggleBar = false;
 
                 if(show_toast)
                     toast();
@@ -255,21 +255,25 @@ angular.module('stSpots')
 
             $scope.imageToggleButtonClick = function() {
                 if($scope.data.cy3Active)
-                    $scope.receiveTilemap($scope.data.bfTiles, false);
+                    $scope.receiveTilemap($scope.data.heTiles, false);
                 else
                     $scope.receiveTilemap($scope.data.cy3Tiles, false);
-                $scope.data.cy3Active ^= true;
+
+                $scope.data.cy3Active = !$scope.data.cy3Active;
             };
 
             $scope.menuButtonClick = function(button) {
-                // switch off all the panel visibilities
-                for(var panel in $scope.visible.panel) {
-                    $scope.visible.panel[panel] = false;
-                }
-                // except for the one we just selected
-                $scope.visible.panel[button] = true;
-                toggleMenuBarPanelVisibility($scope.data.button, button);
-                $scope.data.button = button;
+                // only clickable if not disabled
+                //if($scope.menuButtonDisabled[button] != 'false') {
+                    // switch off all the panel visibilities
+                    for(var panel in $scope.visible.panel) {
+                        $scope.visible.panel[panel] = false;
+                    }
+                    // except for the one we just selected
+                    $scope.visible.panel[button] = true;
+                    toggleMenuBarPanelVisibility($scope.data.button, button);
+                    $scope.data.button = button;
+                //}
             };
 
             $scope.detectSpots = function() {
@@ -353,10 +357,10 @@ angular.module('stSpots')
                     var getTileData = function() {
                         var tileSuccessCallback = function(response) {
                             $scope.visible.spotAdjuster.div_insideTissue
-                                = response.data.bf_tiles != null;
+                                = response.data.he_tiles != null;
 
                             $scope.data.cy3Tiles = response.data.cy3_tiles;
-                            $scope.data.bfTiles = response.data.bf_tiles;
+                            $scope.data.heTiles = response.data.he_tiles;
 
                             $scope.receiveTilemap($scope.data.cy3Tiles); // defined in the viewer directive
                             $scope.data.cy3Active = true;
@@ -371,7 +375,7 @@ angular.module('stSpots')
 
                         $http.post('../tiles', {
                             cy3_image: $scope.data.cy3Image,
-                            bf_image: $scope.data.bfImage,
+                            he_image: $scope.data.heImage,
                             session_id: $scope.data.sessionId
                         }).then(tileSuccessCallback, tileErrorCallback);
                     };

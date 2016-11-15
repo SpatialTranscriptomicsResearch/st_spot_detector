@@ -83,7 +83,7 @@ def select_spots_inside():
         print(session_id[:20] + ": Error. " + error_message)
         return error_message
 
-    image = session_cache.image['bf']
+    image = session_cache.image['he']
     if image is None:
         response.status = 500
         error_message = 'Image cache is empty.'
@@ -164,7 +164,7 @@ def process_thumbnail():
 @post('/tiles')
 def get_tiles():
     data = ast.literal_eval(request.body.read())
-    image_string = {'cy3': data['cy3_image'], 'bf': data['bf_image']}
+    image_string = {'cy3': data['cy3_image'], 'he': data['he_image']}
     session_id = data['session_id']
     session_cache = session_cacher.get_session_cache(session_id)
     if(session_cache is not None):
@@ -184,8 +184,6 @@ def get_tiles():
 
                 print(session_id[:20] + ": Transforming " + key + " image.")
                 image = image_processor.jpeg_URI_to_Image(image)
-
-                # release
                 image = image_processor.transform_original_image(image)
 
                 print(session_id[:20] + ": Tiling " + key + " images.")
@@ -193,10 +191,6 @@ def get_tiles():
                 for x in tiles_.tilemapLevels:
                     tiles_.put_tiles_at(
                         x, image_processor.tile_image(image, x))
-
-                # debug
-                #print(session_id[:20] + ": Tiling images.")
-                #tiles.put_tiles_at(20, image_processor.tile_image(image, 20))
 
                 session_cache.image[key] = image
                 largest_tile = tiles_.tilemapLevels[-1]
@@ -218,7 +212,7 @@ def get_tiles():
         return error_message
 
     return {'cy3_tiles': tiles['cy3'].wrapped_tiles(),
-            'bf_tiles': tiles['bf'].wrapped_tiles() if valid['bf'] else None}
+            'he_tiles': tiles['he'].wrapped_tiles() if valid['he'] else None}
 
 @route('/<filepath:path>')
 def serve_site(filepath):
