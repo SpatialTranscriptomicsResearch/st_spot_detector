@@ -13,10 +13,6 @@ body {
     -ms-user-select: none;
     user-select: none;
     background-color: #eeeeee;
-    /*
-    height: 100%;
-    width: 100%;
-    */
 }
 
 .spinner, .error-text {
@@ -96,9 +92,11 @@ canvas:active {
     background-color: hsla(0, 0%, 100%, 1);
     display: inline-block;
     vertical-align: top;
+    /*
     -webkit-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
     -moz-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
     box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+    */
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px;
     border-top-right-radius: 4px;
@@ -108,13 +106,7 @@ canvas:active {
 .menu-bar-panel {
     background-color: white;
     display: inline-block;
-    /*
-    position: absolute;
-    top: 0.5px;
-    left: 40px;
-    width: 400px;
-    height: 269px;
-    */
+    width: 200px;
     /*
     border-top-left-radius: 0px;
     border-bottom-left-radius: 0px;
@@ -192,13 +184,13 @@ hr {
 
 .spot-color-bar {
     font-size: 0;
+    border: #000 0.1px solid;
 }
 
 .spot-color {
     display: inline-block;
-    width: 40px;
-    height: 40px;
-    cursor:
+    width: 31px;
+    height: 31px;
 }
 
 #spot-color-1 {
