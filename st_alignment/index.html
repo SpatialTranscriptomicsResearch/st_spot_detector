@@ -52,29 +52,29 @@
             <!-- Menu Bar -->
             <div class='menu-bar btn-group btn-group-vertical' role='group'>
                 <!-- Uploader -->
-                <button ng-click='menuButtonClick("button_uploader")' type='button' ng-class='{active: data.button=="button_uploader"}' class='btn btn-lg btn-default' ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
+                <button ng-click='menuButtonClick("button_uploader")' type='button' ng-class='{active: data.button=="button_uploader"}' class='btn btn-default' ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
                     <span class='glyphicon glyphicon-picture'></span>
                 </button>
                 <!-- Detector -->
-                <!--<button export-spots type='button' class='btn btn-lg btn-default '>-->
-                <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='{disabled: menuButtonDisabled.button_detector, active: data.button=="button_detector"}' class='btn btn-lg btn-default'>
+                <!--<button export-spots type='button' class='btn btn-default '>-->
+                <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='{disabled: menuButtonDisabled.button_detector, active: data.button=="button_detector"}' class='btn btn-default'>
                     <span class='glyphicon glyphicon-eye-open'></span>
                 </button>
                 <!-- Adjuster -->
-                <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='{disabled: menuButtonDisabled.button_adjuster, active: data.button=="button_adjuster"}' class='btn btn-lg btn-default'>
+                <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='{disabled: menuButtonDisabled.button_adjuster, active: data.button=="button_adjuster"}' class='btn btn-default'>
                     <span class='glyphicon glyphicon-record'></span>
                 </button>
                 <!-- Exporter -->
-                <button ng-click='menuButtonClick("button_exporter")' type='button' ng-class='{disabled: menuButtonDisabled.button_exporter, active: data.button=="button_exporter"}' class='btn btn-lg btn-default'>
+                <button ng-click='menuButtonClick("button_exporter")' type='button' ng-class='{disabled: menuButtonDisabled.button_exporter, active: data.button=="button_exporter"}' class='btn btn-default'>
                     <span class='glyphicon glyphicon-save'></span>
                 </button>
                 <!-- Help -->
-                <button ng-click='menuButtonClick("button_help")' type='button' ng-class='{active: data.button=="button_help"}'class='btn btn-lg btn-default'>
+                <button ng-click='menuButtonClick("button_help")' type='button' ng-class='{active: data.button=="button_help"}'class='btn btn-default'>
                     <span class='glyphicon glyphicon-question-sign'></span>
                 </button>
                 <!-- Info -->
                 <!-- This opens in a new tab to avoid an in-progress application being aborted -->
-                <a target='_blank' href='https://github.com/SpatialTranscriptomicsResearch/st_aligner/blob/master/README.md' type='button' class='btn btn-lg btn-default' ng-style="{'border-bottom-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
+                <a target='_blank' href='https://github.com/SpatialTranscriptomicsResearch/st_aligner/blob/master/README.md' type='button' class='btn btn-default' ng-style="{'border-bottom-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
                     <span class='glyphicon glyphicon-info-sign'></span>
                 </a>
             </div>
