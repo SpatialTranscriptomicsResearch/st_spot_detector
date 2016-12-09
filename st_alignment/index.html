@@ -120,12 +120,10 @@
                     </div>
                     <!-- Adjuster Panel -->
                     <div ng-show='visible.panel.button_adjuster'>
-                        <button ng-click='addSpots()'       ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-default btn-block'>Add spots</button>
-                        <button ng-click='finishAddSpots()' ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-default btn-block'>Finish adding spots</button>
-                        <button ng-click='deleteSpots()'    ng-show='visible.spotAdjuster.button_deleteSpots'    type='button' class='btn btn-default btn-block'>Delete selected spots</button>
-                        <div ng-show='visible.spotAdjuster.div_insideTissue'>
-                            <button ng-click='selinsideTissue()' type='button' class='btn btn-default btn-sm'>Automatically select spots inside tissue</button>
-                        </div>
+                        <button ng-click='addSpots()'           ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-default btn-block'>Add spots</button>
+                        <button ng-click='finishAddSpots()'     ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-default btn-block'>Finish adding spots</button>
+                        <button ng-click='deleteSpots()'        ng-show='visible.spotAdjuster.button_deleteSpots'    type='button' class='btn btn-default btn-block'>Delete selected spots</button>
+                        <button ng-click='selectInsideTissue()' ng-show='visible.spotAdjuster.div_insideTissue'      type='button' class='btn btn-default btn-block'>Automatically select spots<br>inside tissue</button>
                         <div class='spot-color-selector'>
                             Spot Opacity
                             <div class='spot-color-bar clickable'>
@@ -153,21 +151,21 @@
                     <div ng-show='visible.panel.button_exporter'>
                         <form ng-submit='exportSpots(exportForm.coordinateType, exportForm.selection)'>
                         Selection export:
-                        <div class="btn-group" data-toggle="buttons">
-                            <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-default btn-sm">
-                                <input type="radio" value='all' ng-model='exportForm.selection'> All Spots
+                        <div class="btn-group radio-button-group" data-toggle="buttons">
+                            <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-default radio-button">
+                                <input type="radio" value='all' ng-model='exportForm.selection'> All spots
                             </label>
-                            <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-default btn-sm">
-                                <input type="radio" value='selection' ng-model='exportForm.selection' checked> Selection Only
+                            <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-default radio-button">
+                                <input type="radio" value='selection' ng-model='exportForm.selection' checked> Selection only
                             </label>
                         </div>
                         <br>
                         Coordinate format:
-                        <div class="btn-group" data-toggle="buttons">
-                            <label ng-class="{active: exportForm.coordinateType == 'array'}" class="btn btn-default btn-sm">
+                        <div class="btn-group radio-button-group" data-toggle="buttons">
+                            <label ng-class="{active: exportForm.coordinateType == 'array'}" class="btn btn-default radio-button">
                                 <input type="radio" value='array' ng-model='exportForm.coordinateType' checked> Array
                             </label>
-                            <label ng-class="{active: exportForm.coordinateType == 'pixel'}" class="btn btn-default btn-sm">
+                            <label ng-class="{active: exportForm.coordinateType == 'pixel'}" class="btn btn-default radio-button">
                                 <input type="radio" value='pixel' ng-model='exportForm.coordinateType'> Pixel
                             </label>
                         </div>

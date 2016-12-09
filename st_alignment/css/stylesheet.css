@@ -106,7 +106,7 @@ canvas:active {
 .menu-bar-panel {
     background-color: white;
     display: inline-block;
-    width: 200px;
+    width: 248px;
     /*
     border-top-left-radius: 0px;
     border-bottom-left-radius: 0px;
@@ -139,6 +139,13 @@ canvas:active {
     right: 5px;
 }
 
+.radio-button-group {
+    width: 100%;
+}
+
+.radio-button {
+    width: 50%;
+}
 
 .image-toggle-bar {
     border: #ddd 2px solid ;
@@ -189,8 +196,8 @@ hr {
 
 .spot-color {
     display: inline-block;
-    width: 31px;
-    height: 31px;
+    width: 39px;
+    height: 39px;
 }
 
 #spot-color-1 {
