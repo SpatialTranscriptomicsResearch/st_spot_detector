@@ -5,6 +5,7 @@ import time
 
 import numpy as np
 
+import bottle
 from bottle import BaseRequest, error, get, post, response, request, route, \
     run, static_file
 
@@ -21,19 +22,21 @@ from tissue_recognition import recognize_tissue, get_binary_mask, free
 #######################
 
 # Increases the request limit to 1 MB.
-# Avoids server throwing 403 error when posting to /select_spots_inside.
+# Avoids server throwing 403 error when posting to /select_spots_inside
 BaseRequest.MEMFILE_MAX = 1024 * 1024
 
 session_cacher = SessionCacher()
 image_processor = ImageProcessor()
 
-@get('/session_id')
+app = application = bottle.Bottle()
+
+@app.get('/session_id')
 def create_session_cache():
     new_session_id = session_cacher.create_session_cache()
     print(new_session_id[:20] + ": New session created.")
     return new_session_id
 
-@get('/detect_spots')
+@app.get('/detect_spots')
 def get_spots():
     session_id = request.query['session_id']
     session_cache = session_cacher.get_session_cache(session_id)
@@ -64,7 +67,7 @@ def get_spots():
         print(session_id[:20] + ": Error. " + error_message)
         return error_message
 
-@post('/select_spots_inside')
+@app.post('/select_spots_inside')
 def select_spots_inside():
     data = request.json
 
@@ -137,7 +140,7 @@ def select_spots_inside():
 
     return {'spots': spots, 'spacer': data.get('spacer')}
 
-@get('/thumbnail')
+@app.get('/thumbnail')
 def process_thumbnail():
     brightness = float(request.query['brightness'])
     contrast = float(request.query['contrast'])
@@ -161,7 +164,7 @@ def process_thumbnail():
         return error_message
     return thumbnail_dictionary
 
-@post('/tiles')
+@app.post('/tiles')
 def get_tiles():
     data = ast.literal_eval(request.body.read())
     image_string = {'cy3': data['cy3_image'], 'he': data['he_image']}
@@ -214,12 +217,13 @@ def get_tiles():
     return {'cy3_tiles': tiles['cy3'].wrapped_tiles(),
             'he_tiles': tiles['he'].wrapped_tiles() if valid['he'] else None}
 
-@route('/<filepath:path>')
+@app.route('/<filepath:path>')
 def serve_site(filepath):
     return static_file(filepath, root='./st_alignment')
 
-@error(404)
+@app.error(404)
 def error404(error):
     return "404 Not Found"
 
-run(host='0.0.0.0', port=8080, debug=True, reloader=True)
+if(__name__ == "__main__"): # if this file is run from the terminal
+    app.run(host='0.0.0.0', port=8080, debug=True, reloader=True)
