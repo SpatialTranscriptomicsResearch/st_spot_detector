@@ -13,7 +13,7 @@ It also uses another [tissue recognition library](https://github.com/ludvb/tissu
 A modern browser with HTML5 support is required for the front-end interface. The web app has been tested on the lastest version of Chrome and Firefox.
 
 ## Usage
-### Server setup
+### Server setup (all `pip` and `Python` commands assume Python 2)
 1. Create and activate a Python virtual environment 
 
     ```
@@ -30,7 +30,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
 
 3. Install the tissue recognition library. Follow the instructions [here.](https://github.com/ludvb/tissue_recognition)
 
-4. Run the server (make sure the python command uses Python 2, not Python 3)
+4. Run the server
 
     ```
     python server.py
