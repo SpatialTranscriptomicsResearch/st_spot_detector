@@ -13,8 +13,21 @@ It also uses another [tissue recognition library](https://github.com/ludvb/tissu
 A modern browser with HTML5 support is required for the front-end interface. The web app has been tested on the lastest version of Chrome and Firefox.
 
 ## Usage
+### Download
+1. Clone the repository
+
+    ```
+    git clone https://github.com/SpatialTranscriptomicsResearch/st_aligner.git
+    ```
+2. Move into the directory
+    ```
+    cd st_aligner
+    ```
+
 ### Server setup (all `pip` and `Python` commands assume Python 2)
-1. Create and activate a Python virtual environment 
+1. Install the tissue recognition library. Follow the instructions [here.](https://github.com/ludvb/tissue_recognition)
+
+2. Create and activate a Python virtual environment 
 
     ```
     pip install virtualenv
@@ -22,13 +35,11 @@ A modern browser with HTML5 support is required for the front-end interface. The
     source venv/bin/activate
     ```
     
-2. Install the dependencies in requirements.txt.
+3. Install the dependencies in requirements.txt.
 
     ```
     pip install -r requirements.txt
     ```
-
-3. Install the tissue recognition library. Follow the instructions [here.](https://github.com/ludvb/tissue_recognition)
 
 4. Run the server
 
