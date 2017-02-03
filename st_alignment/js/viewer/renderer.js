@@ -15,7 +15,7 @@
         self.spotSelectionColor = 'rgba(150, 150, 150, 0.95)'; // grey
         self.calibrationLineWidth = 60.0;
         self.calibrationLineWidthHighlighted = 10.0;
-        self.spotSize = 110;
+        self.spotSize = 11;
     };
   
     Renderer.prototype = {
@@ -84,10 +84,10 @@
             };
             self.camera.begin();
                 self.ctx.strokeStyle = self.calibrationColor;
-                drawLine(        0, data.TL.y,     20000, data.TL.y, data.highlighted.includes('T'));
-                drawLine(data.TL.x,         0, data.TL.x,     20000, data.highlighted.includes('L'));
-                drawLine(        0, data.BR.y,     20000, data.BR.y, data.highlighted.includes('B'));
-                drawLine(data.BR.x,         0, data.BR.x,     20000, data.highlighted.includes('R'));
+                drawLine(        0, data.TL.y,     2000, data.TL.y, data.highlighted.includes('T'));
+                drawLine(data.TL.x,         0, data.TL.x,     2000, data.highlighted.includes('L'));
+                drawLine(        0, data.BR.y,     2000, data.BR.y, data.highlighted.includes('B'));
+                drawLine(data.BR.x,         0, data.BR.x,     2000, data.highlighted.includes('R'));
             self.camera.end();
         },
         renderSpotSelection: function(rectCoords) {

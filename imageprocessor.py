@@ -152,8 +152,8 @@ class ImageProcessor:
         params.minThreshold = 170.0
         params.maxThreshold = params.minThreshold + 50.0;
         params.filterByArea = True
-        params.minArea = 20000
-        params.maxArea = 70000
+        params.minArea = 200
+        params.maxArea = 700
 
         detector = cv2.SimpleBlobDetector_create(params)
         keypoints = detector.detect(cv2_image)
@@ -168,10 +168,10 @@ class ImageProcessor:
         width, height = image.size
         aspect_ratio = float(width) / float(height)
         if(aspect_ratio >= 1.0):
-            new_width = 20000
+            new_width = 2000
             new_height = int(float(new_width) / aspect_ratio)
         else:
-            new_height = 20000
+            new_height = 2000
             new_width = int(float(new_height) * aspect_ratio)
         scaled_image = image.resize((new_width, new_height), Image.ANTIALIAS)
 

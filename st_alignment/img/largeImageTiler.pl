@@ -8,8 +8,8 @@
 # $tileWidth and $tileHeight affect the tile size.
 
 my $zoomOutLevel = 1;
-my $photoWidth  = 20000;
-my $photoHeight = 20000;
+my $photoWidth  = 2000;
+my $photoHeight = 2000;
 my $tileWidth  = 1024;
 my $tileHeight = 1024;
 

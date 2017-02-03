@@ -19,7 +19,7 @@ angular.module('stSpots')
                     var tilemap = new Tilemap();
                     var scaleManager = new ScaleManager();
 
-                    var tilemapLevel = 20;
+                    var tilemapLevel = 2;
                     var tilePosition;
                     var camera = new Camera(ctx);
                     var renderer = new Renderer(ctx, camera);
