@@ -19,16 +19,27 @@
         self.navFactor = 60;
         self.scaleFactor = 0.95; 
         self.minScale = 0.03;
-        self.maxScale = 1.00;
-        self.positionBoundaries = {"minX": 0, "maxX": 20480, "minY": 0, "maxY": 20480};
+        self.maxScale = 5.00;
+        self.positionBoundaries = {"minX": 0, "maxX": 2048, "minY": 0, "maxY": 2048};
         self.updateViewport();
     };
   
     Camera.prototype = {
-        begin: function() {
+        begin: function(translation, rotation, rotationpoint, alpha) {
+            translation = translation || 0;
+            rotation = rotation || 0;
+            rotationpoint = rotationpoint || Vec2.Vec2(0, 0);
+            alpha = alpha || 1;
+
             self.context.save();
+
+            self.context.globalAlpha = alpha;
+
             self.applyScale();
             self.applyTranslation();
+
+            self.applyTranslationOffset(translation);
+            self.applyRotationOffset(rotation, rotationpoint);
         },
         end: function() {
             self.context.restore();
@@ -38,8 +49,17 @@
         },
         applyTranslation: function() {
             // move offset code to updateViewport() function
-            self.context.translate(-self.viewport.l + self.positionOffset.x, -self.viewport.t + self.positionOffset.y);
+            self.context.translate(-self.viewport.l + self.positionOffset.x,
+                -self.viewport.t + self.positionOffset.y);
             //self.context.translate(-self.viewport.l, -self.viewport.t);
+        },
+        applyTranslationOffset: function(translation) {
+            self.context.translate(translation.x, translation.y);
+        },
+        applyRotationOffset: function(rotation, rotpoint) {
+            self.context.translate(rotpoint.x, rotpoint.y);
+            self.context.rotate(rotation);
+            self.context.translate(-rotpoint.x, -rotpoint.y);
         },
         updateViewport: function() {
             self.clampValues();

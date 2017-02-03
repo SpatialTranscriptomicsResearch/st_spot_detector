@@ -41,6 +41,7 @@ angular.module('stSpots')
             // texts to display as a title on the menu bar panel
             const panelTitles = {
                 button_uploader: 'Uploader',
+                button_aligner: 'Alignment',
                 button_detector: 'Detection Parameters',
                 button_adjuster: 'Spot adjustment',
                 button_exporter: 'Spot export',
@@ -86,6 +87,7 @@ angular.module('stSpots')
                 error: false,
                 panel: {
                     button_uploader: true,
+                    button_aligner: false,
                     button_detector: false,
                     button_adjuster: false,
                     button_exporter: false,
@@ -103,9 +105,10 @@ angular.module('stSpots')
             // strings which determine the clickable state of the menu bar buttons 
             $scope.menuButtonDisabled = {
                 button_uploader: '',
-                button_detector: 'false',
-                button_adjuster: 'false',
-                button_exporter: 'false',
+                button_aligner:  '',   // 'false',
+                button_detector: '',   //  'false',
+                button_adjuster: '',   //  'false',
+                button_exporter: '',   //  'false',
                 button_help: '',
                 button_info: ''
             };
@@ -205,7 +208,10 @@ angular.module('stSpots')
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
 
-                    openPanel('button_detector');
+                    // if($scope.data.heTiles != null)
+                    //     openPanel('button_aligner');
+                    // else
+                    //     openPanel('button_detector');
                 }
                 else if($scope.data.state === 'state_detection'
                     || $scope.data.state == 'state_autoselection') {
@@ -232,7 +238,7 @@ angular.module('stSpots')
                     $scope.visible.canvas = false;
                     $scope.visible.errorText = true;
                 }
-                if($scope.data.heTiles != null)
+                if($scope.data.heTiles)
                     // toggle bar should have the same visibility as the zoom bar if HE tiles uploaded
                     $scope.visible.imageToggleBar = $scope.visible.zoomBar;
                 else
@@ -262,9 +268,16 @@ angular.module('stSpots')
                 $scope.data.cy3Active = !$scope.data.cy3Active;
             };
 
-            $scope.menuButtonClick = function(button) {
-                // only clickable if not disabled
-                //if($scope.menuButtonDisabled[button] != 'false') {
+            $scope.menuButtonClick = (function() {
+                var prevCloseCallback = undefined;
+                return function(button, openCallback,
+                    closeCallback) {
+                    if(prevCloseCallback)
+                        prevCloseCallback();
+                    prevCloseCallback = closeCallback;
+
+                    // only clickable if not disabled
+                    //if($scope.menuButtonDisabled[button] != 'false') {
                     // switch off all the panel visibilities
                     for(var panel in $scope.visible.panel) {
                         $scope.visible.panel[panel] = false;
@@ -273,7 +286,21 @@ angular.module('stSpots')
                     $scope.visible.panel[button] = true;
                     toggleMenuBarPanelVisibility($scope.data.button, button);
                     $scope.data.button = button;
-                //}
+
+                    if(openCallback)
+                        openCallback();
+                    //}
+                }
+            })();
+
+            $scope.openAlignment = function() {
+                $scope.visible.imageToggleBar = false;
+            };
+
+            $scope.exitAlignment = function() {
+                console.log("exitAlignment");
+                // reset to state before alignment
+                $scope.updateState($scope.data.state, false);
             };
 
             $scope.detectSpots = function() {

@@ -32,10 +32,16 @@
             self.ctx.fillStyle = self.bgColor;
             self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
         },
-        renderImages: function(images) {
-            self.camera.begin();
+        renderImages: function(images, translation, rotation, rotationpoint, alpha) {
+            alpha = 0.5;
+            self.camera.begin(translation, rotation, rotationpoint, alpha);
                 for(var i = 0; i < images.length; ++i) {
                     self.ctx.drawImage(images[i], images[i].renderPosition.x, images[i].renderPosition.y, images[i].scaledSize.x, images[i].scaledSize.y);
+                }
+            self.camera.end();
+            self.camera.begin(translation, rotation + Math.PI / 16, rotationpoint, alpha);
+                for(var i = 0; i < images.length; ++i) {
+                    self.ctx.drawImage(images[i], images[i].renderPosition.x + 50, images[i].renderPosition.y, images[i].scaledSize.x, images[i].scaledSize.y);
                 }
             self.camera.end();
         },

@@ -16,7 +16,10 @@ angular.module('stSpots')
                     // prevents the context menu from appearing on right click
                     canvas.oncontextmenu = function(e) { e.preventDefault(); } 
 
-                    var tilemap = new Tilemap();
+                    var tilemaps = {
+                        'cy3': new Tilemap(),
+                        'he': new Tilemap()
+                    };
                     var scaleManager = new ScaleManager();
 
                     var tilemapLevel = 2;
@@ -75,7 +78,8 @@ angular.module('stSpots')
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
                         images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        renderer.renderImages(images.images); 
+                        renderer.renderImages(
+                            images.images, Vec2.Vec2(0, 0), 0, Vec2.Vec2(0, 0), 1);
 
                         if(scope.data.state == 'state_predetection') {
                             renderer.renderCalibrationPoints(calibrator.calibrationData);
@@ -111,7 +115,7 @@ angular.module('stSpots')
                         refreshCanvas();
                     };
 
-                    scope.receiveTilemap = function(tilemapData, resetCamera = true) {
+                    scope.receiveTilemaps = function(tilemapData, resetCamera = true) {
                         tilemap.loadTilemap(tilemapData, refreshCanvas);
                         scaleManager.setTilemapLevels(tilemap.tilemapLevels, tilemapLevel);
                         tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel);
