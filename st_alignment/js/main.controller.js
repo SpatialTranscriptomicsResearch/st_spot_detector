@@ -105,10 +105,10 @@ angular.module('stSpots')
             // strings which determine the clickable state of the menu bar buttons 
             $scope.menuButtonDisabled = {
                 button_uploader: '',
-                button_aligner:  '',   // 'false',
-                button_detector: '',   //  'false',
-                button_adjuster: '',   //  'false',
-                button_exporter: '',   //  'false',
+                button_aligner: 'false',
+                button_detector: 'false',
+                button_adjuster: 'false',
+                button_exporter: 'false',
                 button_help: '',
                 button_info: ''
             };
@@ -207,11 +207,6 @@ angular.module('stSpots')
                     $scope.visible.spinner = false;
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
-
-                    // if($scope.data.heTiles != null)
-                    //     openPanel('button_aligner');
-                    // else
-                    //     openPanel('button_detector');
                 }
                 else if($scope.data.state === 'state_detection'
                     || $scope.data.state == 'state_autoselection') {
@@ -227,9 +222,6 @@ angular.module('stSpots')
                     $scope.visible.spinner = false;
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
-
-                    // openPanel('button_exporter');
-                    // openPanel('button_adjuster');
                 }
                 else if($scope.data.state === 'state_error') {
                     $scope.visible.menuBar = true;
@@ -329,6 +321,8 @@ angular.module('stSpots')
                 var getSpotData = function() {
                     var successCallback = function(response) {
                         $scope.updateState('state_adjustment');
+                        openPanel('button_exporter');
+                        openPanel('button_adjuster');
                         $scope.loadSpots(response.data); // defined in the viewer directive
                     };
                     var errorCallback = function(response) {
@@ -407,6 +401,10 @@ angular.module('stSpots')
                             $scope.setCy3Active(true);
 
                             $scope.updateState('state_predetection');
+
+                            openPanel('button_detector');
+                            if($scope.data.heImages !== undefined)
+                                openPanel('button_aligner');
                         };
                         var tileErrorCallback = function(response) {
                             $scope.data.errorText = response.data;

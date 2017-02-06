@@ -22,7 +22,7 @@
             position = self.camera.mouseToCameraPosition(position);
             for(var i = 0; i < self.spots.spots.length; ++i) {
                 if(self.spots.spots[i].selected) {
-                    if(Vec2.distanceBetween(position, self.spots.spots[i].renderPosition) < 100) {
+                    if(Vec2.distanceBetween(position, self.spots.spots[i].renderPosition) < 10) {
                         atSpots = true;
                         break;
                     }
