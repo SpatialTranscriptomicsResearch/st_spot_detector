@@ -13,7 +13,7 @@
         self.selectedSpotColor  = 'hsla(140, 63%, 42%, 0.50)'; // green
         self.calibrationColor   = 'hsla(204, 64%, 44%, 0.95)'; // blue
         self.spotSelectionColor = 'rgba(150, 150, 150, 0.95)'; // grey
-        self.calibrationLineWidth = 60.0;
+        self.calibrationLineWidth = 6.0;
         self.calibrationLineWidthHighlighted = 10.0;
         self.spotSize = 11;
     };
@@ -32,18 +32,21 @@
             self.ctx.fillStyle = self.bgColor;
             self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
         },
-        renderImages: function(images, translation, rotation, rotationpoint, alpha) {
-            alpha = 0.5;
-            self.camera.begin(translation, rotation, rotationpoint, alpha);
-                for(var i = 0; i < images.length; ++i) {
-                    self.ctx.drawImage(images[i], images[i].renderPosition.x, images[i].renderPosition.y, images[i].scaledSize.x, images[i].scaledSize.y);
-                }
-            self.camera.end();
-            self.camera.begin(translation, rotation + Math.PI / 16, rotationpoint, alpha);
-                for(var i = 0; i < images.length; ++i) {
-                    self.ctx.drawImage(images[i], images[i].renderPosition.x + 50, images[i].renderPosition.y, images[i].scaledSize.x, images[i].scaledSize.y);
-                }
-            self.camera.end();
+        renderImages: function(images, layerMod) {
+            for (var l in images) {
+                if (!layerMod[l].visible)
+                    continue;
+
+                self.camera.begin(layerMod[l].trans, layerMod[l].rot,
+                    layerMod[l].rotpoint, layerMod[l].alpha);
+                for(var i = 0; i < images[l].length; ++i)
+                    self.ctx.drawImage(images[l][i],
+                        images[l][i].renderPosition.x,
+                        images[l][i].renderPosition.y,
+                        images[l][i].scaledSize.x,
+                        images[l][i].scaledSize.y);
+                self.camera.end();
+            }
         },
         renderSpots: function(spots) {
             self.camera.begin();
@@ -87,7 +90,7 @@
                 self.ctx.stroke();
                 self.ctx.closePath();
 
-            };
+            }
             self.camera.begin();
                 self.ctx.strokeStyle = self.calibrationColor;
                 drawLine(        0, data.TL.y,     2000, data.TL.y, data.highlighted.includes('T'));

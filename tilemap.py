@@ -23,12 +23,13 @@ class Tilemap:
         }
         return dict_wrapper
 
-    def put_tiles_at(self, tilemap_level, tiles):
+    def put_tiles_at(self, tilemap_level, tiles, layer='default'):
         """This takes a 2D array of tiles and inserts it into
         the tilemaps object with the tilemap level as a key.
         """
-        tilemap_level = int(tilemap_level)
-        self.tilemaps[tilemap_level] = tiles
+        if self.tilemaps.get(layer) is None:
+            self.tilemaps[layer] = {}
+        self.tilemaps[layer][int(tilemap_level)] = tiles
 
     def fill_dummy_tiles(self):
         """Fills the tilemap with pre-calculated images."""

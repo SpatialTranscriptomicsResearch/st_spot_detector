@@ -228,8 +228,8 @@ angular.module('stSpots')
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
 
-                    openPanel('button_exporter');
-                    openPanel('button_adjuster');
+                    // openPanel('button_exporter');
+                    // openPanel('button_adjuster');
                 }
                 else if($scope.data.state === 'state_error') {
                     $scope.visible.menuBar = true;
@@ -238,8 +238,9 @@ angular.module('stSpots')
                     $scope.visible.canvas = false;
                     $scope.visible.errorText = true;
                 }
-                if($scope.data.heTiles)
-                    // toggle bar should have the same visibility as the zoom bar if HE tiles uploaded
+                if($scope.data.heImage !== '')
+                    // toggle bar should have the same visibility as the zoom
+                    // bar if HE tiles uploaded
                     $scope.visible.imageToggleBar = $scope.visible.zoomBar;
                 else
                     $scope.visible.imageToggleBar = false;
@@ -260,16 +261,24 @@ angular.module('stSpots')
             };
 
             $scope.imageToggleButtonClick = function() {
-                if($scope.data.cy3Active)
-                    $scope.receiveTilemap($scope.data.heTiles, false);
-                else
-                    $scope.receiveTilemap($scope.data.cy3Tiles, false);
+                $scope.setCy3Active(!$scope.data.cy3Active);
+            };
 
-                $scope.data.cy3Active = !$scope.data.cy3Active;
+            $scope.setCy3Active = function(active) {
+                if ($scope.data.heImage === '') {
+                    $scope.data.cy3Active = true;
+                    return;
+                }
+
+                $scope.data.cy3Active = active;
+                $scope.updateLayerMod({
+                    'cy3': {'visible': $scope.data.cy3Active},
+                    'he': {'visible': !$scope.data.cy3Active},
+                });
             };
 
             $scope.menuButtonClick = (function() {
-                var prevCloseCallback = undefined;
+                var prevCloseCallback;
                 return function(button, openCallback,
                     closeCallback) {
                     if(prevCloseCallback)
@@ -290,17 +299,28 @@ angular.module('stSpots')
                     if(openCallback)
                         openCallback();
                     //}
-                }
+                };
             })();
 
             $scope.openAlignment = function() {
                 $scope.visible.imageToggleBar = false;
+                $scope.updateLayerMod({
+                    'cy3': {
+                        'visible': true,
+                        'alpha': 0.5
+                    },
+                    'he': {
+                        'visible': true,
+                        'alpha': 0.5
+                    }
+                });
             };
 
             $scope.exitAlignment = function() {
                 console.log("exitAlignment");
                 // reset to state before alignment
                 $scope.updateState($scope.data.state, false);
+                $scope.setCy3Active($scope.data.cy3Active);
             };
 
             $scope.detectSpots = function() {
@@ -383,14 +403,8 @@ angular.module('stSpots')
                     $scope.updateState('state_upload');
                     var getTileData = function() {
                         var tileSuccessCallback = function(response) {
-                            $scope.visible.spotAdjuster.div_insideTissue
-                                = response.data.he_tiles != null;
-
-                            $scope.data.cy3Tiles = response.data.cy3_tiles;
-                            $scope.data.heTiles = response.data.he_tiles;
-
-                            $scope.receiveTilemap($scope.data.cy3Tiles); // defined in the viewer directive
-                            $scope.data.cy3Active = true;
+                            $scope.receiveTilemap(response.data);
+                            $scope.setCy3Active(true);
 
                             $scope.updateState('state_predetection');
                         };
@@ -401,8 +415,8 @@ angular.module('stSpots')
                         };
 
                         $http.post('../tiles', {
-                            cy3_image: $scope.data.cy3Image,
-                            he_image: $scope.data.heImage,
+                            cy3: $scope.data.cy3Image,
+                            he: $scope.data.heImage,
                             session_id: $scope.data.sessionId
                         }).then(tileSuccessCallback, tileErrorCallback);
                     };

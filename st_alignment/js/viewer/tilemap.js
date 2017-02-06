@@ -7,49 +7,71 @@
     };
 
     Tilemap.prototype = {
-        loadTilemap: function(tilemap, onLoadCallback) {
-            // these two variables are used to check for async image loading status
-            var imageCount = 0;
-            var loadedImageCount = 0;
-
+        loadTilemap: function(tilemap, onComplete) {
             // store these variables and hold the tilemaps in an object
             self.tilemapLevels = tilemap.tilemapLevels;
             self.tilesize = Vec2.Vec2(tilemap.tileWidth, tilemap.tileHeight);
             self.tilemaps = {};
 
-            // iterate through all the tilemap levels in the loaded tilemap
-            for(var tilemapLevel in tilemap.tilemaps) {
-                // only count them if they are not part of the prototype (JS necessity)
-                if(tilemap.tilemaps.hasOwnProperty(tilemapLevel)) {
-                    // create empty tilemap array to fill with a 2D tilemap
+            self.rows = {};
+            self.cols = {};
+            // TODO: make this better
+            for(var l in tilemap.tilemaps) {
+                for(var t in tilemap.tilemaps[l]) {
+                    if(self.rows[t] === undefined)
+                        self.rows[t] = tilemap.tilemaps[l][t].length;
+                    else if(self.rows[t] != tilemap.tilemaps[l][t].length)
+                        throw "tile sizes differ";
+
+                    if(self.cols[t] === undefined)
+                        self.cols[t] = tilemap.tilemaps[l][t][0].length;
+                    else if(self.cols[t] != tilemap.tilemaps[l][t][0].length)
+                        throw "tile sizes differ";
+                }
+            }
+
+            var onLoad = (function() {
+                var imageCount = 0;
+                for(var l in tilemap.tilemaps)
+                    for(var t in tilemap.tilemaps[l])
+                        imageCount += self.rows * self.cols;
+                var loadedImageCount = 0;
+                return function() {
+                    // we increment the loaded image count and compare it against
+                    // the total, imageCount
+                    loadedImageCount++;
+                    if(loadedImageCount >= imageCount) {
+                        // we refresh the canvas once everything is loaded
+                        onComplete();
+                    }
+                };
+            })();
+
+            // Indices:
+            // l = layer
+            // t = tilemap level
+            // r = image row
+            // c = image col
+            for(var l in tilemap.tilemaps) {
+                self.tilemaps[l] = {};
+                for(var t in tilemap.tilemaps[l]) {
                     var newTilemap = [];
-                    for(var i = 0; i < tilemap.tilemaps[tilemapLevel].length; ++i) {
+                    for(var r = 0; r < self.rows[t]; ++r) {
                         // create empty image array as one row of the tilemap
                         var imageRow = [];
-                        for(var j = 0; j < tilemap.tilemaps[tilemapLevel][i].length; ++j) {
-                            // increment the image counter
-                            imageCount++;
+                        for(var c = 0; c < self.cols[t]; ++c) {
                             var image = new Image();
-                            image.src = tilemap.tilemaps[tilemapLevel][i][j]; // this loading is asynchronous; therefore we use the image.onload callback to count how many images have been loaded, and call the onLoadCallback (which calls refreshCanvas()) after they are done loading
+                            image.src = tilemap.tilemaps[l][t][r][c]; // this loading is asynchronous; therefore we use the image.onload callback to count how many images have been loaded, and call the onLoadCallback after they are done loading
                             // this function is called once image.src has finished loading
-                            image.onload = function() {
-                                // we increment the loaded image count and compare it against the imageCount
-                                // note: it is possible that an image finished loading before all the imageCounts are incremented,
-                                // but this is a non-critical operation and will not break things if this happens
-                                loadedImageCount++;
-                                if(loadedImageCount >= imageCount) {
-                                    // we refresh the canvas once everything is loaded
-                                    onLoadCallback();
-                                }
-                            };
+                            image.onload = onLoad;
                             // add the image to the row
                             imageRow.push(image);
                         }
                         // add the row to the tilemap
                         newTilemap.push(imageRow);
-                    }
-                    self.tilemaps[tilemapLevel] = newTilemap;
-                } 
+                    } 
+                    self.tilemaps[l][t] = newTilemap;
+                }
             }
         },
         getRenderableImages: function(tilePosition, tilemapLevel, radius) {
@@ -61,14 +83,18 @@
         getImagesAtTilePositions: function(tilePositions, tilemapLevel) {
             /* given a set of tile positions and a tile map level,
                the relevant images are returned from the tile map */
-            var images = [];
-            for(var i = 0; i < tilePositions.length; ++i) {
-                var tile = Vec2.Vec2(tilePositions[i].x, tilePositions[i].y);
-                var image = self.tilemaps[tilemapLevel][tile.x][tile.y]; 
-
-                image.renderPosition = Vec2.scale(Vec2.multiply(tile, self.tilesize), tilemapLevel);
-                image.scaledSize = Vec2.scale(self.tilesize, tilemapLevel);
-                images.push(image);
+            var images = {};
+            for(var l in self.tilemaps) {
+                images[l] = [];
+                for(var i = 0; i < tilePositions.length; ++i) {
+                    var tile = Vec2.Vec2(tilePositions[i].x,
+                        tilePositions[i].y);
+                    var image = self.tilemaps[l][tilemapLevel][tile.x][tile.y];
+                    image.renderPosition = Vec2.scale(Vec2.multiply(tile,
+                        self.tilesize), tilemapLevel);
+                    image.scaledSize = Vec2.scale(self.tilesize, tilemapLevel);
+                    images[l].push(image);
+                }
             }
             return images;
         },
@@ -86,10 +112,8 @@
                     var xPos = tilePosition.x + x;
                     var yPos = tilePosition.y + y;
                     // make sure it is a valid tile
-                    var tilemapHeight = self.tilemaps[tilemapLevel][0].length;
-                    var tilemapWidth  = self.tilemaps[tilemapLevel].length;
-                    if(!(xPos < 0 || xPos >= tilemapWidth ||
-                         yPos < 0 || yPos >= tilemapHeight)) {
+                    if(!(xPos < 0 || xPos >= self.cols[tilemapLevel] ||
+                         yPos < 0 || yPos >= self.rows[tilemapLevel])) {
                         positions.push(Vec2.Vec2(xPos, yPos));
                         ++i;
                     }

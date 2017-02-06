@@ -16,16 +16,24 @@ angular.module('stSpots')
                     // prevents the context menu from appearing on right click
                     canvas.oncontextmenu = function(e) { e.preventDefault(); } 
 
-                    var tilemaps = {
-                        'cy3': new Tilemap(),
-                        'he': new Tilemap()
-                    };
+                    var tilemap = new Tilemap();
                     var scaleManager = new ScaleManager();
 
                     var tilemapLevel = 2;
+                    var tilemapLevels = [];
                     var tilePosition;
                     var camera = new Camera(ctx);
                     var renderer = new Renderer(ctx, camera);
+
+                    var layers = [];
+                    var layerMod = {};
+                    var layerModDef = {
+                        'visible': true,
+                        'trans': Vec2.Vec2(0, 0),
+                        'rot': 0, 
+                        'rotpoint': Vec2.Vec2(0, 0),
+                        'alpha': 0.5
+                    };
 
                     var calibrator = new Calibrator(camera);
 
@@ -41,10 +49,7 @@ angular.module('stSpots')
                     var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, calibrator, refreshCanvas, scope.setCanvasCursor);
                     var eventHandler = new EventHandler(scope.data, canvas, camera, logicHandler);
 
-                    var images = {
-                        images: '',
-                        thumbnail: new Image()
-                    };
+                    var images = [];
 
                     scope.loadSpots = function(spotData) {
                         spots.loadSpots(spotData);
@@ -63,7 +68,7 @@ angular.module('stSpots')
                             brightness: calibrator.calibrationData.brightness,
                             contrast:   calibrator.calibrationData.contrast,
                             threshold:  calibrator.calibrationData.threshold,
-                        }
+                        };
                     };
 
                     scope.clickSpotColor = function(color, type) {
@@ -76,17 +81,19 @@ angular.module('stSpots')
 
                         scaleManager.updateScaleLevel(camera.scale);
                         tilemapLevel = 1 / scaleManager.currentScaleLevel;
-                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
-                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                        renderer.renderImages(
-                            images.images, Vec2.Vec2(0, 0), 0, Vec2.Vec2(0, 0), 1);
+                        tilePosition = tilemap.getTilePosition(camera.position,
+                            tilemapLevel); 
+                        images = tilemap.getRenderableImages(tilePosition,
+                            tilemapLevel);
+                        
+                        renderer.renderImages(images, layerMod);
 
                         if(scope.data.state == 'state_predetection') {
                             renderer.renderCalibrationPoints(calibrator.calibrationData);
                         }
                         else if(scope.data.state == 'state_adjustment') {
-                            renderer.renderSpots(spots.spots)
-                            renderer.renderSpotSelection(spotSelector.renderingRect)
+                            renderer.renderSpots(spots.spots);
+                            renderer.renderSpotSelection(spotSelector.renderingRect);
                             if(logicHandler.addingSpots) {
                                 renderer.renderSpotToAdd(spots.spotToAdd);
                             }
@@ -115,16 +122,49 @@ angular.module('stSpots')
                         refreshCanvas();
                     };
 
-                    scope.receiveTilemaps = function(tilemapData, resetCamera = true) {
-                        tilemap.loadTilemap(tilemapData, refreshCanvas);
-                        scaleManager.setTilemapLevels(tilemap.tilemapLevels, tilemapLevel);
-                        tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel);
-                        images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
-                        if(resetCamera) {
-                            camera.position = {x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
-                                y: (1024 / 2) * tilemapLevel};
-                            camera.scale = 1 / tilemapLevel;
-                            camera.updateViewport();
+                    scope.receiveTilemap = function(tilemapData) {
+                        tilemap.loadTilemap(tilemapData, function(){});
+                        scaleManager.setTilemapLevels(tilemap.tilemapLevels,
+                            tilemapLevel);
+                        tilePosition = tilemap.getTilePosition(camera.position,
+                            tilemapLevel);
+                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+
+                        camera.position = {x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
+                            y: (1024 / 2) * tilemapLevel};
+                        camera.scale = 1 / tilemapLevel;
+                        camera.updateViewport();
+
+                        for (var l in tilemapData.tilemaps)
+                            layers.push(l);
+                        scope.initLayerMod();
+
+                        refreshCanvas();
+                    };
+
+                    scope.initLayerMod = function() {
+                        for (var l of layers) {
+                            layerMod[l] = {};
+                            for (var k in layerModDef)
+                                layerMod[l][k] = layerModDef[k];
+                        }
+                    };
+
+                    /* Returns a deep copy of layerMod */
+                    scope.getLayerMod = function() {
+                        var ret = {};
+                        for (var l in layerMod)
+                            ret[l] = Object.assign({}, layerMod[l]);
+                        return ret;
+                    };
+
+                    scope.updateLayerMod = function(update) {
+                        for (var l in update) {
+                            if (!(l in layerMod))
+                                throw "Failed to update layerMod: layer " + l +
+                                    " does not exist!";
+                            for (var k in update[l])
+                                layerMod[l][k] = update[l][k];
                         }
                         refreshCanvas();
                     };

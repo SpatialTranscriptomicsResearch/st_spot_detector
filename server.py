@@ -167,55 +167,44 @@ def process_thumbnail():
 @app.post('/tiles')
 def get_tiles():
     data = ast.literal_eval(request.body.read())
-    image_string = {'cy3': data['cy3_image'], 'he': data['he_image']}
+
     session_id = data['session_id']
     session_cache = session_cacher.get_session_cache(session_id)
-    if(session_cache is not None):
-        valid = {}
-        for key, image in image_string.items():
-            valid.update({
-                key: image_processor.validate_jpeg_URI(image)
-            })
-        # also do proper type validation here; see
-        # https://zubu.re/bottle-security-checklist.html and
-        # https://github.com/ahupp/python-magic
-        if(valid['cy3']):
-            tiles = {}
-            for key, image in image_string.items():
-                if not valid[key]:
-                    continue
-
-                print(session_id[:20] + ": Transforming " + key + " image.")
-                image = image_processor.jpeg_URI_to_Image(image)
-                image = image_processor.transform_original_image(image)
-
-                print(session_id[:20] + ": Tiling " + key + " images.")
-                tiles_ = Tilemap()
-                for x in tiles_.tilemapLevels:
-                    tiles_.put_tiles_at(
-                        x, image_processor.tile_image(image, x))
-
-                session_cache.image[key] = image
-                largest_tile = tiles_.tilemapLevels[-1]
-                thumbnail = tiles_.tilemaps[largest_tile][0][0]
-                thumbnail = image_processor.jpeg_URI_to_Image(thumbnail)
-                session_cache.thumbnail[key] = thumbnail
-
-                tiles.update({key: tiles_})
-                print(session_id[:20] + ": Image tiling complete.")
-        else:
-            response.status = 400
-            error_message = 'Invalid Cy3 image. Please upload a jpeg image.'
-            print(session_id[:20] + ": Error. " + error_message)
-            return error_message
-    else:
+    if session_cache is None:
         response.status = 400
         error_message = 'Session ID expired. Please try again.'
         print(session_id[:20] + ": Error. " + error_message)
         return error_message
 
-    return {'cy3_tiles': tiles['cy3'].wrapped_tiles(),
-            'he_tiles': tiles['he'].wrapped_tiles() if valid['he'] else None}
+    # also do proper type validation here; see
+    # https://zubu.re/bottle-security-checklist.html and
+    # https://github.com/ahupp/python-magic
+    valid = {k: image_processor.validate_jpeg_URI(i)
+             for (k, i) in data.items()}
+    if not valid['cy3']:
+        response.status = 400
+        error_message = 'Invalid Cy3 image. Please upload a jpeg image.'
+        print(session_id[:20] + ": Error. " + error_message)
+        return error_message
+
+    tilemap = Tilemap()
+    for key, image in data.items():
+        if not valid[key]:
+            continue
+
+        print(session_id[:20] + ": Transforming " + key + " image.")
+        image = image_processor.jpeg_URI_to_Image(image)
+        image = image_processor.transform_original_image(image)
+
+        print(session_id[:20] + ": Tiling " + key + " images.")
+        for x in tilemap.tilemapLevels:
+            tilemap.put_tiles_at(
+                x, image_processor.tile_image(image, x), key)
+        print(session_id[:20] + ": Image tiling complete.")
+
+        session_cache.image[key] = image
+
+    return tilemap.wrapped_tiles()
 
 @app.route('/<filepath:path>')
 def serve_site(filepath):
