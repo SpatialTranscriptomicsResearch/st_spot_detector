@@ -35,6 +35,7 @@
 	<script src='js/viewer/logic-handler.js'></script>
 	<script src='js/viewer/spot-selector.js'></script>
 	<script src='js/viewer/spot-adjuster.js'></script>
+	<script src='js/viewer/aligner.js'></script>
 
     <!-- angular app files -->
 	<script src='js/app.module.js'></script>
@@ -56,7 +57,7 @@
                     <span class='glyphicon glyphicon-picture'></span>
                 </button>
                 <!-- Aligner -->
-                <button ng-click='menuButtonClick("button_aligner", openAlignment, exitAlignment)' type='button' ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}' class='btn btn-default'>
+                <button ng-click='menuButtonClick("button_aligner", aligner.open, aligner.exit)' type='button' ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}' class='btn btn-default'>
                     <span class='glyphicon glyphicon-edit'></span>
                 </button>
                 <!-- Detector -->
@@ -111,6 +112,21 @@
                     </div>
                     <!-- Aligner Panel -->
                     <div ng-show='visible.panel.button_aligner'>
+                        <button clas='btn'>Cy3</button>
+                        <button clas='btn'>HE</button>
+                        <div>Opacity: <input type="range" min=0 max=1
+                            defaultValue=1 /></div>
+                        <div>Contrast: <input type="range" /></div>
+                        <button clas='btn'>Move</button>
+                        <button clas='btn'>Rotate</button>
+                        <div>&nbsp;</div>
+                        <div style='position: absolute; bottom: 0.5em; right:
+                            0.5em;'>
+                            HE offset:
+                            {{ getOffset('x') | number : 0 }} px,
+                            {{ getOffset('y') | number : 0 }} px,
+                            {{ getOffset('rotation') | number : 1 }} deg
+                        </div>
                     </div>
                     <!-- Detector Panel -->
                     <div ng-show='visible.panel.button_detector'>

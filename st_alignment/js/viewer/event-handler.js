@@ -19,7 +19,9 @@
   
     EventHandler.prototype = {
         passEventToLogicHandler: function(evt) {
-            if(self.scopeData.state == 'state_predetection' || self.scopeData.state == 'state_adjustment') {
+            if(self.scopeData.state == 'state_predetection' ||
+                self.scopeData.state == 'state_adjustment' ||
+                self.scopeData.state == 'state_alignment') {
                 if(evt.type == 'mouse') {
                     self.logicHandler.processMouseEvent(self.scopeData.state, evt.eventType, evt.data);
                 }
@@ -83,7 +85,7 @@
                     eventType: thisEventType,
                     data: {
                         position: self.mousePos,
-                        difference: distanceMoved,
+                        difference: camera.mouseToCameraScale(distanceMoved),
                         button: mouseButton,
                         ctrl: e.ctrlKey
                     }

@@ -179,7 +179,7 @@ def get_tiles():
     # also do proper type validation here; see
     # https://zubu.re/bottle-security-checklist.html and
     # https://github.com/ahupp/python-magic
-    for key, image in data.items():
+    for key, image in data['images'].items():
         if not image_processor.validate_jpeg_URI(image):
             response.status = 400
             error_message = ('Invalid image (%s). Please upload a jpeg image.'
@@ -188,7 +188,7 @@ def get_tiles():
             return error_message
 
     tilemap = Tilemap()
-    for key, image in data.items():
+    for key, image in data['images'].items():
         print(session_id[:20] + ": Transforming " + key + " image.")
         image = image_processor.jpeg_URI_to_Image(image)
         image = image_processor.transform_original_image(image)

@@ -22,6 +22,7 @@ angular.module('stSpots')
                     var tilemapLevel = 2;
                     var tilemapLevels = [];
                     var tilePosition;
+
                     var camera = new Camera(ctx);
                     var renderer = new Renderer(ctx, camera);
 
@@ -35,6 +36,35 @@ angular.module('stSpots')
                         'alpha': 0.5
                     };
 
+                    scope.initLayerMod = function() {
+                        for (var l of layers) {
+                            layerMod[l] = {};
+                            for (var k in layerModDef)
+                                layerMod[l][k] = layerModDef[k];
+                        }
+                    };
+
+                    /* Returns a deep copy of layerMod */
+                    scope.getLayerMod = function() {
+                        var ret = {};
+                        for (var l in layerMod)
+                            ret[l] = Object.assign({}, layerMod[l]);
+                        return ret;
+                    };
+
+                    scope.updateLayerMod = function(update) {
+                        for (var l in update) {
+                            if (!(l in layerMod))
+                                throw "Failed to update layerMod: layer " + l +
+                                    " does not exist!";
+                            for (var k in update[l])
+                                layerMod[l][k] = update[l][k];
+                        }
+                        refreshCanvas();
+                    };
+
+                    var aligner = new Aligner(layerMod, scope.updateLayerMod);
+
                     var calibrator = new Calibrator(camera);
 
                     scope.setCanvasCursor = function(cursor) {
@@ -46,10 +76,21 @@ angular.module('stSpots')
                     var spots = new SpotManager();
                     var spotSelector = new SpotSelector(camera, spots);
                     var spotAdjuster = new SpotAdjuster(camera, spots, calibrator.calibrationData);
-                    var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, calibrator, refreshCanvas, scope.setCanvasCursor);
+                    var logicHandler = new LogicHandler(canvas, camera, aligner, spotSelector, spotAdjuster, calibrator, refreshCanvas, scope.setCanvasCursor);
                     var eventHandler = new EventHandler(scope.data, canvas, camera, logicHandler);
 
                     var images = [];
+
+                    scope.getOffset = function(type) {
+                        switch(type) {
+                            case 'rotation':
+                                return aligner.rotation;
+                            case 'x':
+                                return aligner.translation.x;
+                            case 'y':
+                                return aligner.translation.y;
+                        }
+                    };
 
                     scope.loadSpots = function(spotData) {
                         spots.loadSpots(spotData);
@@ -139,33 +180,6 @@ angular.module('stSpots')
                             layers.push(l);
                         scope.initLayerMod();
 
-                        refreshCanvas();
-                    };
-
-                    scope.initLayerMod = function() {
-                        for (var l of layers) {
-                            layerMod[l] = {};
-                            for (var k in layerModDef)
-                                layerMod[l][k] = layerModDef[k];
-                        }
-                    };
-
-                    /* Returns a deep copy of layerMod */
-                    scope.getLayerMod = function() {
-                        var ret = {};
-                        for (var l in layerMod)
-                            ret[l] = Object.assign({}, layerMod[l]);
-                        return ret;
-                    };
-
-                    scope.updateLayerMod = function(update) {
-                        for (var l in update) {
-                            if (!(l in layerMod))
-                                throw "Failed to update layerMod: layer " + l +
-                                    " does not exist!";
-                            for (var k in update[l])
-                                layerMod[l][k] = update[l][k];
-                        }
                         refreshCanvas();
                     };
 

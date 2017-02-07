@@ -117,7 +117,7 @@
         },
         pan: function(movement) {
             // takes an object {x, y} and moves the camera with that distance //
-            movement = self.mouseToCameraScale(movement, 1 / self.scale);
+            // movement = self.mouseToCameraScale(movement, 1 / self.scale);
             self.position = Vec2.add(self.position, movement);
             self.updateViewport();
         },

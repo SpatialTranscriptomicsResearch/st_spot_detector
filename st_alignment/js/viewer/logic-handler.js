@@ -2,10 +2,11 @@
 
 (function() {
     var self;
-    var LogicHandler = function(canvas, camera, spotSelector, spotAdjuster, calibrator, refreshCanvas, setCanvasCursor) {
+    var LogicHandler = function(canvas, camera, aligner, spotSelector, spotAdjuster, calibrator, refreshCanvas, setCanvasCursor) {
         self = this;
         self.canvas = canvas;
         self.camera = camera;
+        self.aligner = aligner;
         self.spotSelector = spotSelector;
         self.spotAdjuster = spotAdjuster;
         self.calibrator = calibrator;
@@ -118,6 +119,12 @@
                     self.camera.navigate(eventData.direction, eventData.position);
                     self.calibrator.detectHighlight(eventData.position);
                     cursor = self.checkCalibrationCursor(self.calibrator.calibrationData.highlighted);
+                }
+            }
+            else if(state == 'state_alignment') {
+                if(mouseEvent == self.mouseEvent.drag) {
+                    self.aligner.move(eventData.difference);
+                    cursor = 'grabbed';
                 }
             }
             // adjusting spots state

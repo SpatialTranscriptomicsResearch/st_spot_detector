@@ -1,3 +1,4 @@
+// TODO: Redo state transitions in a separate module
 'use strict';
 
 angular.module('stSpots')
@@ -13,6 +14,7 @@ angular.module('stSpots')
             const helpTexts = {
                 state_start:         "Click on the top-most icon to select and upload image(s).",
                 state_upload:        "",
+                state_alignment:     "",
                 state_predetection:  "Adjust the lines to align on top of the outermost spot frame.\n" +
                                      "Click on 'Detect spots' to begin spot detection.",
                 state_detection:     "",
@@ -30,6 +32,7 @@ angular.module('stSpots')
             const spinnerTexts = {
                 state_start:         "",
                 state_upload:        "Processing image. This may take a few minutes.",
+                state_alignment:     "",
                 state_predetection:  "",
                 state_detection:     "Detecting spots. This may take a few minutes.",
                 state_autoselection: "Running tissue recognition. This may take" +
@@ -162,6 +165,11 @@ angular.module('stSpots')
                 else if($scope.data.state === 'state_upload') {
                     toastr.clear();
                 }
+                else if($scope.data.state === 'state_alignment') {
+                    toastr.options.timeOut = "2000";
+                    var toasts = ["\\-_-/"];
+                    displayToasts(toasts);
+                }
                 else if($scope.data.state === 'state_predetection') {
                     toastr["info"](
                         "Adjust the lines to frame the spots, as shown:<br>" + 
@@ -190,6 +198,7 @@ angular.module('stSpots')
             }
 
             $scope.updateState = function(new_state, show_toast = true) {
+                console.log(new_state);
                 $scope.data.state = new_state;
                 if($scope.data.state === 'state_start') {
                     // reinitialise things
@@ -201,6 +210,11 @@ angular.module('stSpots')
                     $scope.visible.canvas = false;
                     $scope.visible.errorText = false;
                 }
+                else if($scope.data.state === 'state_alignment') {
+                    $scope.visible.menuBar = $scope.visible.zoomBar =
+                        $scope.visible.canvas = true;
+                    $scope.visible.spinner = $scope.visible.errorText = false;
+                }
                 else if($scope.data.state === 'state_predetection') {
                     $scope.visible.menuBar = true;
                     $scope.visible.zoomBar = true;
@@ -208,8 +222,8 @@ angular.module('stSpots')
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
                 }
-                else if($scope.data.state === 'state_detection'
-                    || $scope.data.state == 'state_autoselection') {
+                else if($scope.data.state === 'state_detection' ||
+                    $scope.data.state == 'state_autoselection') {
                         $scope.visible.menuBar = false;
                         $scope.visible.zoomBar = false;
                         $scope.visible.spinner = true;
@@ -241,11 +255,11 @@ angular.module('stSpots')
                     toast();
             };
 
-            function openPanel(button) {
+            function openPanel(button, openCB, closeCB) {
                 // undisable the button
                 $scope.menuButtonDisabled[button] = '';
                 // click the button
-                $scope.menuButtonClick(button);
+                $scope.menuButtonClick(button, openCB, closeCB);
             }
 
             $scope.zoomButtonClick = function(direction) {
@@ -294,26 +308,31 @@ angular.module('stSpots')
                 };
             })();
 
-            $scope.openAlignment = function() {
-                $scope.visible.imageToggleBar = false;
-                $scope.updateLayerMod({
-                    'cy3': {
-                        'visible': true,
-                        'alpha': 0.5
-                    },
-                    'he': {
-                        'visible': true,
-                        'alpha': 0.5
-                    }
-                });
-            };
-
-            $scope.exitAlignment = function() {
-                console.log("exitAlignment");
-                // reset to state before alignment
-                $scope.updateState($scope.data.state, false);
-                $scope.setCy3Active($scope.data.cy3Active);
-            };
+            $scope.aligner = new (function() {
+                this.prevState = undefined;
+                this.open = function() {
+                    this.prevState = $scope.data.state;
+                    $scope.updateState('state_alignment');
+                    $scope.visible.imageToggleBar = false;
+                    $scope.updateLayerMod({
+                        'cy3': {
+                            'visible': true,
+                            'alpha': 0.5
+                        },
+                        'he': {
+                            'visible': true,
+                            'alpha': 0.5
+                        }
+                    });
+                }.bind(this);
+                this.exit = function() {
+                    console.log("exitAlignment");
+                    // reset to state before alignment
+                    if (this.prevState)
+                        $scope.updateState(this.prevState, false);
+                    $scope.setCy3Active($scope.data.cy3Active);
+                }.bind(this);
+            })();
 
             $scope.detectSpots = function() {
                 $scope.updateState('state_detection');
@@ -393,18 +412,21 @@ angular.module('stSpots')
             };
 
             $scope.uploadImage = function() {
-                if($scope.data.cy3Image != '') {
+                if($scope.data.cy3Image !== '') {
                     $scope.updateState('state_upload');
                     var getTileData = function() {
                         var tileSuccessCallback = function(response) {
                             $scope.receiveTilemap(response.data);
                             $scope.setCy3Active(true);
 
+                            // if($scope.data.heImage !== undefined)
+                            //     openPanel('button_aligner',
+                            //         $scope.aligner.open,
+                            //         $scope.aligner.exit);
+                            if($scope.data.heImage !== undefined)
+                                $scope.menuButtonDisabled.button_aligner = '';
                             $scope.updateState('state_predetection');
-
                             openPanel('button_detector');
-                            if($scope.data.heImages !== undefined)
-                                openPanel('button_aligner');
                         };
                         var tileErrorCallback = function(response) {
                             $scope.data.errorText = response.data;
@@ -413,8 +435,8 @@ angular.module('stSpots')
                         };
 
                         $http.post('../tiles', {
-                            cy3: $scope.data.cy3Image,
-                            he: $scope.data.heImage,
+                            images: {'cy3': $scope.data.cy3Image,
+                                     'he': $scope.data.heImage},
                             session_id: $scope.data.sessionId
                         }).then(tileSuccessCallback, tileErrorCallback);
                     };
