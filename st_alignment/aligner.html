@@ -1,0 +1,12 @@
+<div class="btn-group">
+  <button ng-repeat="layer in getLayers();">{{ layer }}</button>
+</div>
+<div>Opacity: <input type="range" min=0 max=1 defaultValue=1 /></div>
+<div>Contrast: <input type="range" /></div>
+<div class="btn-group">
+  <button class="btn">Move</button><button class="btn">Rotate</button>
+</div>
+<div>&nbsp;</div>
+<div style="position: absolute; bottom: 0.5em; right: 0.5em;">
+  HE offset: {{ layerManager.getOffset('x') | number : 0 }} px, {{ layerManager.getOffset('y') | number : 0 }} px, {{ layerManager.getOffset('rotation') | number : 1 }} deg
+</div>

@@ -25,10 +25,9 @@
     };
   
     Camera.prototype = {
-        begin: function(translation, rotation, rotationpoint, alpha) {
+        begin: function(translation, rotation, alpha) {
             translation = translation || 0;
             rotation = rotation || 0;
-            rotationpoint = rotationpoint || Vec2.Vec2(0, 0);
             alpha = alpha || 1;
 
             self.context.save();
@@ -38,8 +37,8 @@
             self.applyScale();
             self.applyTranslation();
 
+            self.applyRotationOffset(rotation);
             self.applyTranslationOffset(translation);
-            self.applyRotationOffset(rotation, rotationpoint);
         },
         end: function() {
             self.context.restore();
@@ -56,10 +55,8 @@
         applyTranslationOffset: function(translation) {
             self.context.translate(translation.x, translation.y);
         },
-        applyRotationOffset: function(rotation, rotpoint) {
-            self.context.translate(rotpoint.x, rotpoint.y);
+        applyRotationOffset: function(rotation) {
             self.context.rotate(rotation);
-            self.context.translate(-rotpoint.x, -rotpoint.y);
         },
         updateViewport: function() {
             self.clampValues();

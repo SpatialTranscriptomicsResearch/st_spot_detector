@@ -271,16 +271,18 @@ angular.module('stSpots')
             };
 
             $scope.setCy3Active = function(active) {
-                if ($scope.data.heImage === '') {
-                    $scope.data.cy3Active = true;
-                    return;
-                }
+              if ($scope.data.heImage === '') {
+                $scope.data.cy3Active = true;
+                return;
+              }
 
-                $scope.data.cy3Active = active;
-                $scope.updateLayerMod({
-                    'cy3': {'visible': $scope.data.cy3Active},
-                    'he': {'visible': !$scope.data.cy3Active},
-                });
+              $scope.data.cy3Active = active;
+              for (var [layer, visible] of[[ 'cy3', $scope.data.cy3Active ],
+                                           [ 'he', !$scope.data.cy3Active ]])
+                $scope.layerManager.setModifiers(layer, new Map([
+                                                   [ 'visible', visible ],
+                                                   [ 'alpha', 1.0 ],
+                                                 ]));
             };
 
             $scope.menuButtonClick = (function() {
@@ -309,29 +311,24 @@ angular.module('stSpots')
             })();
 
             $scope.aligner = new (function() {
-                this.prevState = undefined;
-                this.open = function() {
-                    this.prevState = $scope.data.state;
-                    $scope.updateState('state_alignment');
-                    $scope.visible.imageToggleBar = false;
-                    $scope.updateLayerMod({
-                        'cy3': {
-                            'visible': true,
-                            'alpha': 0.5
-                        },
-                        'he': {
-                            'visible': true,
-                            'alpha': 0.5
-                        }
-                    });
-                }.bind(this);
-                this.exit = function() {
-                    console.log("exitAlignment");
-                    // reset to state before alignment
-                    if (this.prevState)
-                        $scope.updateState(this.prevState, false);
-                    $scope.setCy3Active($scope.data.cy3Active);
-                }.bind(this);
+              this.prevState = undefined;
+              this.open = function() {
+                this.prevState = $scope.data.state;
+                $scope.updateState('state_alignment');
+                $scope.visible.imageToggleBar = false;
+                for (var layer of ['cy3', 'he'])
+                  $scope.layerManager.setModifiers(layer, new Map([
+                                                     [ 'visible', true ],
+                                                     [ 'alpha', 0.5 ],
+                                                   ]));
+              }.bind(this);
+              this.exit = function() {
+                console.log("exitAlignment");
+                // reset to state before alignment
+                if (this.prevState)
+                  $scope.updateState(this.prevState, false);
+                $scope.setCy3Active($scope.data.cy3Active);
+              }.bind(this);
             })();
 
             $scope.detectSpots = function() {

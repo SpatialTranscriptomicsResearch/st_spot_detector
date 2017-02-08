@@ -35,17 +35,18 @@
 	<script src='js/viewer/logic-handler.js'></script>
 	<script src='js/viewer/spot-selector.js'></script>
 	<script src='js/viewer/spot-adjuster.js'></script>
-	<script src='js/viewer/aligner.js'></script>
+	<script src='js/viewer/layer-manager.js'></script>
 
     <!-- angular app files -->
 	<script src='js/app.module.js'></script>
 	<script src='js/main.controller.js'></script>
 	<script src='js/image-upload.directive.js'></script>
 	<script src='js/viewer.directive.js'></script>
+	<script src='js/aligner.directive.js'></script>
 </head>
 
 <body ng-app='stSpots' ng-strict-di='true'>
-    <div ng-controller='MainController'>
+    <div ng-controller='MainController as ctrl'>
         <canvas viewer ng-show='visible.canvas' ng-class='classes.canvas'>
             If you're seeing this message, then either HTML5 canvasses are not supported in your browser, or you have JavaScript disabled.
         </canvas>
@@ -112,21 +113,8 @@
                     </div>
                     <!-- Aligner Panel -->
                     <div ng-show='visible.panel.button_aligner'>
-                        <button clas='btn'>Cy3</button>
-                        <button clas='btn'>HE</button>
-                        <div>Opacity: <input type="range" min=0 max=1
-                            defaultValue=1 /></div>
-                        <div>Contrast: <input type="range" /></div>
-                        <button clas='btn'>Move</button>
-                        <button clas='btn'>Rotate</button>
-                        <div>&nbsp;</div>
-                        <div style='position: absolute; bottom: 0.5em; right:
-                            0.5em;'>
-                            HE offset:
-                            {{ getOffset('x') | number : 0 }} px,
-                            {{ getOffset('y') | number : 0 }} px,
-                            {{ getOffset('rotation') | number : 1 }} deg
-                        </div>
+                        <alignment-widget
+                            layerManager="ctrl.layerManager"></alignment-widget>
                     </div>
                     <!-- Detector Panel -->
                     <div ng-show='visible.panel.button_detector'>
