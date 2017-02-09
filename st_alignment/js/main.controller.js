@@ -58,8 +58,8 @@ angular.module('stSpots')
                 state: 'state_start',
                 button: 'button_uploader',
                 sessionId: '',
-                cy3Image: '',
-                heImage: '',
+                cy3Image: 'REMOVE_THIS',
+                heImage: 'REMOVE_THIS',
                 cy3Tiles: null,
                 heTiles: null,
                 cy3Active: null,
@@ -149,7 +149,7 @@ angular.module('stSpots')
             $scope.addSpotsToasts = function() {
                 if(!addSpotsToastsDisplayed) {
                     addSpotsToastsDisplayed = true;
-                    toastr.options.timeOut = "10000";
+                    toastr.options.timeOut = "100";
                     var toasts = [
                         "Left click to add spots.",
                         "Right click or Ctrl+click to navigate the canvas.",
@@ -171,18 +171,18 @@ angular.module('stSpots')
                     displayToasts(toasts);
                 }
                 else if($scope.data.state === 'state_predetection') {
-                    toastr["info"](
-                        "Adjust the lines to frame the spots, as shown:<br>" + 
-                        "<img src='images/framealignment.png'/><br>" +
-                        "Click DETECT SPOTS to begin automatic spot detection."
-                    );
+                    // toastr["info"](
+                    //     "Adjust the lines to frame the spots, as shown:<br>" + 
+                    //     "<img src='images/framealignment.png'/><br>" +
+                    //     "Click DETECT SPOTS to begin automatic spot detection."
+                    // );
                 }
                 else if($scope.data.state === 'state_detection'
                     || $scope.data.state == 'state_autoselection') {
                         toastr.clear();
                 }
                 else if($scope.data.state === 'state_adjustment') {
-                    toastr.options.timeOut = "10000";
+                    toastr.options.timeOut = "100";
                     var toasts = [
                         "Detected spots are shown in red.",
                         "Left click to select spots.<br>Holding in Shift adds to the selection.",
@@ -409,21 +409,22 @@ angular.module('stSpots')
             };
 
             $scope.uploadImage = function() {
-                if($scope.data.cy3Image !== '') {
+                // if($scope.data.cy3Image !== '') {
                     $scope.updateState('state_upload');
                     var getTileData = function() {
                         var tileSuccessCallback = function(response) {
                             $scope.receiveTilemap(response.data);
                             $scope.setCy3Active(true);
 
-                            // if($scope.data.heImage !== undefined)
-                            //     openPanel('button_aligner',
-                            //         $scope.aligner.open,
-                            //         $scope.aligner.exit);
                             if($scope.data.heImage !== undefined)
                                 $scope.menuButtonDisabled.button_aligner = '';
+                            // $scope.updateState('state_predetection');
+                            // openPanel('button_detector');
+
                             $scope.updateState('state_predetection');
                             openPanel('button_detector');
+                            openPanel('button_aligner', $scope.aligner.open,
+                                $scope.aligner.exit);
                         };
                         var tileErrorCallback = function(response) {
                             $scope.data.errorText = response.data;
@@ -431,11 +432,12 @@ angular.module('stSpots')
                             $scope.updateState('state_error');
                         };
 
-                        $http.post('../tiles', {
-                            images: {'cy3': $scope.data.cy3Image,
-                                     'he': $scope.data.heImage},
-                            session_id: $scope.data.sessionId
-                        }).then(tileSuccessCallback, tileErrorCallback);
+                        // $http.post('../tiles', {
+                        //     images: {'cy3': $scope.data.cy3Image,
+                        //              'he': $scope.data.heImage},
+                        //     session_id: $scope.data.sessionId
+                        // }).then(tileSuccessCallback, tileErrorCallback);
+                        tileSuccessCallback({data: RESPONSE});
                     };
 
                     var getSessionId = function() {
@@ -452,7 +454,7 @@ angular.module('stSpots')
                             .then(sessionSuccessCallback, sessionErrorCallback);
                     };
                     getSessionId();
-                }
+                // }
             };
 
             toastr.options = {
@@ -464,15 +466,16 @@ angular.module('stSpots')
                 "preventDuplicates": true,
                 "onclick": null,
                 "showDuration": "300",
-                "hideDuration": "1000",
+                "hideDuration": "10",
                 "timeOut": "0",
-                "extendedTimeOut": "10000",
+                "extendedTimeOut": "100",
                 "showEasing": "swing",
                 "hideEasing": "linear",
                 "showMethod": "fadeIn",
                 "hideMethod": "fadeOut"
             };
             toastr["info"]("Welcome to the Spatial Transcriptomics Spot Detection Tool. Begin by uploading a Cy3 fluorescence image.", "");
+            
+            $scope.uploadImage();
         }
     ]);
-

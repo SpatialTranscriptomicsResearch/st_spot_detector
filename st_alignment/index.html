@@ -37,6 +37,8 @@
 	<script src='js/viewer/spot-adjuster.js'></script>
 	<script src='js/viewer/layer-manager.js'></script>
 
+  <script src='def_response.js'></script>
+
     <!-- angular app files -->
 	<script src='js/app.module.js'></script>
 	<script src='js/main.controller.js'></script>
@@ -46,7 +48,7 @@
 </head>
 
 <body ng-app='stSpots' ng-strict-di='true'>
-    <div ng-controller='MainController as ctrl'>
+  <div ng-controller='MainController as ctrl'>
         <canvas viewer ng-show='visible.canvas' ng-class='classes.canvas'>
             If you're seeing this message, then either HTML5 canvasses are not supported in your browser, or you have JavaScript disabled.
         </canvas>

@@ -1,7 +1,8 @@
 <div class="btn-group">
-  <button ng-repeat="layer in getLayers();">{{ layer }}</button>
+  <button class="btn" ng-repeat="layer in getLayers()" ng-class="{'active':
+    layerManager.getModifier(layer, 'active')}" ng-click="toggle(layer)">{{ layer }}</button>
 </div>
-<div>Opacity: <input type="range" min=0 max=1 defaultValue=1 /></div>
+<div>Opacity: <input type="range" min=0 max=1 defaultValue=0.5 step="any" /></div>
 <div>Contrast: <input type="range" /></div>
 <div class="btn-group">
   <button class="btn">Move</button><button class="btn">Rotate</button>

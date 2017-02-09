@@ -8,6 +8,10 @@ angular.module('stSpots').directive('alignmentWidget', function() {
           ret.push(layer);
         return ret;
       };
+      scope.toggle = function(layer) {
+        scope.layerManager.setModifier(layer, 'active',
+            !scope.layerManager .getModifier(layer, 'active'));
+      };
     },
     templateUrl: '../aligner.html'
   };
