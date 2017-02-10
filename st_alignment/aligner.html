@@ -1,13 +1,18 @@
 <div class="btn-group">
   <button class="btn" ng-repeat="layer in getLayers()" ng-class="{'active':
-    layerManager.getModifier(layer, 'active')}" ng-click="toggle(layer)">{{ layer }}</button>
+    layerManager.getActiveLayer(layer)}" ng-click="toggleLayer(layer)">{{ layer }}</button>
 </div>
-<div>Opacity: <input type="range" min=0 max=1 defaultValue=0.5 step="any" /></div>
+<div>Opacity: <input type="range" min="0" max="1" defaultValue="0.5" step="any"
+  ng-disabled="opacity == -1" ng-model="opacity"
+  ng-change="setOpacity(opacity)" /></div>
 <div>Contrast: <input type="range" /></div>
 <div class="btn-group">
-  <button class="btn">Move</button><button class="btn">Rotate</button>
+  <button class="btn" ng-repeat="tool in tools" ng-click="setActiveTool(tool)"
+    ng-class="{'active': tool == getActiveTool()}">{{ tool }}</button>
 </div>
 <div>&nbsp;</div>
 <div style="position: absolute; bottom: 0.5em; right: 0.5em;">
-  HE offset: {{ layerManager.getOffset('x') | number : 0 }} px, {{ layerManager.getOffset('y') | number : 0 }} px, {{ layerManager.getOffset('rotation') | number : 1 }} deg
+  HE offset: {{ layerManager.getOffset('x') | number : 0 }} px, {{
+  layerManager.getOffset('y') | number : 0 }} px, {{
+  layerManager.getOffset('rotation') | number : 1 }} deg
 </div>

@@ -8,7 +8,6 @@
  */
 
 const DEF_MODIFIERS = new Map([
-  ['active', false],
   ['visible', true],
   ['trans', Vec2.Vec2(0, 0)],
   ['rot', 0],
@@ -19,7 +18,11 @@ const DEF_MODIFIERS = new Map([
 var LayerManager = class {
   constructor(callback) {
     this._layers = new Map();
+    this._active = {};
     this._callback = callback;
+
+    this.setModifiers = this._interpretLayers(this.setModifiers);
+    this.setModifier = this._interpretLayers(this.setModifier);
   }
 
   addLayer(name) {
@@ -33,6 +36,31 @@ var LayerManager = class {
 
   getLayers() {
     return this._layers.keys();
+  }
+
+  getActiveLayers() {
+    var ret = [];
+    for (var layer in this._active)
+      ret.push(layer);
+    return ret;
+  }
+
+  getActiveLayer(layer) {
+    if (layer in this._active)
+      return true;
+    return false;
+  }
+
+  setActiveLayer(layer, b) {
+    if (b === undefined) {
+      if (this._active[layer] !== undefined)
+        b = false;
+      else b = true;
+    }
+    if (b === true)
+      this._active[layer] = true;
+    else if (b === false && layer in this._active)
+      delete this._active[layer];
   }
 
   getModifiers(layer) {
@@ -52,27 +80,30 @@ var LayerManager = class {
     return ret;
   }
 
-  setModifiers(layer, modifiers) {
-    layer = this.getModifiers(layer);
-    for (var [key, val] of modifiers) {
-      if (!layer.has(key))
-        throw "Invalid modifier " + key + ".";
-      layer.set(key, val);
+  setModifiers(layers, modifiers) {
+    for (var layer of layers) {
+      layer = this.getModifiers(layer);
+      for (var [key, val] of modifiers) {
+        if (!layer.has(key))
+          throw "Invalid modifier " + key + ".";
+        layer.set(key, val);
+      }
     }
     this._callback();
   }
 
-  setModifier(layer, modifier, value) {
-    this.setModifiers(layer, new Map([
-      [modifier, value]
-    ]));
+  setModifier(layers, modifier, value) {
+    for (var layer of layers)
+      this.setModifiers(layer, new Map([
+        [modifier, value]
+      ]));
   }
 
   move(diff) {
-    for (var [key, layer] of this._layers)
-      if (layer.get('active'))
-        this.setModifier(key, 'trans', Vec2.subtract(this.getModifier(key,
-          'trans'), diff));
+    for (var layer in this._active) {
+      this.setModifier(layer, 'trans', Vec2.subtract(this.getModifier(layer,
+        'trans'), diff));
+    }
   }
 
   getOffset(type) {
@@ -84,5 +115,15 @@ var LayerManager = class {
       case 'y':
         return 0;
     }
+  }
+
+  _interpretLayers(func) {
+    return function(layers, ...args) {
+      if (typeof(layers) !== "object")
+        layers = [layers];
+      else if (layers === null)
+        layers = Object.keys(this._active);
+      func.apply(this, [layers, ...args]);
+    };
   }
 };
