@@ -22,8 +22,7 @@
   <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js'></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.16.1/sortable.js'></script>
-  <script
-src='http://cdnjs.cloudflare.com/ajax/libs/mathjs/3.9.1/math.min.js'></script>
+  <script src='http://cdnjs.cloudflare.com/ajax/libs/mathjs/3.9.1/math.min.js'></script>
 
   <!-- project js -->
   <!-- viewer utility classes -->
@@ -55,9 +54,11 @@ src='http://cdnjs.cloudflare.com/ajax/libs/mathjs/3.9.1/math.min.js'></script>
 
 <body ng-app='stSpots' ng-strict-di='true'>
   <div ng-controller='MainController as ctrl'>
-    <canvas viewer ng-show='visible.canvas' ng-class='classes.canvas'>
-            If you're seeing this message, then either HTML5 canvasses are not supported in your browser, or you have JavaScript disabled.
-        </canvas>
+    <div viewer ng-show='visible.canvas' ng-class='classes.canvas'>
+      <canvas id='bg'></canvas>
+      <div id='layers'></div>
+      <canvas id='fg'></canvas>
+    </div>
     <div ng-show='visible.menuBar' class='menu-wrapper'>
       <!-- Menu Bar -->
       <div class='menu-bar btn-group btn-group-vertical' role='group'>
@@ -121,8 +122,7 @@ src='http://cdnjs.cloudflare.com/ajax/libs/mathjs/3.9.1/math.min.js'></script>
           </div>
           <!-- Aligner Panel -->
           <div ng-show='visible.panel.button_aligner'>
-            <alignment-widget layerManager="ctrl.layerManager"
-              toolsManager="ctrl.toolsManager" />
+            <alignment-widget layerManager="ctrl.layerManager" toolsManager="ctrl.toolsManager" />
           </div>
           <!-- Detector Panel -->
           <div ng-show='visible.panel.button_detector'>
@@ -249,26 +249,18 @@ src='http://cdnjs.cloudflare.com/ajax/libs/mathjs/3.9.1/math.min.js'></script>
   // It is derived from http://stackoverflow.com/a/8486324/1748928
 
   (function() {
-    var canvas = document.getElementsByTagName('canvas')[0];
-    var context = canvas.getContext('2d');
-
-    // resize the canvas to fill browser window dynamically
-    window.addEventListener('resize', resizeCanvas, false);
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      /**
-       * Your drawings need to be inside this function otherwise they will be reset when 
-       * you resize the browser window and the canvas goes will be cleared.
-       */
-      drawStuff();
-    }
-    resizeCanvas();
-
-    function drawStuff() {
-      // do your drawing stuff here
+    var canvas = document.getElementsByTagName('canvas');
+    var resizeCanvas = (function(el) {
+      return function() {
+        el.width = window.innerWidth;
+        el.height = window.innerHeight;
+      };
+    });
+    for (var el of canvas) {
+      // resize the canvas to fill browser window dynamically
+      var resizeFunc = resizeCanvas(el);
+      window.addEventListener('resize', resizeFunc, false);
+      resizeFunc();
     }
   })();
 </script>

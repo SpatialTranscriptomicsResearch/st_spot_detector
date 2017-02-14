@@ -101,7 +101,7 @@
           // moving the canvas normally
           if (mouseEvent == self.mouseEvent.drag) {
             // maybe this should take the position rather than the difference
-            self.camera.pan(eventData.difference);
+            self.camera.pan(self.camera.mouseToCameraScale(eventData.difference));
             cursor = 'grabbed';
           }
         }
@@ -128,23 +128,28 @@
         switch (mouseEvent) {
           case self.mouseEvent.drag:
             if (eventData.ctrl) {
-              self.camera.pan(eventData.difference);
-              // var ctx = self.canvas.getContext('2d');
-              // ctx.save();
-              // ctx.translate(eventData.difference.x, eventData.difference.y);
-              // ctx.drawImage(self.canvas, 0, 0);
-              // ctx.restore();
-              // return;
+              self.camera.pan(self.camera.mouseToCameraScale(eventData.difference));
+              var ctx = self.canvas.getContext('2d');
+              ctx.save();
+              var diff = eventData.difference;  // self.camera.mouseToCameraScale(eventData.difference);
+              ctx.translate(-diff.x, -diff.y);
+              ctx.drawImage(self.canvas, 0, 0);
+              ctx.restore();
+              return;
             } else {
               switch (curTool) {
                 case 'move':
-                  self.layerManager.move(eventData.difference);
+                  self.layerManager.move(self.camera.mouseToCameraScale(
+                    eventData.difference));
                   break;
                 case 'rotate':
                   if (eventData.button == self.mouseButton.left) {
-                    var rp =  self.toolsManager.options('rotate').rotationPoint;
-                    rp = math.transpose(math.matrix([[rp.x, rp.y, 1]]));
-                    self.layerManager.rotate(eventData.difference.x / 360, rp);
+                    var rp = self.toolsManager.options('rotate').rotationPoint;
+                    rp = math.transpose(math.matrix([
+                      [rp.x, rp.y, 1]
+                    ]));
+                    self.layerManager.rotate(eventData.difference.x / 360,
+                      rp);
                   }
                   break;
                 default:

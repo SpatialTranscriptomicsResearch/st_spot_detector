@@ -44,14 +44,13 @@
       self.applyScale();
       self.applyTranslation();
 
+      // Add offsets
       // Note: In html canvas, translations also offset the origin -> rotation
       // point. Thus, while we assume that the parameter values are such that
       // the rotation occurs before the translation in a fixed basis, the order
-      // of translation and rotation is switched in the canvas.
-      if (translation)
-        self.context.translate(translation.x, translation.y);
-      if (rotation)
-        self.context.rotate(rotation);
+      // of translation and rotation must be switched in the canvas.
+      self.context.translate(translation.x, translation.y);
+      self.context.rotate(rotation);
     },
     end: function() {
       self.context.restore();

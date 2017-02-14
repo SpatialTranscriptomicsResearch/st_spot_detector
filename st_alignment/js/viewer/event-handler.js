@@ -85,7 +85,7 @@
                     eventType: thisEventType,
                     data: {
                         position: self.mousePos,
-                        difference: camera.mouseToCameraScale(distanceMoved),
+                        difference: distanceMoved,
                         button: mouseButton,
                         ctrl: e.ctrlKey
                     }

@@ -38,14 +38,14 @@
           continue;
 
         tmat = mod.get('tmat');
-        translation = math.subset(tmat, math.index([0, 1], 2));
+        translation = tmat.subset(math.index([0, 1], 2));
         // TODO: use mathjs instead of Vec2?
         translation = Vec2.Vec2(
           math.subset(translation, math.index(0, 0)),
           math.subset(translation, math.index(1, 0))
         );
         rotation = Math.acos(math.subset(tmat, math.index(0, 0)));
-        if (math.subset(tmat, math.index(1, 0)) < 0) 
+        if (math.subset(tmat, math.index(1, 0)) < 0)
           rotation = -rotation;
 
         self.camera.begin(translation, rotation, mod.get('alpha'));
@@ -76,8 +76,8 @@
       var spotColor =
         'hsla(' + self.spotColorHSL + ',' + self.spotColorA + ')';
       self.ctx.fillStyle = spotColor;
-      self.ctx.arc(options.rotationPoint.x, options.rotationPoint.y, self
-        .spotSize, 0, Math.PI * 2);
+      self.ctx.arc(options.rotationPoint.x, options.rotationPoint.y, 20,
+        0, Math.PI * 2);
       self.ctx.closePath();
       self.ctx.fill();
       self.camera.end();

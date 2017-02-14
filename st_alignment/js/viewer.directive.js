@@ -1,5 +1,3 @@
-'use strict';
-
 // this directive controls the rendering and input of the canvas element
 // used for viewing the image and spots.
 
@@ -10,13 +8,16 @@ angular.module('stSpots')
         restrict: 'A',
         scope: false,
         link: function(scope, element) {
-          var canvas = element[0];
-          var ctx = canvas.getContext('2d');
+          var bgcvs = $(element[0]).find('#bg')[0];
+          var fgcvs = $(element[0]).find('#fg')[0];
+          var layers = $(element[0]).find('#layers')[0];
+
+          var fgctx = fgcvs.getContext('2d');
 
           // prevents the context menu from appearing on right click
-          canvas.oncontextmenu = function(e) {
+          fgcvs.oncontextmenu = function(e) {
             e.preventDefault();
-          }
+          };
 
           var tilemap = new Tilemap();
           var scaleManager = new ScaleManager();
@@ -25,11 +26,11 @@ angular.module('stSpots')
           var tilemapLevels = [];
           var tilePosition;
 
-          var camera = new Camera(ctx);
+          var camera = new Camera(fgctx);
 
           scope.layerManager = new LayerManager(refreshCanvas);
 
-          var renderer = new Renderer(ctx, camera, scope.layerManager);
+          var renderer = new Renderer(fgctx, camera, scope.layerManager);
 
           var calibrator = new Calibrator(camera);
 
@@ -49,10 +50,10 @@ angular.module('stSpots')
           var spotAdjuster = new SpotAdjuster(
             camera, spots, calibrator.calibrationData);
           var logicHandler =
-            new LogicHandler(canvas, camera, scope.layerManager, scope.toolsManager,
+            new LogicHandler(fgcvs, camera, scope.layerManager, scope.toolsManager,
               spotSelector, spotAdjuster, calibrator, refreshCanvas, scope.setCanvasCursor
             );
-          var eventHandler = new EventHandler(scope.data, canvas,
+          var eventHandler = new EventHandler(scope.data, fgcvs,
             camera, logicHandler);
 
           var images = [];
