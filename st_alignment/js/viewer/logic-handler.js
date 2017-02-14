@@ -124,20 +124,49 @@
             .highlighted);
         }
       } else if (state == 'state_alignment') {
+        var curTool = self.toolsManager.activeTool();
         switch (mouseEvent) {
           case self.mouseEvent.drag:
-            if (eventData.button == self.mouseButton.left) {
-              if (self.toolsManager.activeTool() == 'move')
-                self.layerManager.move(eventData.difference);
-              else if (self.toolsManager.activeTool == 'rotate')
-                console.log('not implemented');
-            } else
+            if (eventData.ctrl) {
               self.camera.pan(eventData.difference);
-            cursor = 'grabbed';
+              // var ctx = self.canvas.getContext('2d');
+              // ctx.save();
+              // ctx.translate(eventData.difference.x, eventData.difference.y);
+              // ctx.drawImage(self.canvas, 0, 0);
+              // ctx.restore();
+              // return;
+            } else {
+              switch (curTool) {
+                case 'move':
+                  self.layerManager.move(eventData.difference);
+                  break;
+                case 'rotate':
+                  if (eventData.button == self.mouseButton.left) {
+                    var rp =  self.toolsManager.options('rotate').rotationPoint;
+                    rp = math.transpose(math.matrix([[rp.x, rp.y, 1]]));
+                    self.layerManager.rotate(eventData.difference.x / 360, rp);
+                  }
+                  break;
+                default:
+                  return;
+              }
+            }
             break;
-          default:
-            cursor = 'grabbable';
+          case self.mouseEvent.wheel:
+            self.camera.navigate(eventData.direction, eventData.position);
+            break;
+          case self.mouseEvent.up:
+            if (curTool == 'rotate' && eventData.button ==
+              self.mouseButton.right) {
+              self.toolsManager.options('rotate', {
+                'rotationPoint': self.camera.mouseToCameraPosition(
+                  eventData.position)
+              });
+            }
+            break;
         }
+        if (cursor === undefined)
+          cursor = 'grabbable';
       }
       // adjusting spots state
       else if (state == 'state_adjustment') {

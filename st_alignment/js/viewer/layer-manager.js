@@ -11,8 +11,7 @@
 
 const DEF_MODIFIERS = new Map([
   ['visible', true],
-  ['trans', Vec2.Vec2(0, 0)],
-  ['rot', 0],
+  ['tmat', math.eye(3)],
   ['alpha', 1.0]
 ]);
 
@@ -115,9 +114,40 @@ var LayerManager = class {
   }
 
   move(diff) {
+    var transform = math.matrix([
+      [1, 0, -diff.x],
+      [0, 1, -diff.y],
+      [0, 0, 1]
+    ]);
     for (var layer of this.getActiveLayers()) {
-      this.setModifier(layer, 'trans', Vec2.subtract(this.getModifier(layer,
-        'trans'), diff));
+      this.setModifier(layer, 'tmat', math.multiply(transform, this.getModifier(
+        layer, 'tmat')));
+    }
+  }
+
+  rotate(diff, rp) {
+    var transform, transform_, x, y;
+    for (var layer of this.getActiveLayers()) {
+      transform = this.getModifier(layer, 'tmat');
+      [x, y] = [
+        math.subset(rp, math.index(0, 0)),
+        math.subset(rp, math.index(1, 0))
+      ];
+      var lol = math.matrix([
+        [1, 0, -x],
+        [0, 1, -y],
+        [0, 0, 1]
+      ]);
+      var lol2 = math.matrix([
+        [Math.cos(diff), Math.sin(diff), 0],
+        [-Math.sin(diff), Math.cos(diff), 0],
+        [0, 0, 1]
+      ]);
+      this.setModifier(layer, 'tmat', math.multiply(lol, transform));
+      this.setModifier(layer, 'tmat', math.multiply(lol2, this.getModifier(
+        layer, 'tmat')));
+      this.setModifier(layer, 'tmat', math.multiply(math.inv(lol),
+        this.getModifier(layer, 'tmat')));
     }
   }
 

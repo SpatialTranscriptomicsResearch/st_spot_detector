@@ -41,7 +41,7 @@ angular.module('stSpots')
           scope.toolsManager = new ToolsManager(refreshCanvas)
             .addTool('move')
             .addTool('rotate', {
-              'rotation_point': null
+              'rotationPoint': undefined
             });
 
           var spots = new SpotManager();
@@ -99,7 +99,7 @@ angular.module('stSpots')
               renderer.renderCalibrationPoints(calibrator.calibrationData);
             } else if (scope.data.state == 'state_alignment' &&
               scope.toolsManager.activeTool() == 'rotate') {
-              renderer.renderRotationPoint(Vec2.Vec2(0, 0));
+              renderer.renderRotationPoint(scope.toolsManager.options('rotate'));
             } else if (scope.data.state == 'state_adjustment') {
               renderer.renderSpots(spots.spots);
               renderer.renderSpotSelection(spotSelector.renderingRect);
