@@ -32,36 +32,37 @@
   };
 
   Camera.prototype = {
-    begin: function(translation, rotation, alpha) {
+    begin: function(translation, rotation, alpha, ctx) {
       translation = translation || 0;
       rotation = rotation || 0;
       alpha = alpha || 1;
+      ctx = ctx || self.context;
 
-      self.context.save();
+      ctx.save();
 
-      self.context.globalAlpha = alpha;
+      ctx.globalAlpha = alpha;
 
-      self.applyScale();
-      self.applyTranslation();
+      self.applyScale(ctx);
+      self.applyTranslation(ctx);
 
       // Add offsets
       // Note: In html canvas, translations also offset the origin -> rotation
       // point. Thus, while we assume that the parameter values are such that
       // the rotation occurs before the translation in a fixed basis, the order
       // of translation and rotation must be switched in the canvas.
-      self.context.translate(translation.x, translation.y);
-      self.context.rotate(rotation);
+      ctx.translate(translation.x, translation.y);
+      ctx.rotate(rotation);
     },
     end: function() {
       self.context.restore();
     },
-    applyScale: function() {
-      self.context.scale(self.viewport.scale.x, self.viewport.scale.y);
+    applyScale: function(ctx) {
+      ctx.scale(self.viewport.scale.x, self.viewport.scale.y);
     },
-    applyTranslation: function() {
+    applyTranslation: function(ctx) {
       // move offset code to updateViewport() function
-      self.context.translate(-self.viewport.l + self.positionOffset.x, -
-        self.viewport.t + self.positionOffset.y);
+      ctx.translate(-self.viewport.l + self.positionOffset.x, -self.viewport
+        .t + self.positionOffset.y);
       //self.context.translate(-self.viewport.l, -self.viewport.t);
     },
     applyRotationOffset: function(rotation) {},

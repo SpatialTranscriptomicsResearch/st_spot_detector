@@ -8,7 +8,6 @@ angular.module('stSpots')
         restrict: 'A',
         scope: false,
         link: function(scope, element) {
-          var bgcvs = $(element[0]).find('#bg')[0];
           var fgcvs = $(element[0]).find('#fg')[0];
           var layers = $(element[0]).find('#layers')[0];
 
@@ -30,7 +29,7 @@ angular.module('stSpots')
 
           scope.layerManager = new LayerManager(refreshCanvas);
 
-          var renderer = new Renderer(fgctx, camera, scope.layerManager);
+          var renderer = new Renderer(fgctx, layers, camera, scope.layerManager);
 
           var calibrator = new Calibrator(camera);
 
@@ -100,7 +99,8 @@ angular.module('stSpots')
               renderer.renderCalibrationPoints(calibrator.calibrationData);
             } else if (scope.data.state == 'state_alignment' &&
               scope.toolsManager.activeTool() == 'rotate') {
-              renderer.renderRotationPoint(scope.toolsManager.options('rotate'));
+              renderer.renderRotationPoint(scope.toolsManager.options(
+                'rotate'));
             } else if (scope.data.state == 'state_adjustment') {
               renderer.renderSpots(spots.spots);
               renderer.renderSpotSelection(spotSelector.renderingRect);

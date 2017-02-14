@@ -1,9 +1,10 @@
 (function() {
 
   var self;
-  var Renderer = function(context, camera, layerManager) {
+  var Renderer = function(context, layers, camera, layerManager) {
     self = this;
     self.ctx = context;
+    self.layers = layers;
     self.camera = camera;
     self.layerManager = layerManager;
     self.bgColor = 'black';
@@ -27,15 +28,27 @@
       }
     },
     clearCanvas: function() {
-      self.ctx.fillStyle = self.bgColor;
-      self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
+      // self.ctx.fillStyle = self.bgColor;
+      // self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
+      self.ctx.clearRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
+      self.layers.innerHTML = "";
+    },
+    // TODO: This should be managed in LayerManager
+    addLayer: function(id) {
+      var layer = $("<canvas id='" + id + "' width='" + self.ctx.canvas.width +
+        "' height='" + self.ctx.canvas.height + "' />")[0];
+      $(self.layers).append(layer);
+      return layer;
     },
     renderImages: function(images) {
-      var i, l, tmat, translation, rotation;
+      var i, l, ctx, tmat, translation, rotation;
+      self.clearCanvas();
       for (l of self.layerManager.layerOrder) {
         var mod = self.layerManager.getModifiers(l);
         if (!mod.get('visible'))
           continue;
+
+        ctx = self.addLayer(l).getContext("2d");
 
         tmat = mod.get('tmat');
         translation = tmat.subset(math.index([0, 1], 2));
@@ -48,10 +61,10 @@
         if (math.subset(tmat, math.index(1, 0)) < 0)
           rotation = -rotation;
 
-        self.camera.begin(translation, rotation, mod.get('alpha'));
+        self.camera.begin(translation, rotation, mod.get('alpha'), ctx);
 
         for (i = 0; i < images[l].length; ++i)
-          self.ctx.drawImage(images[l][i], images[l][i].renderPosition.x,
+          ctx.drawImage(images[l][i], images[l][i].renderPosition.x,
             images[l][i].renderPosition.y,
             images[l][i].scaledSize.x,
             images[l][i].scaledSize.y);

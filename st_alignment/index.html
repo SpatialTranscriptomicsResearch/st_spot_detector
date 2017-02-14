@@ -249,19 +249,16 @@
   // It is derived from http://stackoverflow.com/a/8486324/1748928
 
   (function() {
-    var canvas = document.getElementsByTagName('canvas');
-    var resizeCanvas = (function(el) {
-      return function() {
+    var resizeCanvas = function() {
+      var canvas = document.getElementsByTagName('canvas'),
+        el;
+      for (el of canvas) {
         el.width = window.innerWidth;
         el.height = window.innerHeight;
-      };
-    });
-    for (var el of canvas) {
-      // resize the canvas to fill browser window dynamically
-      var resizeFunc = resizeCanvas(el);
-      window.addEventListener('resize', resizeFunc, false);
-      resizeFunc();
-    }
+      }
+    };
+    window.addEventListener('resize', resizeCanvas, false);
+    resizeCanvas();
   })();
 </script>
 
