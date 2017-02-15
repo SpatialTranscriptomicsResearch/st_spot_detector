@@ -1,5 +1,3 @@
-'use strict';
-
 (function() {
   var self;
   var LogicHandler = function(canvas, camera, layerManager, toolsManager,
@@ -14,6 +12,7 @@
     self.calibrator = calibrator;
     self.refreshCanvas = refreshCanvas;
     self.setCanvasCursor = setCanvasCursor;
+    self.cumdiff;
 
     self.mouseEvent = Object.freeze({
       "down": 1,
@@ -124,23 +123,33 @@
             .highlighted);
         }
       } else if (state == 'state_alignment') {
-        var curTool = self.toolsManager.activeTool();
+        var curTool = self.toolsManager.activeTool(),
+          l, ctx;
         switch (mouseEvent) {
           case self.mouseEvent.drag:
             if (eventData.ctrl) {
               self.camera.pan(self.camera.mouseToCameraScale(eventData.difference));
-              var ctx = self.canvas.getContext('2d');
-              ctx.save();
-              var diff = eventData.difference;  // self.camera.mouseToCameraScale(eventData.difference);
-              ctx.translate(-diff.x, -diff.y);
-              ctx.drawImage(self.canvas, 0, 0);
-              ctx.restore();
+              for (l of self.layerManager.getLayers()) {
+                ctx = self.layerManager.getCanvas(l).getContext('2d');
+                ctx.save();
+                ctx.translate(-eventData.difference.x, -eventData.difference
+                  .y);
+                ctx.drawImage(ctx.canvas, 0, 0);
+                ctx.restore();
+              }
               return;
             } else {
               switch (curTool) {
                 case 'move':
-                  self.layerManager.move(self.camera.mouseToCameraScale(
-                    eventData.difference));
+                  for (l of self.layerManager.getActiveLayers()) {
+                    ctx = self.layerManager.getCanvas(l).getContext('2d');
+                    ctx.save();
+                    ctx.translate(-eventData.difference.x, -eventData.difference
+                      .y);
+                    ctx.drawImage(ctx.canvas, 0, 0);
+                    ctx.restore();
+                  }
+                  self.cumdiff = Vec2.add(self.cumdiff, eventData.difference);
                   break;
                 case 'rotate':
                   if (eventData.button == self.mouseButton.left) {
@@ -153,12 +162,15 @@
                   }
                   break;
                 default:
-                  return;
+                  break;
               }
             }
             break;
           case self.mouseEvent.wheel:
             self.camera.navigate(eventData.direction, eventData.position);
+            break;
+          case self.mouseEvent.down:
+            self.cumdiff = Vec2.Vec2(0, 0);
             break;
           case self.mouseEvent.up:
             if (curTool == 'rotate' && eventData.button ==
@@ -168,6 +180,7 @@
                   eventData.position)
               });
             }
+            self.layerManager.move(self.camera.mouseToCameraScale(self.cumdiff));
             break;
         }
         if (cursor === undefined)
@@ -223,7 +236,7 @@
           self.camera.navigate(eventData.direction, eventData.position);
         }
       }
-      self.refreshCanvas();
+      // self.refreshCanvas();
       self.setCanvasCursor(cursor);
     }
   };

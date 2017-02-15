@@ -3,7 +3,7 @@
      ng-model="layerManager.layerOrder"
      >
   <li class="btn"
-      ng-repeat="layer in layerManager.layerOrder"
+      ng-repeat="layer in aligner.getLayers()"
       ng-class="{ 'active': layerManager.getActiveLayer(layer) }"
       ng-click="layerManager.setActiveLayer(layer)"
       >

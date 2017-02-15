@@ -7,6 +7,12 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
           axis: 'x'
         };
 
+        // TODO: Need to clone array in order to avoid infinite recursion. Why
+        // does this happen, though?
+        scope.aligner.getLayers = function() {
+          return scope.layerManager.layerOrder.slice().reverse();
+        };
+
         scope.aligner.opacity = function(value) {
           if (arguments.length) {
             scope.layerManager.setModifier(null, 'alpha', value);

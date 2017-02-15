@@ -1,10 +1,9 @@
 (function() {
 
   var self;
-  var Renderer = function(context, layers, camera, layerManager) {
+  var Renderer = function(fgcontext, camera, layerManager) {
     self = this;
-    self.ctx = context;
-    self.layers = layers;
+    self.ctx = fgcontext;
     self.camera = camera;
     self.layerManager = layerManager;
     self.bgColor = 'black';
@@ -27,28 +26,18 @@
         self.spotColorA = color;
       }
     },
-    clearCanvas: function() {
-      // self.ctx.fillStyle = self.bgColor;
-      // self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
-      self.ctx.clearRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
-      self.layers.innerHTML = "";
-    },
-    // TODO: This should be managed in LayerManager
-    addLayer: function(id) {
-      var layer = $("<canvas id='" + id + "' width='" + self.ctx.canvas.width +
-        "' height='" + self.ctx.canvas.height + "' />")[0];
-      $(self.layers).append(layer);
-      return layer;
+    clearCanvas: function(ctx) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     },
     renderImages: function(images) {
       var i, l, ctx, tmat, translation, rotation;
-      self.clearCanvas();
-      for (l of self.layerManager.layerOrder) {
+      for (l of self.layerManager.getLayers()) {
         var mod = self.layerManager.getModifiers(l);
         if (!mod.get('visible'))
           continue;
 
-        ctx = self.addLayer(l).getContext("2d");
+        ctx = self.layerManager.getCanvas(l).getContext('2d');
+        self.clearCanvas(ctx);
 
         tmat = mod.get('tmat');
         translation = tmat.subset(math.index([0, 1], 2));
@@ -61,7 +50,9 @@
         if (math.subset(tmat, math.index(1, 0)) < 0)
           rotation = -rotation;
 
-        self.camera.begin(translation, rotation, mod.get('alpha'), ctx);
+        $(ctx.canvas).css('opacity', mod.get('alpha'));
+
+        self.camera.begin(translation, rotation, ctx);
 
         for (i = 0; i < images[l].length; ++i)
           ctx.drawImage(images[l][i], images[l][i].renderPosition.x,
@@ -69,13 +60,13 @@
             images[l][i].scaledSize.x,
             images[l][i].scaledSize.y);
 
-        // var imageData = self.ctx.getImageData(0, 0, self.ctx.canvas.width,
-        //   self.ctx.canvas.height);
-        // for (i = 0; i < imageData.data.length; ++i)
-        //   imageData.data[i] = 5 * (imageData.data[i] - 127) + 300;
-        // self.ctx.putImageData(imageData, 0, 0);
+        var imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas
+          .height);
+        for (i = 0; i < imageData.data.length; ++i)
+          imageData.data[i] = 5 * (imageData.data[i] - 127) + 300;
+        ctx.putImageData(imageData, 0, 0);
 
-        self.camera.end();
+        self.camera.end(ctx);
       }
     },
     renderRotationPoint: function(options) {

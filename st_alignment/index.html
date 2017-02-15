@@ -55,9 +55,9 @@
 <body ng-app='stSpots' ng-strict-di='true'>
   <div ng-controller='MainController as ctrl'>
     <div viewer ng-show='visible.canvas' ng-class='classes.canvas'>
-      <canvas id='bg'></canvas>
-      <div id='layers'></div>
-      <canvas id='fg'></canvas>
+      <canvas id='bg' class='fullscreen'></canvas>
+      <div id='layers' class='fullscreen'></div>
+      <canvas id='fg' class='fullscreen'></canvas>
     </div>
     <div ng-show='visible.menuBar' class='menu-wrapper'>
       <!-- Menu Bar -->
@@ -249,16 +249,15 @@
   // It is derived from http://stackoverflow.com/a/8486324/1748928
 
   (function() {
-    var resizeCanvas = function() {
-      var canvas = document.getElementsByTagName('canvas'),
-        el;
-      for (el of canvas) {
+    var resize = function() {
+      var els = $('canvas'), el;
+      for (el of els) {
         el.width = window.innerWidth;
         el.height = window.innerHeight;
       }
     };
-    window.addEventListener('resize', resizeCanvas, false);
-    resizeCanvas();
+    window.addEventListener('resize', resize, false);
+    resize();
   })();
 </script>
 

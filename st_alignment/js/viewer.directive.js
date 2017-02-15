@@ -9,7 +9,7 @@ angular.module('stSpots')
         scope: false,
         link: function(scope, element) {
           var fgcvs = $(element[0]).find('#fg')[0];
-          var layers = $(element[0]).find('#layers')[0];
+          var layerContainer = $(element[0]).find('#layers')[0];
 
           var fgctx = fgcvs.getContext('2d');
 
@@ -27,9 +27,9 @@ angular.module('stSpots')
 
           var camera = new Camera(fgctx);
 
-          scope.layerManager = new LayerManager(refreshCanvas);
+          scope.layerManager = new LayerManager(layerContainer, refreshCanvas);
 
-          var renderer = new Renderer(fgctx, layers, camera, scope.layerManager);
+          var renderer = new Renderer(fgctx, camera, scope.layerManager);
 
           var calibrator = new Calibrator(camera);
 
@@ -84,8 +84,6 @@ angular.module('stSpots')
           };
 
           function refreshCanvas() {
-            renderer.clearCanvas();
-
             scaleManager.updateScaleLevel(camera.scale);
             tilemapLevel = 1 / scaleManager.currentScaleLevel;
             tilePosition = tilemap.getTilePosition(camera.position,
@@ -95,6 +93,7 @@ angular.module('stSpots')
 
             renderer.renderImages(images);
 
+            renderer.clearCanvas(fgctx);
             if (scope.data.state == 'state_predetection') {
               renderer.renderCalibrationPoints(calibrator.calibrationData);
             } else if (scope.data.state == 'state_alignment' &&
@@ -147,8 +146,14 @@ angular.module('stSpots')
             camera.scale = 1 / tilemapLevel;
             camera.updateViewport();
 
+            var [width, height] = ['width', 'height'].map(s =>
+              $(fgcvs).attr(s));
             for (var layer in tilemapData.tilemaps)
-              scope.layerManager.addLayer(layer);
+              layer = scope.layerManager.addLayer(
+                layer,
+                `<canvas id='layer-{name}' class='fullscreen' width='${width}'
+                height='${height}' />`
+              );
 
             refreshCanvas();
           };
