@@ -55,6 +55,7 @@
       ctx.restore();
     },
     applyScale: function(ctx) {
+      console.log(self.scale);
       ctx.scale(self.viewport.scale.x, self.viewport.scale.y);
     },
     applyTranslation: function(ctx) {

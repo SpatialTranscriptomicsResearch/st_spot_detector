@@ -141,15 +141,16 @@
             } else {
               switch (curTool) {
                 case 'move':
-                  for (l of self.layerManager.getActiveLayers()) {
-                    ctx = self.layerManager.getCanvas(l).getContext('2d');
-                    ctx.save();
-                    ctx.translate(-eventData.difference.x, -eventData.difference
-                      .y);
-                    ctx.drawImage(ctx.canvas, 0, 0);
-                    ctx.restore();
-                  }
-                  self.cumdiff = Vec2.add(self.cumdiff, eventData.difference);
+                  // for (l of self.layerManager.getActiveLayers()) {
+                  //   ctx = self.layerManager.getCanvas(l).getContext('2d');
+                  //   ctx.save();
+                  //   ctx.translate(-eventData.difference.x, -eventData.difference
+                  //     .y);
+                  //   ctx.drawImage(ctx.canvas, 0, 0);
+                  //   ctx.restore();
+                  // }
+                  // self.cumdiff = Vec2.add(self.cumdiff, eventData.difference);
+                  self.layerManager.move(self.camera.mouseToCameraScale(eventData.difference));
                   break;
                 case 'rotate':
                   if (eventData.button == self.mouseButton.left) {
@@ -180,7 +181,7 @@
                   eventData.position)
               });
             }
-            self.layerManager.move(self.camera.mouseToCameraScale(self.cumdiff));
+            // self.layerManager.move(self.camera.mouseToCameraScale(self.cumdiff));
             break;
         }
         if (cursor === undefined)
