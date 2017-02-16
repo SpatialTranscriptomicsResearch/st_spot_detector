@@ -10,7 +10,6 @@
  *  TODO
  *  ----
  *  1. Add documentation
- *  2. Make it possible to pass varargs to callback
  *  3. Validation when setting layerOrder (should make sure that all layers are
  *     included)
  */
@@ -29,8 +28,9 @@ var LayerManager = (function() {
   return class {
     constructor(container, callback) {
       this._active = {};
-      this._callback = callback;
+      this._callback = callback || (() => null);
       this._container = container;
+      this._defmod = new Map(DEF_MODIFIERS.entries());
       this._layers = new Map();
       this._layerOrder = [];
 
@@ -44,6 +44,8 @@ var LayerManager = (function() {
 
       this.setModifiers = this._interpretLayers(this.setModifiers);
       this.setModifier = this._interpretLayers(this.setModifier);
+
+      return this;
     }
 
     addLayer(name, template) {
@@ -55,7 +57,7 @@ var LayerManager = (function() {
       el = (template || DEF_TEMPLATE).replace("{name}", name);
       el = $(el)[0];
 
-      mod = new Map(DEF_MODIFIERS.entries());
+      mod = new Map(this._defmod.entries());
 
       this._layers.set(name, Object.create(null, {
         el: {
@@ -101,6 +103,7 @@ var LayerManager = (function() {
         this._active[layer] = true;
       else if (b === false && layer in this._active)
         delete this._active[layer];
+      return this;
     }
 
     getCanvas(layer) {
@@ -109,6 +112,26 @@ var LayerManager = (function() {
         throw "Failed to get canvas for layer " + layer +
           " (does it exist?).";
       return ret;
+    }
+
+    addModifier(name, value) {
+      var layer;
+      if (this._defmod.has(name))
+        throw "Modifier already defined!";
+      this._defmod.set(name, value);
+      for (layer of this._layers)
+        layer.mod.set(name, value);
+      return this;
+    }
+
+    deleteModifier(name) {
+      var layer;
+      if (!this._defmod.has(name))
+        throw "Modifier does not exist!";
+      this._defmod.delete(name);
+      for (layer of this._layers)
+        layer.mod.delete(name);
+      return this;
     }
 
     getModifiers(layer) {
@@ -124,12 +147,11 @@ var LayerManager = (function() {
       var ret = modifiers.get(modifier);
       if (ret === undefined)
         throw "Failed to get modifier " + modifier + " in layer " +
-          layer +
-          ". (does the modifier exist?)";
+          layer + ". (does the modifier exist?)";
       return ret;
     }
 
-    setModifiers(layers, modifiers) {
+    setModifiers(layers, modifiers, ...args) {
       var layer, curmod, key, val;
       for (layer of layers) {
         curmod = this.getModifiers(layer);
@@ -139,29 +161,34 @@ var LayerManager = (function() {
           curmod.set(key, val);
         }
       }
-      this._callback();
+      this._callback(...args);
+      return this;
     }
 
-    setModifier(layers, modifier, value) {
+    setModifier(layers, modifier, value, ...args) {
       for (var layer of layers)
         this.setModifiers(layer, new Map([
           [modifier, value]
-        ]));
+        ]), ...args);
+      return this;
     }
 
-    move(diff) {
+    // TODO: callback should only be called once
+    move(diff, ...args) {
       var transform = math.matrix([
         [1, 0, -diff.x],
         [0, 1, -diff.y],
         [0, 0, 1]
       ]);
       for (var layer of this.getActiveLayers()) {
-        this.setModifier(layer, 'tmat', math.multiply(transform, this.getModifier(
-          layer, 'tmat')));
+        this.setModifier(layer, 'tmat', math.multiply(transform,
+          this.getModifier(layer, 'tmat')), ...args);
       }
+      return this;
     }
 
-    rotate(diff, rp) {
+    // TODO: callback should only be called once
+    rotate(diff, rp, ...args) {
       var transform, transform_, x, y;
       for (var layer of this.getActiveLayers()) {
         transform = this.getModifier(layer, 'tmat');
@@ -169,6 +196,7 @@ var LayerManager = (function() {
           math.subset(rp, math.index(0, 0)),
           math.subset(rp, math.index(1, 0))
         ];
+        // TODO: rewrite !! (:
         var lol = math.matrix([
           [1, 0, -x],
           [0, 1, -y],
@@ -179,12 +207,11 @@ var LayerManager = (function() {
           [-Math.sin(diff), Math.cos(diff), 0],
           [0, 0, 1]
         ]);
-        this.setModifier(layer, 'tmat', math.multiply(lol, transform));
-        this.setModifier(layer, 'tmat', math.multiply(lol2, this.getModifier(
-          layer, 'tmat')));
         this.setModifier(layer, 'tmat', math.multiply(math.inv(lol),
-          this.getModifier(layer, 'tmat')));
+            math.multiply(lol2, math.multiply(lol, transform))), ...
+          args);
       }
+      return this;
     }
 
     _interpretLayers(func) {
@@ -193,7 +220,7 @@ var LayerManager = (function() {
           layers = [layers];
         else if (layers === null)
           layers = Object.keys(this._active);
-        func.apply(this, [layers, ...args]);
+        return func.apply(this, [layers, ...args]);
       };
     }
 

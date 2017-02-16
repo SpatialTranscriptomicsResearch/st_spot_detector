@@ -15,12 +15,13 @@
                   ng-model="aligner.opacity"
                   ng-model-options="{ getterSetter: true }"
                   ng-disabled="aligner.opacity == -1"
-                  ng-change="aligner.setOpacity(aligner.opacity)"
                   />
 </div>
 <div>
-  Contrast: <input type="range"
-                   disabled="true"
+  Contrast: <input type="range" min="-1" max="1" defaultValue="0" step="any"
+                   ng-model="aligner.contrast"
+                   ng-model-options="{ getterSetter: true }"
+                   ng-disabled="aligner.contrast == -1"
                    />
 </div>
 <ul class="btn-group">

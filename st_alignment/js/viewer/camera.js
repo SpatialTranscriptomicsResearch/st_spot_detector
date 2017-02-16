@@ -43,10 +43,10 @@
       self.applyTranslation(ctx);
 
       // Add offsets
-      // Note: In html canvas, translations also offset the origin -> rotation
-      // point. Thus, while we assume that the parameter values are such that
-      // the rotation occurs before the translation in a fixed basis, the order
-      // of translation and rotation is switched in the canvas.
+      // Note: We assume that the parameter values are such that the rotation
+      // occurs before the translation. This is also what happens here, since
+      // we're doing the transformations using ctx.save() -> transforms ->
+      // ctx.restore().
       ctx.translate(translation.x, translation.y);
       ctx.rotate(rotation);
     },
@@ -55,7 +55,6 @@
       ctx.restore();
     },
     applyScale: function(ctx) {
-      console.log(self.scale);
       ctx.scale(self.viewport.scale.x, self.viewport.scale.y);
     },
     applyTranslation: function(ctx) {

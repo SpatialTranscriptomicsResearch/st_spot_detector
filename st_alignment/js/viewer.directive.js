@@ -27,7 +27,8 @@ angular.module('stSpots')
 
           var camera = new Camera(fgctx);
 
-          scope.layerManager = new LayerManager(layerContainer, refreshCanvas);
+          scope.layerManager = new LayerManager(layerContainer, refreshCanvas)
+            .addModifier('contrast', 0);
 
           var renderer = new Renderer(fgctx, camera, scope.layerManager);
 
@@ -83,7 +84,10 @@ angular.module('stSpots')
             refreshCanvas();
           };
 
-          function refreshCanvas() {
+          function refreshCanvas(redraw) {
+            if (redraw === undefined)
+              redraw = true;
+
             scaleManager.updateScaleLevel(camera.scale);
             tilemapLevel = 1 / scaleManager.currentScaleLevel;
             tilePosition = tilemap.getTilePosition(camera.position,
@@ -91,7 +95,7 @@ angular.module('stSpots')
             images = tilemap.getRenderableImages(tilePosition,
               tilemapLevel);
 
-            renderer.renderImages(images);
+            renderer.renderImages(images, redraw);
 
             renderer.clearCanvas(fgctx);
             if (scope.data.state == 'state_predetection') {

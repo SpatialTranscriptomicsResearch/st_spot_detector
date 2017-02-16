@@ -141,16 +141,8 @@
             } else {
               switch (curTool) {
                 case 'move':
-                  // for (l of self.layerManager.getActiveLayers()) {
-                  //   ctx = self.layerManager.getCanvas(l).getContext('2d');
-                  //   ctx.save();
-                  //   ctx.translate(-eventData.difference.x, -eventData.difference
-                  //     .y);
-                  //   ctx.drawImage(ctx.canvas, 0, 0);
-                  //   ctx.restore();
-                  // }
-                  // self.cumdiff = Vec2.add(self.cumdiff, eventData.difference);
-                  self.layerManager.move(self.camera.mouseToCameraScale(eventData.difference));
+                  self.layerManager.move(self.camera.mouseToCameraScale(
+                    eventData.difference), false);
                   break;
                 case 'rotate':
                   if (eventData.button == self.mouseButton.left) {
@@ -159,7 +151,7 @@
                       [rp.x, rp.y, 1]
                     ]));
                     self.layerManager.rotate(eventData.difference.x / 360,
-                      rp);
+                      rp, false);
                   }
                   break;
                 default:
@@ -169,6 +161,7 @@
             break;
           case self.mouseEvent.wheel:
             self.camera.navigate(eventData.direction, eventData.position);
+            self.refreshCanvas(false);
             break;
           case self.mouseEvent.down:
             self.cumdiff = Vec2.Vec2(0, 0);

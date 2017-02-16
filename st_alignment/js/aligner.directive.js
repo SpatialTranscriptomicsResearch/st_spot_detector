@@ -7,21 +7,32 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
           axis: 'x'
         };
 
-        // TODO: Need to clone array in order to avoid infinite recursion. Why
-        // does this happen, though?
+        // TODO: Need to clone array in order to avoid infinite recursion when
+        // reversing. Why does this happen, though?
         scope.aligner.getLayers = function() {
-          return scope.layerManager.layerOrder.slice().reverse();
+          return scope.layerManager.layerOrder.slice(); // .reverse();
         };
 
         scope.aligner.opacity = function(value) {
           if (arguments.length) {
-            scope.layerManager.setModifier(null, 'alpha', value);
+            scope.layerManager.setModifier(null, 'alpha', value, false);
             return true;
           }
           var layers = scope.layerManager.getActiveLayers();
           if (layers.length != 1)
             return -1;
           return scope.layerManager.getModifier(layers[0], 'alpha');
+        };
+
+        scope.aligner.contrast = function(value) {
+          if (arguments.length) {
+            scope.layerManager.setModifier(null, 'contrast', value);
+            return true;
+          }
+          var layers = scope.layerManager.getActiveLayers();
+          if (layers.length != 1)
+            return -1;
+          return scope.layerManager.getModifier(layers[0], 'contrast');
         };
       },
       templateUrl: '../aligner.html'

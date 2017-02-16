@@ -30,10 +30,11 @@
     clearCanvas: function(ctx) {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     },
+    // TODO: should detect which layers that have been modified and rerender
+    // only those.
     renderImages: function(images, redraw) {
       var i, l, ctx, tmat, tmat_, translation, rotation, redraw_,
         prevState;
-      redraw = false; // redraw || true;
 
       for (l of self.layerManager.getLayers()) {
         var mod = self.layerManager.getModifiers(l);
@@ -47,81 +48,54 @@
         // Disallow quick refresh (not redrawing) if we don't know the previous
         // state of the layer. (This should never happen).
         redraw_ = redraw | (prevState === undefined);
-        // assert(redraw == redraw_);
+        console.assert(redraw == redraw_);
 
-        if (!redraw_)
-          tmat_ = math.multiply(tmat, math.inv(prevState.mat));
-        else tmat_ = tmat;
-
-        translation = tmat_.subset(math.index([0, 1], 2));
+        translation = tmat.subset(math.index([0, 1], 2));
         // TODO: use mathjs instead of Vec2?
         translation = Vec2.Vec2(
           math.subset(translation, math.index(0, 0)),
           math.subset(translation, math.index(1, 0))
         );
-        rotation = Math.acos(math.subset(tmat_, math.index(0, 0)));
-        if (math.subset(tmat_, math.index(1, 0)) < 0)
+        rotation = Math.acos(math.subset(tmat, math.index(0, 0)));
+        if (math.subset(tmat, math.index(1, 0)) < 0)
           rotation = -rotation;
 
         if (redraw_) {
-          // self.clearCanvas(ctx);
+          var [height, width] = ['y', 'x'].map(function(s) {
+            return images[l].reduce((acc, val) => Math.max(acc, val.renderPosition[
+              s] + val.scaledSize[s]), 0);
+          });
+          var canvas_ = $(
+              `<canvas width='${width}' height='${height}' />`)[0],
+            ctx_ = canvas_.getContext('2d');
 
-          // self.camera.begin(translation, rotation, ctx);
-
-          for (i = 0; i < images[l].length; ++i) {
-            if (ctx.canvas.width < images[l][i].renderPosition.x +
-              images[l][i].scaledSize.x)
-              ctx.canvas.width = images[l][i].renderPosition.x +
-              images[l][i].scaledSize.x;
-            if (ctx.canvas.height < images[l][i].renderPosition.y +
-              images[l][i].scaledSize.y)
-              ctx.canvas.height = images[l][i].renderPosition.y +
-              images[l][i].scaledSize.y;
-            ctx.drawImage(images[l][i], images[l][i].renderPosition.x,
+          for (i = 0; i < images[l].length; ++i)
+            ctx_.drawImage(images[l][i], images[l][i].renderPosition.x,
               images[l][i].renderPosition.y,
               images[l][i].scaledSize.x,
               images[l][i].scaledSize.y);
+
+          var imageData = ctx_.getImageData(0, 0, ctx_.canvas.width, ctx_
+            .canvas.height);
+          var contrast = mod.get('contrast');
+          if (contrast && contrast !== 0) {
+            contrast += 1;
+            ctx.filter = `contrast(${contrast})`;
+            // contrast = 62.75 * contrast * contrast + 63.75 * contrast + 1;
+            // for (i = 0; i < imageData.data.length; i += 4) {
+            //   imageData.data[i] = contrast * (imageData.data[i] - 127.5) + 127.5;
+            //   imageData.data[i+1] = contrast * (imageData.data[i+1] - 127.5) + 127.5;
+            //   imageData.data[i+2] = contrast * (imageData.data[i+2] - 127.5) + 127.5;
+            // }
+            // ctx_.putImageData(imageData, 0, 0);
           }
 
-          var imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas
-            .height);
-          for (i = 0; i < imageData.data.length; ++i)
-            imageData.data[i] = 5 * (imageData.data[i] - 127) + 300;
-          ctx.putImageData(imageData, 0, 0);
-
-          prevState = {
-            mat: math.clone(tmat),
-            canvas: (function() {
-              var ret = $(
-                `<canvas width='${ctx.canvas.width}' height='${ctx.canvas.height}' />`
-              )[0];
-              ret.getContext('2d').drawImage(ctx.canvas, 0, 0);
-              return ret;
-            })()
-          };
-          self.prevState.set(l, prevState);
-
-          // self.camera.end(ctx);
-        } else {
-          // self.clearCanvas(ctx);
-          // ctx.save();
-          // // self.camera.applyScale(ctx);
-          // // self.camera.applyTranslation(ctx);
-          // translation = Vec2.scale(translation, self.camera.scale);
-          // ctx.translate(translation.x, translation.y);
-          // ctx.rotate(rotation);
-          // // ctx.scale(1 / self.camera.scale, 1 / self.camera.scale);
-          // ctx.drawImage(prevState.canvas, 0, 0);
-          // ctx.restore();
-          // self.clearCanvas(ctx);
-          // self.camera.begin(translation, rotation, ctx);
-          // ctx.drawImage(prevState.canvas, 0, 0);
-          // self.camera.end(ctx);
+          self.prevState.set(l, canvas_);
         }
 
         self.clearCanvas(ctx);
         self.camera.begin(translation, rotation, ctx);
-        ctx.drawImage(prevState.canvas, 0, 0);
+        ctx.drawImage(self.prevState.get(l), 0, 0);
         self.camera.end(ctx);
 
         $(ctx.canvas).css('opacity', mod.get('alpha'));
