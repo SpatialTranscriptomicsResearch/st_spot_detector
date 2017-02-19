@@ -24,9 +24,22 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
           return scope.layerManager.getModifier(layers[0], 'alpha');
         };
 
+        scope.aligner.brightness = function(value) {
+          if (arguments.length) {
+            scope.layerManager.setModifier(null, 'brightness', parseInt(
+              value));
+            return true;
+          }
+          var layers = scope.layerManager.getActiveLayers();
+          if (layers.length != 1)
+            return -1;
+          return scope.layerManager.getModifier(layers[0], 'brightness');
+        };
+
         scope.aligner.contrast = function(value) {
           if (arguments.length) {
-            scope.layerManager.setModifier(null, 'contrast', value);
+            scope.layerManager.setModifier(null, 'contrast', parseInt(
+              value));
             return true;
           }
           var layers = scope.layerManager.getActiveLayers();
@@ -37,5 +50,4 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
       },
       templateUrl: '../aligner.html'
     };
-  }
-);
+  });

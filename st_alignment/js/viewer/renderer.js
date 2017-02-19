@@ -75,20 +75,21 @@
               images[l][i].scaledSize.x,
               images[l][i].scaledSize.y);
 
-          var imageData = ctx_.getImageData(0, 0, ctx_.canvas.width, ctx_
-            .canvas.height);
-          var contrast = mod.get('contrast');
-          if (contrast && contrast !== 0) {
-            contrast += 1;
-            ctx.filter = `contrast(${contrast})`;
-            // contrast = 62.75 * contrast * contrast + 63.75 * contrast + 1;
-            // for (i = 0; i < imageData.data.length; i += 4) {
-            //   imageData.data[i] = contrast * (imageData.data[i] - 127.5) + 127.5;
-            //   imageData.data[i+1] = contrast * (imageData.data[i+1] - 127.5) + 127.5;
-            //   imageData.data[i+2] = contrast * (imageData.data[i+2] - 127.5) + 127.5;
-            // }
-            // ctx_.putImageData(imageData, 0, 0);
+          // var imageData = ctx_.getImageData(0, 0, ctx_.canvas.width, ctx_
+          //   .canvas.height);
+
+          var filters = [];
+          var [brightness, contrast] = ['brightness', 'contrast'].map(s =>
+            mod.get(s));
+          if (brightness && brightness !== 0) {
+            brightness = Math.pow((brightness + 100) / 100, 2);
+            filters.push(`brightness(${brightness})`);
           }
+          if (contrast && contrast !== 0) {
+            contrast = Math.pow((contrast + 100) / 100, 5);
+            filters.push(`contrast(${contrast})`);
+          }
+          ctx.filter = filters.join(" ");
 
           self.prevState.set(l, canvas_);
         }

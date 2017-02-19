@@ -129,15 +129,7 @@
           case self.mouseEvent.drag:
             if (eventData.ctrl) {
               self.camera.pan(self.camera.mouseToCameraScale(eventData.difference));
-              for (l of self.layerManager.getLayers()) {
-                ctx = self.layerManager.getCanvas(l).getContext('2d');
-                ctx.save();
-                ctx.translate(-eventData.difference.x, -eventData.difference
-                  .y);
-                ctx.drawImage(ctx.canvas, 0, 0);
-                ctx.restore();
-              }
-              return;
+              self.refreshCanvas(false);
             } else {
               switch (curTool) {
                 case 'move':
@@ -153,8 +145,6 @@
                     self.layerManager.rotate(eventData.difference.x / 360,
                       rp, false);
                   }
-                  break;
-                default:
                   break;
               }
             }

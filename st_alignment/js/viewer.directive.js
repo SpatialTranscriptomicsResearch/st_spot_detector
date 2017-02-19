@@ -28,7 +28,8 @@ angular.module('stSpots')
           var camera = new Camera(fgctx);
 
           scope.layerManager = new LayerManager(layerContainer, refreshCanvas)
-            .addModifier('contrast', 0);
+            .addModifier('contrast', 0)
+            .addModifier('brightness', 0);
 
           var renderer = new Renderer(fgctx, camera, scope.layerManager);
 

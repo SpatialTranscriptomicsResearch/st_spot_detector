@@ -11,18 +11,37 @@
   </li>
 </ul>
 <div>
-  Opacity: <input type="range" min="0" max="1" defaultValue="0.5" step="any"
-                  ng-model="aligner.opacity"
-                  ng-model-options="{ getterSetter: true }"
-                  ng-disabled="aligner.opacity == -1"
-                  />
+  Opacity:
+  <input type="range"
+         min="0"
+         max="1"
+         defaultValue="0.5"
+         step="any"
+         ng-model="aligner.opacity"
+         ng-model-options="{ getterSetter: true }"
+         />
 </div>
 <div>
-  Contrast: <input type="range" min="-1" max="1" defaultValue="0" step="any"
-                   ng-model="aligner.contrast"
-                   ng-model-options="{ getterSetter: true }"
-                   ng-disabled="aligner.contrast == -1"
-                   />
+  Brightness:
+  <input type="range"
+         min="-100"
+         max="100"
+         defaultValue="0"
+         step="1"
+         ng-model="aligner.brightness"
+         ng-model-options="{ getterSetter: true }"
+         />
+</div>
+<div>
+  Contrast:
+  <input type="range"
+         min="-100"
+         max="100"
+         defaultValue="0"
+         step="1"
+         ng-model="aligner.contrast"
+         ng-model-options="{ getterSetter: true }"
+         />
 </div>
 <ul class="btn-group">
   <li class="btn"
