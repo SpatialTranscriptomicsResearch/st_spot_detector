@@ -162,12 +162,16 @@ angular.module('stSpots')
 
             var [width, height] = ['width', 'height'].map(s =>
               $(fgcvs).attr(s));
-            for (var layer in tilemapData.tilemaps)
-              layer = scope.layerManager.addLayer(
-                layer,
-                `<canvas id='layer-{name}' class='fullscreen' width='${width}'
-                height='${height}' />`
-              );
+            for (var layer in tilemapData.tilemaps) {
+              try {
+                layer = scope.layerManager.addLayer(
+                  layer,
+                  `<canvas id='layer-{name}' class='fullscreen' width='${width}'
+                  height='${height}' />`
+                );
+              }
+              catch (e) {}
+            }
 
             refreshCanvas();
           };
