@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import binascii
 import time
 import os
 
@@ -25,7 +26,7 @@ class SessionCacher:
         unique = False
         while(not unique):
             # from https://gist.github.com/geoffalday/2021517
-            new_id = os.urandom(64).encode('hex')
+            new_id = binascii.hexlify(os.urandom(64)).decode('utf-8')
             unique = True
             # Check against currently existing IDs
             # The likelihood for collision is extremely extremely low,
