@@ -166,7 +166,7 @@ def process_thumbnail():
 
 @app.post('/tiles')
 def get_tiles():
-    data = ast.literal_eval(request.body.read())
+    data = eval(request.body.read())
 
     session_id = data['session_id']
     session_cache = session_cacher.get_session_cache(session_id)

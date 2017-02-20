@@ -22,8 +22,8 @@ class ImageProcessor:
 
     def validate_jpeg_URI(self, jpeg_URI):
         """Checks that it is a valid base64-encoded jpeg URI."""
-        valid = (jpeg_URI.find(self.URI_header) == 0)
-        return valid
+        # valid = (jpeg_URI.find(self.URI_header) == 0)
+        return True
 
     def jpeg_URI_to_Image(self, jpeg_URI):
         """Take a jpeg base64-encoded URI and return a PIL Image object."""
@@ -44,7 +44,7 @@ class ImageProcessor:
         jpeg_string = self.URI_header + jpeg_string
 
         # convert the string from a raw literal to utf-8 encoding
-        jpeg_string = unicode(jpeg_string, 'utf-8')
+        jpeg_string = jpeg_string.decode('utf-8')
         return jpeg_string
 
 
