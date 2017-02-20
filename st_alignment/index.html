@@ -1,271 +1,274 @@
 <!doctype html>
 
 <html lang='en'>
+
 <head>
-	<meta charset='utf-8'>
-	<title>ST Spot Alignment</title>
-	<meta name='description' content='Spatial Transcriptomics Alignment Web Tool'>
+  <meta charset='utf-8'>
+  <title>ST Spot Alignment</title>
+  <meta name='description' content='Spatial Transcriptomics Alignment Web Tool'>
 
-    <!-- library css -->
-	<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css' />
-	<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css' />
-	<link rel='stylesheet' href='css/spinkit/spinners/10-fading-circle.css' />
-	<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.css' />
+  <!-- library css -->
+  <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css' />
+  <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css' />
+  <link rel='stylesheet' href='css/spinkit/spinners/10-fading-circle.css' />
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.css' />
 
-    <!-- project css -->
-	<link rel='stylesheet' href='css/stylesheet.css'>
+  <!-- project css -->
+  <link rel='stylesheet' href='css/stylesheet.css'>
 
-    <!-- library js -->
-    <script src='https://code.jquery.com/jquery-3.1.0.js'></script>
-    <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.min.js'></script>
+  <!-- library js -->
+  <script src='https://code.jquery.com/jquery-3.1.0.js'></script>
+  <script src='http://cdn.jsdelivr.net/g/jquery.ui@1.10%28jquery.ui.core.min.js+jquery.ui.widget.min.js+jquery.ui.mouse.min.js+jquery.ui.sortable.min.js%29'></script>
+  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.16.1/sortable.js'></script>
 
-    <!-- project js -->
-    <!-- viewer utility classes -->
-	<script src='js/viewer/vec2.js'></script>
-	<script src='js/viewer/scale-manager.js'></script>
-	<script src='js/viewer/tilemap.js'></script>
-	<script src='js/viewer/camera.js'></script>
-	<script src='js/viewer/renderer.js'></script>
+  <!-- project js -->
+  <!-- viewer utility classes -->
+  <script src='js/viewer/vec2.js'></script>
+  <script src='js/viewer/scale-manager.js'></script>
+  <script src='js/viewer/tilemap.js'></script>
+  <script src='js/viewer/camera.js'></script>
+  <script src='js/viewer/renderer.js'></script>
 
-	<script src='js/viewer/spots.js'></script>
-	<script src='js/viewer/calibrator.js'></script>
-	<script src='js/viewer/keycodes.js'></script>
-	<script src='js/viewer/event-handler.js'></script>
-	<script src='js/viewer/logic-handler.js'></script>
-	<script src='js/viewer/spot-selector.js'></script>
-	<script src='js/viewer/spot-adjuster.js'></script>
-	<script src='js/viewer/layer-manager.js'></script>
+  <script src='js/viewer/spots.js'></script>
+  <script src='js/viewer/calibrator.js'></script>
+  <script src='js/viewer/keycodes.js'></script>
+  <script src='js/viewer/event-handler.js'></script>
+  <script src='js/viewer/logic-handler.js'></script>
+  <script src='js/viewer/spot-selector.js'></script>
+  <script src='js/viewer/spot-adjuster.js'></script>
+  <script src='js/viewer/layer-manager.js'></script>
+  <script src='js/viewer/tools-manager.js'></script>
 
   <script src='def_response.js'></script>
 
-    <!-- angular app files -->
-	<script src='js/app.module.js'></script>
-	<script src='js/main.controller.js'></script>
-	<script src='js/image-upload.directive.js'></script>
-	<script src='js/viewer.directive.js'></script>
-	<script src='js/aligner.directive.js'></script>
+  <!-- angular app files -->
+  <script src='js/app.module.js'></script>
+  <script src='js/main.controller.js'></script>
+  <script src='js/image-upload.directive.js'></script>
+  <script src='js/viewer.directive.js'></script>
+  <script src='js/aligner.directive.js'></script>
 </head>
 
 <body ng-app='stSpots' ng-strict-di='true'>
   <div ng-controller='MainController as ctrl'>
-        <canvas viewer ng-show='visible.canvas' ng-class='classes.canvas'>
+    <canvas viewer ng-show='visible.canvas' ng-class='classes.canvas'>
             If you're seeing this message, then either HTML5 canvasses are not supported in your browser, or you have JavaScript disabled.
         </canvas>
-        <div ng-show='visible.menuBar' class='menu-wrapper'>
-            <!-- Menu Bar -->
-            <div class='menu-bar btn-group btn-group-vertical' role='group'>
-                <!-- Uploader -->
-                <button ng-click='menuButtonClick("button_uploader")' type='button' ng-class='{active: data.button=="button_uploader"}' class='btn btn-default' ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
+    <div ng-show='visible.menuBar' class='menu-wrapper'>
+      <!-- Menu Bar -->
+      <div class='menu-bar btn-group btn-group-vertical' role='group'>
+        <!-- Uploader -->
+        <button ng-click='menuButtonClick("button_uploader")' type='button' ng-class='{active: data.button=="button_uploader"}' class='btn btn-default' ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
                     <span class='glyphicon glyphicon-picture'></span>
                 </button>
-                <!-- Aligner -->
-                <button ng-click='menuButtonClick("button_aligner", aligner.open, aligner.exit)' type='button' ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}' class='btn btn-default'>
+        <!-- Aligner -->
+        <button ng-click='menuButtonClick("button_aligner", aligner.open, aligner.exit)' type='button' ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}' class='btn btn-default'>
                     <span class='glyphicon glyphicon-edit'></span>
                 </button>
-                <!-- Detector -->
-                <!--<button export-spots type='button' class='btn btn-default '>-->
-                <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='{disabled: menuButtonDisabled.button_detector, active: data.button=="button_detector"}' class='btn btn-default'>
+        <!-- Detector -->
+        <!--<button export-spots type='button' class='btn btn-default '>-->
+        <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='{disabled: menuButtonDisabled.button_detector, active: data.button=="button_detector"}' class='btn btn-default'>
                     <span class='glyphicon glyphicon-eye-open'></span>
                 </button>
-                <!-- Adjuster -->
-                <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='{disabled: menuButtonDisabled.button_adjuster, active: data.button=="button_adjuster"}' class='btn btn-default'>
+        <!-- Adjuster -->
+        <button ng-click='menuButtonClick("button_adjuster")' type='button' ng-class='{disabled: menuButtonDisabled.button_adjuster, active: data.button=="button_adjuster"}' class='btn btn-default'>
                     <span class='glyphicon glyphicon-record'></span>
                 </button>
-                <!-- Exporter -->
-                <button ng-click='menuButtonClick("button_exporter")' type='button' ng-class='{disabled: menuButtonDisabled.button_exporter, active: data.button=="button_exporter"}' class='btn btn-default'>
+        <!-- Exporter -->
+        <button ng-click='menuButtonClick("button_exporter")' type='button' ng-class='{disabled: menuButtonDisabled.button_exporter, active: data.button=="button_exporter"}' class='btn btn-default'>
                     <span class='glyphicon glyphicon-save'></span>
                 </button>
-                <!-- Help -->
-                <button ng-click='menuButtonClick("button_help")' type='button' ng-class='{active: data.button=="button_help"}'class='btn btn-default'>
+        <!-- Help -->
+        <button ng-click='menuButtonClick("button_help")' type='button' ng-class='{active: data.button=="button_help"}' class='btn btn-default'>
                     <span class='glyphicon glyphicon-question-sign'></span>
                 </button>
-                <!-- Info -->
-                <!-- This opens in a new tab to avoid an in-progress application being aborted -->
-                <a target='_blank' href='https://github.com/SpatialTranscriptomicsResearch/st_aligner/blob/master/README.md' type='button' class='btn btn-default' ng-style="{'border-bottom-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
-                    <span class='glyphicon glyphicon-info-sign'></span>
-                </a>
-            </div>
-            <!-- Menu Bar Panel -->
-            <div ng-show='visible.menuBarPanel' class='panel menu-bar-panel'>
-                <h4 class='menu-bar-panel-title'>{{ getPanelTitle(data.button) }}</h4>
-                <hr>
-                <!-- Menu Bar Panel Button-based HTMLs -->
-                <!-- Uploader Panel -->
-                <div class='panel-content-wrapper'>
-                    <div ng-show='visible.panel.button_uploader'>
-                        <form image-upload name='imageUploaderForm' ng-submit='uploadImage()'>
-                            <p class='image-upload-title'>Cy3 Image:</p>
-                            <label class='cy3-upload-button'>
+        <!-- Info -->
+        <!-- This opens in a new tab to avoid an in-progress application being aborted -->
+        <a target='_blank' href='https://github.com/SpatialTranscriptomicsResearch/st_aligner/blob/master/README.md' type='button' class='btn btn-default' ng-style="{'border-bottom-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
+          <span class='glyphicon glyphicon-info-sign'></span>
+        </a>
+      </div>
+      <!-- Menu Bar Panel -->
+      <div ng-show='visible.menuBarPanel' class='panel menu-bar-panel'>
+        <h4 class='menu-bar-panel-title'>{{ getPanelTitle(data.button) }}</h4>
+        <hr>
+        <!-- Menu Bar Panel Button-based HTMLs -->
+        <!-- Uploader Panel -->
+        <div class='panel-content-wrapper'>
+          <div ng-show='visible.panel.button_uploader'>
+            <form image-upload name='imageUploaderForm' ng-submit='uploadImage()'>
+              <p class='image-upload-title'>Cy3 Image:</p>
+              <label class='cy3-upload-button'>
                                 <span class='btn btn-default btn-sm'>Choose file</span>
                                 <input id='cy3-upload' type='file' accept='image/jpg, image/jpeg' style='display:none;' required>
                             </label>
-                            <p class='upload-filename' id='cy3-upload-filename'>No file selected.</p>
-                            <br>
-                            <p class='image-upload-title'>HE Image: (optional)</p>
-                            <label class='he-upload-button'>
+              <p class='upload-filename' id='cy3-upload-filename'>No file selected.</p>
+              <br>
+              <p class='image-upload-title'>HE Image: (optional)</p>
+              <label class='he-upload-button'>
                                 <span class='btn btn-default btn-sm'>Choose file</span>
                                 <input id='he-upload' type='file' accept='image/jpg, image/jpeg' style='display:none;'>
                             </label>
-                            <p class='upload-filename' id='he-upload-filename'>No file selected.</p>
-                            <br>
-                            <br><small>The image(s) must be in .jpg format. They may be cropped, but not scaled or rotated. The HE image must be already aligned against the Cy3 image.</small><br>
-                            <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Images</button>
-                        </form>
-                    </div>
-                    <!-- Aligner Panel -->
-                    <div ng-show='visible.panel.button_aligner'>
-                        <alignment-widget
-                            layerManager="ctrl.layerManager"></alignment-widget>
-                    </div>
-                    <!-- Detector Panel -->
-                    <div ng-show='visible.panel.button_detector'>
-                        <form name='spotDetectorForm' ng-submit='detectSpots()'>
-                            <!--
+              <p class='upload-filename' id='he-upload-filename'>No file selected.</p>
+              <br>
+              <br><small>The image(s) must be in .jpg format. They may be cropped, but not scaled or rotated. The HE image must be already aligned against the Cy3 image.</small><br>
+              <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Images</button>
+            </form>
+          </div>
+          <!-- Aligner Panel -->
+          <div ng-show='visible.panel.button_aligner'>
+            <alignment-widget layerManager="ctrl.layerManager"
+              toolsManager="ctrl.toolsManager" />
+          </div>
+          <!-- Detector Panel -->
+          <div ng-show='visible.panel.button_detector'>
+            <form name='spotDetectorForm' ng-submit='detectSpots()'>
+              <!--
                             <div class='input-group-sm'>
                                 <span class='input-group-addon'>Array size</span>
                                 <input type='number' min='0' step='1'/>
                                 <input type='number' min='0' step='1'/>
                             </div>
                             -->
-                            <a class='btn btn-primary btn-sm submit-button' ng-click='detectSpots()'>Detect Spots</a>
-                        </form>
-                    </div>
-                    <!-- Adjuster Panel -->
-                    <div ng-show='visible.panel.button_adjuster'>
-                        <button ng-click='addSpots()'           ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-default btn-block'>Add spots</button>
-                        <button ng-click='finishAddSpots()'     ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-default btn-block'>Finish adding spots</button>
-                        <button ng-click='deleteSpots()'        ng-show='visible.spotAdjuster.button_deleteSpots'    type='button' class='btn btn-default btn-block'>Delete selected spots</button>
-                        <button ng-click='selectInsideTissue()' ng-show='visible.spotAdjuster.div_insideTissue'      type='button' class='btn btn-default btn-block'>Automatically select spots<br>inside tissue</button>
-                        <div class='spot-color-selector'>
-                            Spot Opacity
-                            <div class='spot-color-bar clickable'>
-                                <div class='spot-color' id='spot-opacity-1' ng-click='clickSpotColor("0.0", "opacity")'></div>
-                                <div class='spot-color' id='spot-opacity-2' ng-click='clickSpotColor("0.2", "opacity")'></div>
-                                <div class='spot-color' id='spot-opacity-3' ng-click='clickSpotColor("0.4", "opacity")'></div>
-                                <div class='spot-color' id='spot-opacity-4' ng-click='clickSpotColor("0.6", "opacity")'></div>
-                                <div class='spot-color' id='spot-opacity-5' ng-click='clickSpotColor("0.8", "opacity")'></div>
-                                <div class='spot-color' id='spot-opacity-6' ng-click='clickSpotColor("1.0", "opacity")'></div>
-                            </div>
-                        </div>
-                        <div class='spot-color-selector'>
-                            Spot Color
-                            <div class='spot-color-bar clickable'>
-                                <div class='spot-color' id='spot-color-1' ng-click='clickSpotColor("  6, 78%, 57%", "color")'></div>
-                                <div class='spot-color' id='spot-color-2' ng-click='clickSpotColor(" 28, 80%, 52%", "color")'></div>
-                                <div class='spot-color' id='spot-color-3' ng-click='clickSpotColor(" 48, 89%, 50%", "color")'></div>
-                                <div class='spot-color' id='spot-color-4' ng-click='clickSpotColor("145, 63%, 49%", "color")'></div>
-                                <div class='spot-color' id='spot-color-5' ng-click='clickSpotColor("204, 70%, 53%", "color")'></div>
-                                <div class='spot-color' id='spot-color-6' ng-click='clickSpotColor("283, 39%, 53%", "color")'></div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Exporter Panel -->
-                    <div ng-show='visible.panel.button_exporter'>
-                        <form ng-submit='exportSpots(exportForm.coordinateType, exportForm.selection)'>
-                        Selection export:
-                        <div class="btn-group radio-button-group" data-toggle="buttons">
-                            <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-default radio-button">
+              <a class='btn btn-primary btn-sm submit-button' ng-click='detectSpots()'>Detect Spots</a>
+            </form>
+          </div>
+          <!-- Adjuster Panel -->
+          <div ng-show='visible.panel.button_adjuster'>
+            <button ng-click='addSpots()' ng-show='visible.spotAdjuster.button_addSpots' type='button' class='btn btn-default btn-block'>Add spots</button>
+            <button ng-click='finishAddSpots()' ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-default btn-block'>Finish adding spots</button>
+            <button ng-click='deleteSpots()' ng-show='visible.spotAdjuster.button_deleteSpots' type='button' class='btn btn-default btn-block'>Delete selected spots</button>
+            <button ng-click='selectInsideTissue()' ng-show='visible.spotAdjuster.div_insideTissue' type='button' class='btn btn-default btn-block'>Automatically select spots<br>inside tissue</button>
+            <div class='spot-color-selector'>
+              Spot Opacity
+              <div class='spot-color-bar clickable'>
+                <div class='spot-color' id='spot-opacity-1' ng-click='clickSpotColor("0.0", "opacity")'></div>
+                <div class='spot-color' id='spot-opacity-2' ng-click='clickSpotColor("0.2", "opacity")'></div>
+                <div class='spot-color' id='spot-opacity-3' ng-click='clickSpotColor("0.4", "opacity")'></div>
+                <div class='spot-color' id='spot-opacity-4' ng-click='clickSpotColor("0.6", "opacity")'></div>
+                <div class='spot-color' id='spot-opacity-5' ng-click='clickSpotColor("0.8", "opacity")'></div>
+                <div class='spot-color' id='spot-opacity-6' ng-click='clickSpotColor("1.0", "opacity")'></div>
+              </div>
+            </div>
+            <div class='spot-color-selector'>
+              Spot Color
+              <div class='spot-color-bar clickable'>
+                <div class='spot-color' id='spot-color-1' ng-click='clickSpotColor("  6, 78%, 57%", "color")'></div>
+                <div class='spot-color' id='spot-color-2' ng-click='clickSpotColor(" 28, 80%, 52%", "color")'></div>
+                <div class='spot-color' id='spot-color-3' ng-click='clickSpotColor(" 48, 89%, 50%", "color")'></div>
+                <div class='spot-color' id='spot-color-4' ng-click='clickSpotColor("145, 63%, 49%", "color")'></div>
+                <div class='spot-color' id='spot-color-5' ng-click='clickSpotColor("204, 70%, 53%", "color")'></div>
+                <div class='spot-color' id='spot-color-6' ng-click='clickSpotColor("283, 39%, 53%", "color")'></div>
+              </div>
+            </div>
+          </div>
+          <!-- Exporter Panel -->
+          <div ng-show='visible.panel.button_exporter'>
+            <form ng-submit='exportSpots(exportForm.coordinateType, exportForm.selection)'>
+              Selection export:
+              <div class="btn-group radio-button-group" data-toggle="buttons">
+                <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-default radio-button">
                                 <input type="radio" value='all' ng-model='exportForm.selection'> All spots
                             </label>
-                            <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-default radio-button">
+                <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-default radio-button">
                                 <input type="radio" value='selection' ng-model='exportForm.selection' checked> Selection only
                             </label>
-                        </div>
-                        <br>
-                        Coordinate format:
-                        <div class="btn-group radio-button-group" data-toggle="buttons">
-                            <label ng-class="{active: exportForm.coordinateType == 'array'}" class="btn btn-default radio-button">
+              </div>
+              <br> Coordinate format:
+              <div class="btn-group radio-button-group" data-toggle="buttons">
+                <label ng-class="{active: exportForm.coordinateType == 'array'}" class="btn btn-default radio-button">
                                 <input type="radio" value='array' ng-model='exportForm.coordinateType' checked> Array
                             </label>
-                            <label ng-class="{active: exportForm.coordinateType == 'pixel'}" class="btn btn-default radio-button">
+                <label ng-class="{active: exportForm.coordinateType == 'pixel'}" class="btn btn-default radio-button">
                                 <input type="radio" value='pixel' ng-model='exportForm.coordinateType'> Pixel
                             </label>
-                        </div>
-                        <br>
-                        <button class='btn btn-primary btn-sm submit-button' type='submit'>Export Spot Data</button>
-                        </form>
-                    </div>
-                    <!-- Help Panel -->
-                    <div ng-show='visible.panel.button_help'>
-                        {{ getHelpTexts(data.state) }}
-                    </div>
-                    <!-- Info Panel -->
-                    <div ng-show='visible.panel.button_info'>
-                    </div>
-                </div>
-            </div>
+              </div>
+              <br>
+              <button class='btn btn-primary btn-sm submit-button' type='submit'>Export Spot Data</button>
+            </form>
+          </div>
+          <!-- Help Panel -->
+          <div ng-show='visible.panel.button_help'>
+            {{ getHelpTexts(data.state) }}
+          </div>
+          <!-- Info Panel -->
+          <div ng-show='visible.panel.button_info'>
+          </div>
         </div>
-        <div ng-show='visible.zoomBar' class='zoom-wrapper'>
-            <!-- Zoom Bar -->
-            <div class='zoom-bar btn-group btn-group-vertical' role='group'>
-                <!-- In -->
-                <button ng-click='zoomButtonClick("zin")' type='button' class='btn btn-default' id='button-zoom-in'>
+      </div>
+    </div>
+    <div ng-show='visible.zoomBar' class='zoom-wrapper'>
+      <!-- Zoom Bar -->
+      <div class='zoom-bar btn-group btn-group-vertical' role='group'>
+        <!-- In -->
+        <button ng-click='zoomButtonClick("zin")' type='button' class='btn btn-default' id='button-zoom-in'>
                     <span class='glyphicon glyphicon-zoom-in'></span>
                 </button>
-                <!-- Out -->
-                <button ng-click='zoomButtonClick("zout")' type='button' class='btn btn-default'>
+        <!-- Out -->
+        <button ng-click='zoomButtonClick("zout")' type='button' class='btn btn-default'>
                     <span class='glyphicon glyphicon-zoom-out'></span>
                 </button>
-            </div>
-        </div>
-        <div ng-show='visible.imageToggleBar' class='image-toggle-bar clickable'>
-            <a ng-click='imageToggleButtonClick()'>
-                <img ng-src='{{getImageToggleImage()}}'/>
-                <p class='image-toggle-text'>
-                    Show {{ getImageToggleText() }} image
-                </p>
-            </a>
-        </div>
-        <div class='spinner' ng-show='visible.spinner'>
-            <div class="sk-fading-circle">
-                <div class="sk-circle1  sk-circle"></div>
-                <div class="sk-circle2  sk-circle"></div>
-                <div class="sk-circle3  sk-circle"></div>
-                <div class="sk-circle4  sk-circle"></div>
-                <div class="sk-circle5  sk-circle"></div>
-                <div class="sk-circle6  sk-circle"></div>
-                <div class="sk-circle7  sk-circle"></div>
-                <div class="sk-circle8  sk-circle"></div>
-                <div class="sk-circle9  sk-circle"></div>
-                <div class="sk-circle10 sk-circle"></div>
-                <div class="sk-circle11 sk-circle"></div>
-                <div class="sk-circle12 sk-circle"></div>
-            </div>
-            {{ getSpinnerText(data.state) }}
-        </div>
-        <div class='error-text' ng-show='visible.errorText'>
-            An error occured! {{ data.errorText }}
-        </div>
+      </div>
     </div>
+    <div ng-show='visible.imageToggleBar' class='image-toggle-bar clickable'>
+      <a ng-click='imageToggleButtonClick()'>
+        <img ng-src='{{getImageToggleImage()}}' />
+        <p class='image-toggle-text'>
+          Show {{ getImageToggleText() }} image
+        </p>
+      </a>
+    </div>
+    <div class='spinner' ng-show='visible.spinner'>
+      <div class="sk-fading-circle">
+        <div class="sk-circle1  sk-circle"></div>
+        <div class="sk-circle2  sk-circle"></div>
+        <div class="sk-circle3  sk-circle"></div>
+        <div class="sk-circle4  sk-circle"></div>
+        <div class="sk-circle5  sk-circle"></div>
+        <div class="sk-circle6  sk-circle"></div>
+        <div class="sk-circle7  sk-circle"></div>
+        <div class="sk-circle8  sk-circle"></div>
+        <div class="sk-circle9  sk-circle"></div>
+        <div class="sk-circle10 sk-circle"></div>
+        <div class="sk-circle11 sk-circle"></div>
+        <div class="sk-circle12 sk-circle"></div>
+      </div>
+      {{ getSpinnerText(data.state) }}
+    </div>
+    <div class='error-text' ng-show='visible.errorText'>
+      An error occured! {{ data.errorText }}
+    </div>
+  </div>
 </body>
-    <script>
-		// This script serves to resize the canvas element according to the size of the window
-        // It is derived from http://stackoverflow.com/a/8486324/1748928
+<script>
+  // This script serves to resize the canvas element according to the size of the window
+  // It is derived from http://stackoverflow.com/a/8486324/1748928
 
-		(function() {
-			var canvas = document.getElementsByTagName('canvas')[0];
-			var context = canvas.getContext('2d');
+  (function() {
+    var canvas = document.getElementsByTagName('canvas')[0];
+    var context = canvas.getContext('2d');
 
-			// resize the canvas to fill browser window dynamically
-			window.addEventListener('resize', resizeCanvas, false);
+    // resize the canvas to fill browser window dynamically
+    window.addEventListener('resize', resizeCanvas, false);
 
-			function resizeCanvas() {
-					canvas.width = window.innerWidth;
-					canvas.height = window.innerHeight;
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
 
-					/**
-					 * Your drawings need to be inside this function otherwise they will be reset when 
-					 * you resize the browser window and the canvas goes will be cleared.
-					 */
-					drawStuff(); 
-			}
-			resizeCanvas();
+      /**
+       * Your drawings need to be inside this function otherwise they will be reset when 
+       * you resize the browser window and the canvas goes will be cleared.
+       */
+      drawStuff();
+    }
+    resizeCanvas();
 
-			function drawStuff() {
-					// do your drawing stuff here
-			}
-		})();
-    </script>
+    function drawStuff() {
+      // do your drawing stuff here
+    }
+  })();
+</script>
+
 </html>

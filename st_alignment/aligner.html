@@ -1,18 +1,34 @@
-<div class="btn-group">
-  <button class="btn" ng-repeat="layer in getLayers()" ng-class="{'active':
-    layerManager.getActiveLayer(layer)}" ng-click="toggleLayer(layer)">{{ layer }}</button>
+<ul class="btn-group"
+     ui-sortable="aligner.layerListOptions"
+     ng-model="layerManager.layerOrder"
+     >
+  <li class="btn"
+      ng-repeat="layer in layerManager.layerOrder"
+      ng-class="{ 'active': layerManager.getActiveLayer(layer) }"
+      ng-click="layerManager.setActiveLayer(layer)"
+      >
+    {{ layer }}
+  </li>
+</ul>
+<div>
+  Opacity: <input type="range" min="0" max="1" defaultValue="0.5" step="any"
+                  ng-model="aligner.opacity"
+                  ng-model-options="{ getterSetter: true }"
+                  ng-disabled="aligner.opacity == -1"
+                  ng-change="aligner.setOpacity(aligner.opacity)"
+                  />
 </div>
-<div>Opacity: <input type="range" min="0" max="1" defaultValue="0.5" step="any"
-  ng-disabled="opacity == -1" ng-model="opacity"
-  ng-change="setOpacity(opacity)" /></div>
-<div>Contrast: <input type="range" /></div>
-<div class="btn-group">
-  <button class="btn" ng-repeat="tool in tools" ng-click="setActiveTool(tool)"
-    ng-class="{'active': tool == getActiveTool()}">{{ tool }}</button>
+<div>
+  Contrast: <input type="range"
+                   disabled="true"
+                   />
 </div>
-<div>&nbsp;</div>
-<div style="position: absolute; bottom: 0.5em; right: 0.5em;">
-  HE offset: {{ layerManager.getOffset('x') | number : 0 }} px, {{
-  layerManager.getOffset('y') | number : 0 }} px, {{
-  layerManager.getOffset('rotation') | number : 1 }} deg
-</div>
+<ul class="btn-group">
+  <li class="btn"
+      ng-repeat="tool in toolsManager.getTools()"
+      ng-click="toolsManager.activeTool(tool)"
+      ng-class="{'active': tool == toolsManager.activeTool() }"
+      >
+    {{ tool }}
+  </li>
+</ul>

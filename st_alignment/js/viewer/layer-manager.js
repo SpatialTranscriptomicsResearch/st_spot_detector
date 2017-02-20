@@ -1,25 +1,36 @@
-/* LayerManager.js
+/* layer-manager.js
  * -----------------------------------------------------------------------------
  *  Simple layer manager.
  *
  *  TODO:
  *  1. Add documentation
  *  2. Make it possible to pass varargs to callback
+ *  3. Validation when setting layerOrder (should make sure that all layers are
+ *     included)
  */
 
 const DEF_MODIFIERS = new Map([
   ['visible', true],
   ['trans', Vec2.Vec2(0, 0)],
   ['rot', 0],
-  ['alpha', 0.5]
+  ['alpha', 1.0]
 ]);
 
 // export default class {
 var LayerManager = class {
   constructor(callback) {
     this._layers = new Map();
+    this._layerOrder = [];
     this._active = {};
     this._callback = callback;
+
+    this.layerOrder = new Proxy(this._layerOrder, {
+      set: (function(target, property, value, receiver) {
+        target[property] = value;
+        this._callback();
+        return true;
+      }).bind(this)
+    });
 
     this.setModifiers = this._interpretLayers(this.setModifiers);
     this.setModifier = this._interpretLayers(this.setModifier);
@@ -29,13 +40,17 @@ var LayerManager = class {
     if (this._layers.has(name))
       throw "Layer " + name + " already exists!";
     this._layers.set(name, new Map(DEF_MODIFIERS.entries()));
+    this.layerOrder.push(name);
   }
 
   // TODO: implement
   deleteLayer(name) {}
 
   getLayers() {
-    return this._layers.keys();
+    var ret = [];
+    for (var layer of this._layers.keys())
+      ret.push(layer);
+    return ret;
   }
 
   getActiveLayers() {
@@ -100,20 +115,9 @@ var LayerManager = class {
   }
 
   move(diff) {
-    for (var layer in this._active) {
+    for (var layer of this.getActiveLayers()) {
       this.setModifier(layer, 'trans', Vec2.subtract(this.getModifier(layer,
         'trans'), diff));
-    }
-  }
-
-  getOffset(type) {
-    switch (type) {
-      case 'rotation':
-        return 0;
-      case 'x':
-        return 0;
-      case 'y':
-        return 0;
     }
   }
 

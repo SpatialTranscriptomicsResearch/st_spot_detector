@@ -4,166 +4,181 @@
 // used for viewing the image and spots.
 
 angular.module('stSpots')
-    .directive('viewer',
-        function() {
+  .directive('viewer',
+    function() {
+      return {
+        restrict: 'A',
+        scope: false,
+        link: function(scope, element) {
+          var canvas = element[0];
+          var ctx = canvas.getContext('2d');
+
+          // prevents the context menu from appearing on right click
+          canvas.oncontextmenu = function(e) {
+            e.preventDefault();
+          }
+
+          var tilemap = new Tilemap();
+          var scaleManager = new ScaleManager();
+
+          var tilemapLevel = 2;
+          var tilemapLevels = [];
+          var tilePosition;
+
+          var camera = new Camera(ctx);
+
+          scope.layerManager = new LayerManager(refreshCanvas);
+
+          var renderer = new Renderer(ctx, camera, scope.layerManager);
+
+          var calibrator = new Calibrator(camera);
+
+          scope.setCanvasCursor = function(cursor) {
+            scope.$apply(function() {
+              scope.classes.canvas = cursor;
+            });
+          };
+          scope.toolsManager = new ToolsManager(refreshCanvas)
+            .addTool('move')
+            .addTool('rotate', {
+              'rotation_point': null
+            });
+
+          var spots = new SpotManager();
+          var spotSelector = new SpotSelector(camera, spots);
+          var spotAdjuster = new SpotAdjuster(
+            camera, spots, calibrator.calibrationData);
+          var logicHandler =
+            new LogicHandler(canvas, camera, scope.layerManager, scope.toolsManager,
+              spotSelector, spotAdjuster, calibrator, refreshCanvas, scope.setCanvasCursor
+            );
+          var eventHandler = new EventHandler(scope.data, canvas,
+            camera, logicHandler);
+
+          var images = [];
+
+
+          scope.loadSpots = function(spotData) {
+            spots.loadSpots(spotData);
+            refreshCanvas();
+          };
+
+          scope.getSpots = function() {
+            return spots.getSpots();
+          };
+
+          scope.getCalibrationData = function() {
             return {
-                restrict: 'A',
-                scope: false,
-                link: function(scope, element) {
-                    var canvas = element[0];
-                    var ctx = canvas.getContext('2d');
-
-                    // prevents the context menu from appearing on right click
-                    canvas.oncontextmenu = function(e) { e.preventDefault(); } 
-
-                    var tilemap = new Tilemap();
-                    var scaleManager = new ScaleManager();
-
-                    var tilemapLevel = 2;
-                    var tilemapLevels = [];
-                    var tilePosition;
-
-                    scope.layerManager = new LayerManager(refreshCanvas);
-
-                    var camera = new Camera(ctx);
-                    var renderer = new Renderer(ctx, camera, scope.layerManager);
-
-                    var calibrator = new Calibrator(camera);
-
-                    scope.setCanvasCursor = function(cursor) {
-                        scope.$apply(function() {
-                            scope.classes.canvas = cursor;
-                        });
-                    };
-
-                    var spots = new SpotManager();
-                    var spotSelector = new SpotSelector(camera, spots);
-                    var spotAdjuster = new SpotAdjuster(
-                        camera, spots, calibrator.calibrationData);
-                    var logicHandler =
-                        new LogicHandler(canvas, camera, scope.layerManager,
-                                         spotSelector, spotAdjuster, calibrator,
-                                         refreshCanvas, scope.setCanvasCursor);
-                    var eventHandler = new EventHandler(scope.data, canvas,
-                                                        camera, logicHandler);
-
-                    var images = [];
-
-                    scope.loadSpots = function(spotData) {
-                        spots.loadSpots(spotData);
-                        refreshCanvas();
-                    };
-
-                    scope.getSpots = function() {
-                        return spots.getSpots();
-                    };
-
-                    scope.getCalibrationData = function() {
-                        return {
-                            TL:         calibrator.calibrationData.TL,
-                            BR:         calibrator.calibrationData.BR,
-                            array_size: calibrator.calibrationData.arraySize,
-                            brightness: calibrator.calibrationData.brightness,
-                            contrast:   calibrator.calibrationData.contrast,
-                            threshold:  calibrator.calibrationData.threshold,
-                        };
-                    };
-
-                    scope.clickSpotColor = function(color, type) {
-                        renderer.changeSpotColor(color, type);
-                        refreshCanvas();
-                    };
-
-                    function refreshCanvas() {
-                        renderer.clearCanvas();
-
-                        scaleManager.updateScaleLevel(camera.scale);
-                        tilemapLevel = 1 / scaleManager.currentScaleLevel;
-                        tilePosition = tilemap.getTilePosition(camera.position,
-                            tilemapLevel); 
-                        images = tilemap.getRenderableImages(tilePosition,
-                            tilemapLevel);
-                        
-                        renderer.renderImages(images);
-
-                        if(scope.data.state == 'state_predetection') {
-                            renderer.renderCalibrationPoints(calibrator.calibrationData);
-                        }
-                        else if(scope.data.state == 'state_adjustment') {
-                            renderer.renderSpots(spots.spots);
-                            renderer.renderSpotSelection(spotSelector.renderingRect);
-                            if(logicHandler.addingSpots) {
-                                renderer.renderSpotToAdd(spots.spotToAdd);
-                            }
-                        }
-                    }
-
-                    scope.addSpots = function() {
-                        logicHandler.addingSpots = true;
-                        scope.visible.spotAdjuster.button_addSpots       = false;
-                        scope.visible.spotAdjuster.button_finishAddSpots = true;
-                        scope.visible.spotAdjuster.button_deleteSpots    = false;
-                        scope.addSpotsToasts(); // in the main controller
-                        refreshCanvas();
-                    };
-
-                    scope.finishAddSpots = function() {
-                        logicHandler.addingSpots = false;
-                        scope.visible.spotAdjuster.button_addSpots       = true;
-                        scope.visible.spotAdjuster.button_finishAddSpots = false;
-                        scope.visible.spotAdjuster.button_deleteSpots    = true;
-                        refreshCanvas();
-                    };
-
-                    scope.deleteSpots = function() {
-                        spotAdjuster.deleteSelectedSpots();
-                        refreshCanvas();
-                    };
-
-                    scope.receiveTilemap = function(tilemapData) {
-                        tilemap.loadTilemap(tilemapData, function(){});
-                        scaleManager.setTilemapLevels(tilemap.tilemapLevels,
-                            tilemapLevel);
-                        tilePosition = tilemap.getTilePosition(camera.position,
-                            tilemapLevel);
-                        images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-
-                        camera.position = {x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
-                            y: (1024 / 2) * tilemapLevel};
-                        camera.scale = 1 / tilemapLevel;
-                        camera.updateViewport();
-
-                        for (var layer in tilemapData.tilemaps)
-                            scope.layerManager.addLayer(layer);
-
-                        refreshCanvas();
-                    };
-
-                    scope.zoom = function(direction) {
-                        camera.navigate(keyevents[direction]);
-                        refreshCanvas();
-                    };
-
-                    scope.exportSpots = function(type, selection) {
-                        var spotDataString = spots.exportSpots(type, selection);
-
-                        var blob = new Blob([spotDataString]);
-                        var filename = "spot_data-" + new Date().toISOString().slice(0, 10) + ".tsv";
-
-                        // the next 11 lines are adapted from https://github.com/mholt/PapaParse/issues/175
-                        if(window.navigator.msSaveOrOpenBlob) { // IE hack; see http://msdn.microsoft.com/en-us/library/ie/hh779016.aspx
-                            window.navigator.msSaveBlob(blob, filename);
-                        }
-                        else {
-                            var a = window.document.createElement("a");
-                            a.href = window.URL.createObjectURL(blob, {type: 'text/tsv'});
-                            a.download = filename;
-                            document.body.appendChild(a);
-                            a.click();  // IE: "Access is denied"; see: https://connect.microsoft.com/IE/feedback/details/797361/ie-10-treats-blob-url-as-cross-origin-and-denies-access
-                            document.body.removeChild(a);
-                        }
-                    };
-                    
-                }
+              TL: calibrator.calibrationData.TL,
+              BR: calibrator.calibrationData.BR,
+              array_size: calibrator.calibrationData.arraySize,
+              brightness: calibrator.calibrationData.brightness,
+              contrast: calibrator.calibrationData.contrast,
+              threshold: calibrator.calibrationData.threshold,
             };
-        });
+          };
+
+          scope.clickSpotColor = function(color, type) {
+            renderer.changeSpotColor(color, type);
+            refreshCanvas();
+          };
+
+          function refreshCanvas() {
+            renderer.clearCanvas();
+
+            scaleManager.updateScaleLevel(camera.scale);
+            tilemapLevel = 1 / scaleManager.currentScaleLevel;
+            tilePosition = tilemap.getTilePosition(camera.position,
+              tilemapLevel);
+            images = tilemap.getRenderableImages(tilePosition,
+              tilemapLevel);
+
+            renderer.renderImages(images);
+
+            if (scope.data.state == 'state_predetection') {
+              renderer.renderCalibrationPoints(calibrator.calibrationData);
+            } else if (scope.data.state == 'state_alignment' &&
+              scope.toolsManager.activeTool() == 'rotate') {
+              renderer.renderRotationPoint(Vec2.Vec2(0, 0));
+            } else if (scope.data.state == 'state_adjustment') {
+              renderer.renderSpots(spots.spots);
+              renderer.renderSpotSelection(spotSelector.renderingRect);
+              if (logicHandler.addingSpots) {
+                renderer.renderSpotToAdd(spots.spotToAdd);
+              }
+            }
+          }
+
+          scope.addSpots = function() {
+            logicHandler.addingSpots = true;
+            scope.visible.spotAdjuster.button_addSpots = false;
+            scope.visible.spotAdjuster.button_finishAddSpots = true;
+            scope.visible.spotAdjuster.button_deleteSpots = false;
+            scope.addSpotsToasts(); // in the main controller
+            refreshCanvas();
+          };
+
+          scope.finishAddSpots = function() {
+            logicHandler.addingSpots = false;
+            scope.visible.spotAdjuster.button_addSpots = true;
+            scope.visible.spotAdjuster.button_finishAddSpots = false;
+            scope.visible.spotAdjuster.button_deleteSpots = true;
+            refreshCanvas();
+          };
+
+          scope.deleteSpots = function() {
+            spotAdjuster.deleteSelectedSpots();
+            refreshCanvas();
+          };
+
+          scope.receiveTilemap = function(tilemapData) {
+            tilemap.loadTilemap(tilemapData, function() {});
+            scaleManager.setTilemapLevels(tilemap.tilemapLevels,
+              tilemapLevel);
+            tilePosition = tilemap.getTilePosition(camera.position,
+              tilemapLevel);
+            images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+
+            camera.position = {
+              x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
+              y: (1024 / 2) * tilemapLevel
+            };
+            camera.scale = 1 / tilemapLevel;
+            camera.updateViewport();
+
+            for (var layer in tilemapData.tilemaps)
+              scope.layerManager.addLayer(layer);
+
+            refreshCanvas();
+          };
+
+          scope.zoom = function(direction) {
+            camera.navigate(keyevents[direction]);
+            refreshCanvas();
+          };
+
+          scope.exportSpots = function(type, selection) {
+            var spotDataString = spots.exportSpots(type, selection);
+
+            var blob = new Blob([spotDataString]);
+            var filename = "spot_data-" + new Date().toISOString().slice(0,
+              10) + ".tsv";
+
+            // the next 11 lines are adapted from https://github.com/mholt/PapaParse/issues/175
+            if (window.navigator.msSaveOrOpenBlob) { // IE hack; see http://msdn.microsoft.com/en-us/library/ie/hh779016.aspx
+              window.navigator.msSaveBlob(blob, filename);
+            } else {
+              var a = window.document.createElement("a");
+              a.href = window.URL.createObjectURL(blob, {
+                type: 'text/tsv'
+              });
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click(); // IE: "Access is denied"; see: https://connect.microsoft.com/IE/feedback/details/797361/ie-10-treats-blob-url-as-cross-origin-and-denies-access
+              document.body.removeChild(a);
+            }
+          };
+
+        }
+      };
+    });
