@@ -51,7 +51,6 @@
         console.assert(redraw == redraw_);
 
         translation = tmat.subset(math.index([0, 1], 2));
-        // TODO: use mathjs instead of Vec2?
         translation = Vec2.Vec2(
           math.subset(translation, math.index(0, 0)),
           math.subset(translation, math.index(1, 0))

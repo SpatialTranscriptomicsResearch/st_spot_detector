@@ -20,6 +20,7 @@ angular.module('stSpots')
 
           var tilemap = new Tilemap();
           var scaleManager = new ScaleManager();
+          var curScale = null;
 
           var tilemapLevel = 2;
           var tilemapLevels = [];
@@ -91,6 +92,14 @@ angular.module('stSpots')
 
             scaleManager.updateScaleLevel(camera.scale);
             tilemapLevel = 1 / scaleManager.currentScaleLevel;
+
+            // Always redraw if we get to a new tilemap level
+            if (tilemapLevel != curScale) {
+                curScale = tilemapLevel;
+                console.log(curScale);
+                redraw = true;
+            }
+
             tilePosition = tilemap.getTilePosition(camera.position,
               tilemapLevel);
             images = tilemap.getRenderableImages(tilePosition,

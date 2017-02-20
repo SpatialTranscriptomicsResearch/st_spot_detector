@@ -12,7 +12,6 @@
     self.calibrator = calibrator;
     self.refreshCanvas = refreshCanvas;
     self.setCanvasCursor = setCanvasCursor;
-    self.cumdiff;
 
     self.mouseEvent = Object.freeze({
       "down": 1,
@@ -137,13 +136,16 @@
                     eventData.difference), false);
                   break;
                 case 'rotate':
+                  var rp = self.toolsManager.options('rotate').rotationPoint,
+                      pos = self.camera.mouseToCameraPosition(eventData.position);
                   if (eventData.button == self.mouseButton.left) {
-                    var rp = self.toolsManager.options('rotate').rotationPoint;
-                    rp = math.transpose(math.matrix([
-                      [rp.x, rp.y, 1]
-                    ]));
-                    self.layerManager.rotate(eventData.difference.x / 360,
-                      rp, false);
+                    var diff = self.camera.mouseToCameraScale(eventData.difference),
+                        to = Vec2.subtract(pos, rp), from = Vec2.subtract(to, diff);
+                    self.layerManager.rotate(
+                            Vec2.angleBetween(from, to),
+                            math.transpose(math.matrix([[rp.x, rp.y, 1]])),
+                            false
+                    );
                   }
                   break;
               }
@@ -151,10 +153,9 @@
             break;
           case self.mouseEvent.wheel:
             self.camera.navigate(eventData.direction, eventData.position);
-            self.refreshCanvas(false);
+            self.refreshCanvas(true);
             break;
           case self.mouseEvent.down:
-            self.cumdiff = Vec2.Vec2(0, 0);
             break;
           case self.mouseEvent.up:
             if (curTool == 'rotate' && eventData.button ==
@@ -164,7 +165,6 @@
                   eventData.position)
               });
             }
-            // self.layerManager.move(self.camera.mouseToCameraScale(self.cumdiff));
             break;
         }
         if (cursor === undefined)
