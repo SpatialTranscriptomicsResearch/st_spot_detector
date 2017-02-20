@@ -9,18 +9,9 @@
     self.position = initialPosition || Vec2.Vec2(0, 0);
     self.scale = initialScale || 0.05;
     self.positionOffset = self.calculateOffset();
-    self.viewport = {
-      l: 0,
-      r: 0,
-      t: 0,
-      b: 0,
-      width: 0,
-      height: 0,
-      scale: Vec2.Vec2(1, 1)
-    };
     self.navFactor = 60;
     self.scaleFactor = 0.95;
-    self.minScale = 0.03;
+    self.minScale = 0.01;
     self.maxScale = 5.00;
     self.positionBoundaries = {
       "minX": 0,
@@ -55,24 +46,17 @@
       ctx.restore();
     },
     applyScale: function(ctx) {
-      ctx.scale(self.viewport.scale.x, self.viewport.scale.y);
+      ctx.scale(self.scale, self.scale);
     },
     applyTranslation: function(ctx) {
       // move offset code to updateViewport() function
-      ctx.translate(-self.viewport.l + self.positionOffset.x, -self.viewport
-        .t + self.positionOffset.y);
-      //self.context.translate(-self.viewport.l, -self.viewport.t);
+      ctx.translate(-self.position.x + self.positionOffset.x, -self.position.y +
+        self.positionOffset.y);
     },
     updateViewport: function() {
       self.clampValues();
       self.positionOffset = self.calculateOffset();
       self.aspectRatio = self.context.canvas.width / self.context.canvas.height;
-      self.viewport.l = self.position.x - (self.viewport.width / 2.0);
-      self.viewport.t = self.position.y - (self.viewport.height / 2.0);
-      self.viewport.r = self.viewport.l + self.viewport.width;
-      self.viewport.b = self.viewport.t + self.viewport.height;
-      self.viewport.scale.x = self.scale;
-      self.viewport.scale.y = self.scale;
     },
     zoomTo: function(z) {
       self.scale = z;
@@ -130,10 +114,11 @@
     },
     clampValues: function() {
       // keep the scale and position values within reasonable limits
-      self.position = Vec2.clampX(self.position, self.positionBoundaries.minX,
+      self.position = Vec2.clampD(self.position, 'x', self.positionBoundaries.minX,
         self.positionBoundaries.maxX);
-      self.position = Vec2.clampY(self.position, self.positionBoundaries.minY,
+      self.position = Vec2.clampD(self.position, 'y', self.positionBoundaries.minY,
         self.positionBoundaries.maxY);
+      console.log(Vec2.toString(self.position));
       self.scale = Math.max(self.scale, self.minScale);
       self.scale = Math.min(self.scale, self.maxScale);
     },

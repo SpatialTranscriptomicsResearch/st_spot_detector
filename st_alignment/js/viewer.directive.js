@@ -22,7 +22,7 @@ angular.module('stSpots')
           var scaleManager = new ScaleManager();
           var curScale = null;
 
-          var tilemapLevel = 5;
+          var tilemapLevel = 2;
           var tilemapLevels = [];
           var tilePosition;
 
@@ -146,11 +146,11 @@ angular.module('stSpots')
           };
 
           scope.receiveTilemap = function(tilemapData, callback) {
+            var [width, height] = ['width', 'height'].map(s =>
+              $(fgcvs).attr(s));
+
             tilemap.loadTilemap(tilemapData, function() {
-              camera.position = {
-                x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
-                y: (1024 / 2) * tilemapLevel
-              };
+              camera.position = { x: 0, y: 0 };
               camera.scale = 1 / tilemapLevel;
               camera.updateViewport();
 
@@ -159,8 +159,6 @@ angular.module('stSpots')
               callback();
             });
 
-            var [width, height] = ['width', 'height'].map(s =>
-              $(fgcvs).attr(s));
             for (var layer in tilemapData.tilemaps) {
               try {
                 layer = scope.layerManager.addLayer(

@@ -89,7 +89,10 @@
                 for(var i = 0; i < tilePositions.length; ++i) {
                     var tile = Vec2.Vec2(tilePositions[i].x,
                         tilePositions[i].y);
-                    var image = self.tilemaps[l][tilemapLevel][tile.x][tile.y];
+                    try {
+                      var image = self.tilemaps[l][tilemapLevel][tile.x][tile.y];
+                    }
+                    catch(err) { continue; }
                     image.renderPosition = Vec2.scale(Vec2.multiply(tile,
                         self.tilesize), tilemapLevel);
                     image.scaledSize = Vec2.scale(self.tilesize, tilemapLevel);

@@ -9,29 +9,15 @@ var Vec2 = (function() {
         copy: function(vec2) {
             return this.Vec2(vec2.x, vec2.y);
         },
-        clampX: function(vec2, lowerLimit, upperLimit) {
-            var newVec = this.copy(vec2);
-            if(lowerLimit != undefined) {
-                newVec.x = Math.max(vec2.x, lowerLimit);
-            }
-            if(upperLimit != undefined) {
-                newVec.x = Math.min(vec2.x, upperLimit);
-            }
-            return newVec;
-        },
-        clampY: function(vec2, lowerLimit, upperLimit) {
-            var newVec = this.copy(vec2);
-            if(lowerLimit != undefined) {
-                newVec.y = Math.max(vec2.y, lowerLimit);
-            }
-            if(upperLimit != undefined) {
-                newVec.y = Math.min(vec2.y, upperLimit);
-            }
-            return newVec;
+        clampD: function(v, d, l, u) {
+            var v_ = this.copy(v);
+            if(v[d] < l) v_[d] = l;
+            else if(v[d] > u) v_[d] = u;
+            return v_;
         },
         clamp: function(vec2, lowerLimit, upperLimit) {
-            var newVec = this.clampX(vec2, lowerLimit, upperLimit);
-            newVec = this.clampY(newVec, lowerLimit, upperLimit);
+            var newVec = this.clampD(vec2, 'x', lowerLimit, upperLimit);
+            newVec = this.clampD(newVec, 'y', lowerLimit, upperLimit);
             return newVec;
         },
         truncate: function(vec2) {
