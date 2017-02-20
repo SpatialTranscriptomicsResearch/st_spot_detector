@@ -406,18 +406,19 @@ angular.module('stSpots')
         $scope.updateState('state_upload');
         var getTileData = function() {
           var tileSuccessCallback = function(response) {
-            $scope.receiveTilemap(response.data);
-            $scope.setCy3Active(true);
+            $scope.receiveTilemap(response.data, function() {
+              $scope.setCy3Active(true);
 
-            if ($scope.data.heImage !== undefined)
-              $scope.menuButtonDisabled.button_aligner = '';
-            // $scope.updateState('state_predetection');
-            // openPanel('button_detector');
+              if ($scope.data.heImage !== undefined)
+                $scope.menuButtonDisabled.button_aligner = '';
+              // $scope.updateState('state_predetection');
+              // openPanel('button_detector');
 
-            $scope.updateState('state_predetection');
-            openPanel('button_detector');
-            openPanel('button_aligner', $scope.aligner.open,
-              $scope.aligner.exit);
+              $scope.updateState('state_predetection');
+              openPanel('button_detector');
+              openPanel('button_aligner', $scope.aligner.open,
+                $scope.aligner.exit);
+            });
           };
           var tileErrorCallback = function(response) {
             $scope.data.errorText = response.data;

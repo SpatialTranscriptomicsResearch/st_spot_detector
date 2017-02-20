@@ -22,7 +22,7 @@ angular.module('stSpots')
           var scaleManager = new ScaleManager();
           var curScale = null;
 
-          var tilemapLevel = 2;
+          var tilemapLevel = 5;
           var tilemapLevels = [];
           var tilePosition;
 
@@ -145,20 +145,19 @@ angular.module('stSpots')
             refreshCanvas();
           };
 
-          scope.receiveTilemap = function(tilemapData) {
-            tilemap.loadTilemap(tilemapData, function() {});
-            scaleManager.setTilemapLevels(tilemap.tilemapLevels,
-              tilemapLevel);
-            tilePosition = tilemap.getTilePosition(camera.position,
-              tilemapLevel);
-            images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
+          scope.receiveTilemap = function(tilemapData, callback) {
+            tilemap.loadTilemap(tilemapData, function() {
+              camera.position = {
+                x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
+                y: (1024 / 2) * tilemapLevel
+              };
+              camera.scale = 1 / tilemapLevel;
+              camera.updateViewport();
 
-            camera.position = {
-              x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
-              y: (1024 / 2) * tilemapLevel
-            };
-            camera.scale = 1 / tilemapLevel;
-            camera.updateViewport();
+              scaleManager.setTilemapLevels(tilemap.tilemapLevels, tilemapLevel);
+
+              callback();
+            });
 
             var [width, height] = ['width', 'height'].map(s =>
               $(fgcvs).attr(s));
@@ -172,8 +171,6 @@ angular.module('stSpots')
               }
               catch (e) {}
             }
-
-            refreshCanvas();
           };
 
           scope.zoom = function(direction) {

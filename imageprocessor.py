@@ -58,9 +58,8 @@ class ImageProcessor:
 
         photoWidth = image.size[0]
         photoHeight = image.size[1]
-        tileWidth = 1024;
-        tileHeight = 1024;
-
+        tileWidth = 124;
+        tileHeight = 124;
         tilemapWidth = int((photoWidth / tilemap_level) / tileWidth) + 1
         tilemapHeight = int((photoHeight / tilemap_level) / tileHeight) + 1
 

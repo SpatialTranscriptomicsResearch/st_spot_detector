@@ -34,7 +34,7 @@
                 var imageCount = 0;
                 for(var l in tilemap.tilemaps)
                     for(var t in tilemap.tilemaps[l])
-                        imageCount += self.rows * self.cols;
+                        imageCount += self.rows[t] * self.cols[t];
                 var loadedImageCount = 0;
                 return function() {
                     // we increment the loaded image count and compare it against
