@@ -15,7 +15,7 @@
     self.calibrationLineWidth = 6.0;
     self.calibrationLineWidthHighlighted = 10.0;
     self.spotSize = 11;
-    self.prevState = new Map();
+    self.preCamera = new Map();
   };
 
   Renderer.prototype = {
@@ -30,26 +30,58 @@
     clearCanvas: function(ctx) {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     },
-    // TODO: should detect which layers that have been modified and rerender
-    // only those.
+    // TODO: detect which layers that need to be redrawn and redraw only those.
     renderImages: function(images, redraw) {
-      var i, l, ctx, tmat, tmat_, translation, rotation, redraw_,
-        prevState;
+      var i, l, ctx, tmat, translation, rotation, canvas, filters;
 
       for (l of self.layerManager.getLayers()) {
         var mod = self.layerManager.getModifiers(l);
         if (!mod.get('visible'))
           continue;
 
+        if (!self.preCamera.has(l)) {
+          canvas = $('<canvas />')[0];
+          self.preCamera.set(l, canvas);
+          redraw = true;
+        }
+        else canvas = self.preCamera.get(l);
+
+        filters = [];
+        if (redraw) {
+          var [height, width] = ['y', 'x'].map(function(s) {
+            return images[l].reduce((acc, val) => Math.max(acc, val.renderPosition[
+              s] + val.scaledSize[s]), 0);
+          });
+          canvas.width = width;
+          canvas.height = height;
+
+          ctx = canvas.getContext('2d');
+
+          for (i = 0; i < images[l].length; ++i)
+            ctx.drawImage(images[l][i], images[l][i].renderPosition.x,
+              images[l][i].renderPosition.y,
+              images[l][i].scaledSize.x,
+              images[l][i].scaledSize.y);
+
+          // var imageData = ctx_.getImageData(0, 0, ctx_.canvas.width, ctx_
+          //   .canvas.height);
+
+          var [brightness, contrast] = [
+            'brightness', 'contrast'
+          ].map(s => mod.get(s));
+
+          if (brightness && brightness !== 0) {
+            brightness = (brightness + 100) / 100;
+            filters.push(`brightness(${brightness})`);
+          }
+          console.log(brightness);
+          if (contrast && contrast !== 0) {
+            contrast = Math.pow((contrast + 100) / 100, 5);
+            filters.push(`contrast(${contrast})`);
+          }
+        }
+
         tmat = mod.get('tmat');
-        prevState = self.prevState.get(l);
-        ctx = self.layerManager.getCanvas(l).getContext('2d');
-
-        // Disallow quick refresh (not redrawing) if we don't know the previous
-        // state of the layer. (This should never happen).
-        redraw_ = redraw | (prevState === undefined);
-        console.assert(redraw == redraw_);
-
         translation = tmat.subset(math.index([0, 1], 2));
         translation = Vec2.Vec2(
           math.subset(translation, math.index(0, 0)),
@@ -59,64 +91,17 @@
         if (math.subset(tmat, math.index(1, 0)) < 0)
           rotation = -rotation;
 
-        if (redraw_) {
-          var [height, width] = ['y', 'x'].map(function(s) {
-            return images[l].reduce((acc, val) => Math.max(acc, val.renderPosition[
-              s] + val.scaledSize[s]), 0);
-          });
-          var canvas_ = $(
-              `<canvas width='${width}' height='${height}' />`)[0],
-            ctx_ = canvas_.getContext('2d');
+        ctx = self.layerManager.getCanvas(l).getContext('2d');
 
-          for (i = 0; i < images[l].length; ++i)
-            ctx_.drawImage(images[l][i], images[l][i].renderPosition.x,
-              images[l][i].renderPosition.y,
-              images[l][i].scaledSize.x,
-              images[l][i].scaledSize.y);
-
-          // var imageData = ctx_.getImageData(0, 0, ctx_.canvas.width, ctx_
-          //   .canvas.height);
-
-          var filters = [];
-          var [brightness, contrast] = ['brightness', 'contrast'].map(s =>
-            mod.get(s));
-          if (brightness && brightness !== 0) {
-            brightness = Math.pow((brightness + 100) / 100, 2);
-            filters.push(`brightness(${brightness})`);
-          }
-          if (contrast && contrast !== 0) {
-            contrast = Math.pow((contrast + 100) / 100, 5);
-            filters.push(`contrast(${contrast})`);
-          }
+        if (filters.length > 0)
           ctx.filter = filters.join(" ");
-
-          self.prevState.set(l, canvas_);
-        }
+        $(ctx.canvas).css('opacity', mod.get('alpha'));
 
         self.clearCanvas(ctx);
         self.camera.begin(translation, rotation, ctx);
-        ctx.drawImage(self.prevState.get(l), 0, 0);
+        ctx.drawImage(canvas, 0, 0);
         self.camera.end(ctx);
-
-        $(ctx.canvas).css('opacity', mod.get('alpha'));
       }
-    },
-    renderRotationPoint: function(options) {
-      if (!options.rotationPoint)
-        options.rotationPoint =
-        self.camera.mouseToCameraPosition(Vec2.Vec2(self.ctx.canvas.width /
-          2, self.ctx.canvas.height / 2));
-
-      self.camera.begin();
-      self.ctx.beginPath();
-      var spotColor =
-        'hsla(' + self.spotColorHSL + ',' + self.spotColorA + ')';
-      self.ctx.fillStyle = spotColor;
-      self.ctx.arc(options.rotationPoint.x, options.rotationPoint.y, 20,
-        0, Math.PI * 2);
-      self.ctx.closePath();
-      self.ctx.fill();
-      self.camera.end();
     },
     renderSpots: function(spots) {
       self.camera.begin();

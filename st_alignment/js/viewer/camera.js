@@ -15,9 +15,9 @@
     self.maxScale = 5.00;
     self.positionBoundaries = {
       "minX": 0,
-      "maxX": 2048,
+      "maxX": 2000,
       "minY": 0,
-      "maxY": 2048
+      "maxY": 2000
     };
     self.updateViewport();
   };
@@ -118,7 +118,6 @@
         self.positionBoundaries.maxX);
       self.position = Vec2.clampD(self.position, 'y', self.positionBoundaries.minY,
         self.positionBoundaries.maxY);
-      console.log(Vec2.toString(self.position));
       self.scale = Math.max(self.scale, self.minScale);
       self.scale = Math.min(self.scale, self.maxScale);
     },

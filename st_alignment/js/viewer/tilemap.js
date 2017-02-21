@@ -75,7 +75,7 @@
             }
         },
         getRenderableImages: function(tilePosition, tilemapLevel, radius) {
-            radius = radius || 3;
+            radius = radius || 100;
             var tilePositions = self.getSurroundingTilePositions(tilePosition, tilemapLevel, radius);
             var images = self.getImagesAtTilePositions(tilePositions, tilemapLevel);
             return images;

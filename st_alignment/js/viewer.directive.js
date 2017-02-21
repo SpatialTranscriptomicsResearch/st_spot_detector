@@ -29,8 +29,8 @@ angular.module('stSpots')
           var camera = new Camera(fgctx);
 
           scope.layerManager = new LayerManager(layerContainer, refreshCanvas)
-            .addModifier('contrast', 0)
-            .addModifier('brightness', 0);
+            .addModifier('brightness', 0)
+            .addModifier('contrast', 0);
 
           var renderer = new Renderer(fgctx, camera, scope.layerManager);
 
@@ -41,11 +41,7 @@ angular.module('stSpots')
               scope.classes.canvas = cursor;
             });
           };
-          scope.toolsManager = new ToolsManager(refreshCanvas)
-            .addTool('move')
-            .addTool('rotate', {
-              'rotationPoint': undefined
-            });
+          scope.toolsManager = new ToolsManager(refreshCanvas);
 
           var spots = new SpotManager();
           var spotSelector = new SpotSelector(camera, spots);
@@ -95,9 +91,8 @@ angular.module('stSpots')
 
             // Always redraw if we get to a new tilemap level
             if (tilemapLevel != curScale) {
-                curScale = tilemapLevel;
-                console.log(curScale);
-                redraw = true;
+              curScale = tilemapLevel;
+              redraw = true;
             }
 
             tilePosition = tilemap.getTilePosition(camera.position,
@@ -112,8 +107,9 @@ angular.module('stSpots')
               renderer.renderCalibrationPoints(calibrator.calibrationData);
             } else if (scope.data.state == 'state_alignment' &&
               scope.toolsManager.activeTool() == 'rotate') {
-              renderer.renderRotationPoint(scope.toolsManager.options(
-                'rotate'));
+              camera.begin();
+              scope.toolsManager.options('rotate').drawRotationPoint(fgctx);
+              camera.end();
             } else if (scope.data.state == 'state_adjustment') {
               renderer.renderSpots(spots.spots);
               renderer.renderSpotSelection(spotSelector.renderingRect);
@@ -150,11 +146,15 @@ angular.module('stSpots')
               $(fgcvs).attr(s));
 
             tilemap.loadTilemap(tilemapData, function() {
-              camera.position = { x: 0, y: 0 };
+              camera.position = {
+                x: 1000,
+                y: 1000
+              };
               camera.scale = 1 / tilemapLevel;
               camera.updateViewport();
 
-              scaleManager.setTilemapLevels(tilemap.tilemapLevels, tilemapLevel);
+              scaleManager.setTilemapLevels(tilemap.tilemapLevels,
+                tilemapLevel);
 
               callback();
             });
@@ -166,8 +166,7 @@ angular.module('stSpots')
                   `<canvas id='layer-{name}' class='fullscreen' width='${width}'
                   height='${height}' />`
                 );
-              }
-              catch (e) {}
+              } catch (e) {}
             }
           };
 

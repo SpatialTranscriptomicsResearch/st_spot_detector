@@ -137,14 +137,17 @@
                   break;
                 case 'rotate':
                   var rp = self.toolsManager.options('rotate').rotationPoint,
-                      pos = self.camera.mouseToCameraPosition(eventData.position);
+                    pos = self.camera.mouseToCameraPosition(eventData.position);
                   if (eventData.button == self.mouseButton.left) {
                     var diff = self.camera.mouseToCameraScale(eventData.difference),
-                        to = Vec2.subtract(pos, rp), from = Vec2.subtract(to, diff);
+                      to = Vec2.subtract(pos, rp),
+                      from = Vec2.subtract(to, diff);
                     self.layerManager.rotate(
-                            Vec2.angleBetween(from, to),
-                            math.transpose(math.matrix([[rp.x, rp.y, 1]])),
-                            false
+                      Vec2.angleBetween(from, to),
+                      math.transpose(math.matrix([
+                        [rp.x, rp.y, 1]
+                      ])),
+                      false
                     );
                   }
                   break;
@@ -153,18 +156,17 @@
             break;
           case self.mouseEvent.wheel:
             self.camera.navigate(eventData.direction, eventData.position);
-            self.refreshCanvas(true);
+            self.refreshCanvas(false);
             break;
           case self.mouseEvent.down:
             break;
           case self.mouseEvent.up:
             if (curTool == 'rotate' && eventData.button ==
               self.mouseButton.right) {
-              self.toolsManager.options('rotate', {
-                'rotationPoint': self.camera.mouseToCameraPosition(
-                  eventData.position)
-              });
+              self.toolsManager.options('rotate').rotationPoint = self.camera
+                .mouseToCameraPosition(eventData.position);
             }
+            self.refreshCanvas(true);
             break;
         }
         if (cursor === undefined)
