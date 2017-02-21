@@ -47,6 +47,8 @@ var ToolsManager = class {
     if (!this._tools.has(name))
       throw "Invalid tool name " + name + ".";
     this._curtool = name;
+    if ('onActive' in this.options(name))
+      this.options(name).onActive();
     this._callback();
     return this;
   }

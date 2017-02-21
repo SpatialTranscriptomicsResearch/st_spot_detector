@@ -12,11 +12,17 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
           axis: 'x'
         };
 
+
+        scope.aligner.logicHandler = new AlignerLH(
+          scope.camera, scope.layerManager, scope.refreshFunc);
+
+
         // TODO: Need to clone array in order to avoid infinite recursion when
         // reversing. Why does this happen, though?
         scope.aligner.getLayers = function() {
           return scope.layerManager.layerOrder.slice(); // .reverse();
         };
+
 
         // TODO: handle this in a smarter way when more than one layer is
         // selected
@@ -31,6 +37,7 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
           return scope.layerManager.getModifier(layers[0], 'alpha');
         };
 
+
         scope.aligner.brightness = function(value) {
           if (arguments.length) {
             scope.layerManager.setModifier(null, 'brightness', parseInt(
@@ -42,6 +49,7 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
             return 0;
           return scope.layerManager.getModifier(layers[0], 'brightness');
         };
+
 
         scope.aligner.contrast = function(value) {
           if (arguments.length) {
@@ -55,8 +63,15 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
           return scope.layerManager.getModifier(layers[0], 'contrast');
         };
 
+
+        // TODO: move tool objects to separate files
         scope.toolsManager
-          .addTool('move')
+          .addTool('move', {
+            logicHandler: new AlignerMoveLH(),
+            onActive: function() {
+              scope.aligner.logicHandler.setInnerLH(this.logicHandler);
+            }
+          })
           .addTool('rotate', {
             rotationPoint: Vec2.Vec2(1000, 1000), // TODO: this should not be hardcoded
             drawRotationPoint: function(ctx) {
@@ -71,7 +86,7 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
                 this.rotationPoint.x,
                 this.rotationPoint.y,
                 scope.aligner.rotationPointRadius,
-                0, Math.PI * 2
+                0, 2 * Math.PI
               );
 
               var innerCircle = new Path2D();
@@ -79,7 +94,7 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
                 this.rotationPoint.x,
                 this.rotationPoint.y,
                 scope.aligner.rotationPointRadius / 4,
-                0, Math.PI * 2
+                0, 2 * Math.PI
               );
 
               ctx.stroke(outerCircle);
@@ -87,13 +102,22 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
 
               ctx.restore();
             },
-            hoverRotationPoint: function(pos) {
+            isHovering: function(pos) {
               if (Vec2.distanceBetween(pos, this.rotationPoint) < scope
                 .aligner.rotationPointRadius)
                 return true;
               return false;
+            },
+            logicHandler: undefined,
+            onActive: function() {
+              scope.aligner.logicHandler.setInnerLH(this.logicHandler);
+            },
+            init: function() {
+              this.logicHandler = new AlignerRotateLH(this.rotationPoint, this.isHovering);
+              delete this.init;
+              return this;
             }
-          });
+          }.init());
       },
       templateUrl: '../aligner.html'
     };

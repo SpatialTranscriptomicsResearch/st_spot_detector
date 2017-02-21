@@ -227,6 +227,6 @@
     }
   };
 
-  this.LogicHandler = LogicHandler;
+  this.DefLogicHandler = LogicHandler;
 
 }).call(self);

@@ -190,7 +190,7 @@ angular.module('stSpots')
       }
 
       $scope.updateState = function(new_state, show_toast = true) {
-        console.log(new_state);
+        var logicHandler_;
         $scope.data.state = new_state;
         if ($scope.data.state === 'state_start') {
           // reinitialise things
@@ -204,6 +204,7 @@ angular.module('stSpots')
           $scope.visible.menuBar = $scope.visible.zoomBar =
             $scope.visible.canvas = true;
           $scope.visible.spinner = $scope.visible.errorText = false;
+          logicHandler_ = $scope.aligner.logicHandler;
         } else if ($scope.data.state === 'state_predetection') {
           $scope.visible.menuBar = true;
           $scope.visible.zoomBar = true;
@@ -236,6 +237,10 @@ angular.module('stSpots')
           $scope.visible.imageToggleBar = $scope.visible.zoomBar;
         else
           $scope.visible.imageToggleBar = false;
+
+        if (!logicHandler_)
+          logicHandler_ = $scope.defLogicHandler;
+        $scope.eventHandler.logicHandler = logicHandler_;
 
         if (show_toast)
           toast();
@@ -479,7 +484,5 @@ angular.module('stSpots')
       toastr["info"](
         "Welcome to the Spatial Transcriptomics Spot Detection Tool. Begin by uploading a Cy3 fluorescence image.",
         "");
-
-      $scope.uploadImage(true);
     }
   ]);

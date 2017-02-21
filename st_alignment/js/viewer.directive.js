@@ -26,15 +26,15 @@ angular.module('stSpots')
           var tilemapLevels = [];
           var tilePosition;
 
-          var camera = new Camera(fgctx);
+          scope.camera = new Camera(fgctx);
 
           scope.layerManager = new LayerManager(layerContainer, refreshCanvas)
             .addModifier('brightness', 0)
             .addModifier('contrast', 0);
 
-          var renderer = new Renderer(fgctx, camera, scope.layerManager);
+          var renderer = new Renderer(fgctx, scope.camera, scope.layerManager);
 
-          var calibrator = new Calibrator(camera);
+          var calibrator = new Calibrator(scope.camera);
 
           scope.setCanvasCursor = function(cursor) {
             scope.$apply(function() {
@@ -44,18 +44,17 @@ angular.module('stSpots')
           scope.toolsManager = new ToolsManager(refreshCanvas);
 
           var spots = new SpotManager();
-          var spotSelector = new SpotSelector(camera, spots);
+          var spotSelector = new SpotSelector(scope.camera, spots);
           var spotAdjuster = new SpotAdjuster(
-            camera, spots, calibrator.calibrationData);
-          var logicHandler =
-            new LogicHandler(fgcvs, camera, scope.layerManager, scope.toolsManager,
+            scope.camera, spots, calibrator.calibrationData);
+          scope.defLogicHandler =
+            new DefLogicHandler(fgcvs, scope.camera, scope.layerManager, scope.toolsManager,
               spotSelector, spotAdjuster, calibrator, refreshCanvas, scope.setCanvasCursor
             );
-          var eventHandler = new EventHandler(scope.data, fgcvs,
-            camera, logicHandler);
+          scope.eventHandler = new EventHandler(scope.data, fgcvs,
+            scope.camera, scope.defLogicHandler);
 
           var images = [];
-
 
           scope.loadSpots = function(spotData) {
             spots.loadSpots(spotData);
@@ -86,7 +85,7 @@ angular.module('stSpots')
             if (redraw === undefined)
               redraw = true;
 
-            scaleManager.updateScaleLevel(camera.scale);
+            scaleManager.updateScaleLevel(scope.camera.scale);
             tilemapLevel = 1 / scaleManager.currentScaleLevel;
 
             // Always redraw if we get to a new tilemap level
@@ -95,7 +94,7 @@ angular.module('stSpots')
               redraw = true;
             }
 
-            tilePosition = tilemap.getTilePosition(camera.position,
+            tilePosition = tilemap.getTilePosition(scope.camera.position,
               tilemapLevel);
             images = tilemap.getRenderableImages(tilePosition,
               tilemapLevel);
@@ -107,9 +106,9 @@ angular.module('stSpots')
               renderer.renderCalibrationPoints(calibrator.calibrationData);
             } else if (scope.data.state == 'state_alignment' &&
               scope.toolsManager.activeTool() == 'rotate') {
-              camera.begin();
+              scope.camera.begin();
               scope.toolsManager.options('rotate').drawRotationPoint(fgctx);
-              camera.end();
+              scope.camera.end();
             } else if (scope.data.state == 'state_adjustment') {
               renderer.renderSpots(spots.spots);
               renderer.renderSpotSelection(spotSelector.renderingRect);
@@ -118,6 +117,7 @@ angular.module('stSpots')
               }
             }
           }
+          scope.refreshFunc = function() { refreshCanvas(true); };
 
           scope.addSpots = function() {
             logicHandler.addingSpots = true;
@@ -146,12 +146,12 @@ angular.module('stSpots')
               $(fgcvs).attr(s));
 
             tilemap.loadTilemap(tilemapData, function() {
-              camera.position = {
+              scope.camera.position = {
                 x: 1000,
                 y: 1000
               };
-              camera.scale = 1 / tilemapLevel;
-              camera.updateViewport();
+              scope.camera.scale = 1 / tilemapLevel;
+              scope.camera.updateViewport();
 
               scaleManager.setTilemapLevels(tilemap.tilemapLevels,
                 tilemapLevel);
@@ -171,7 +171,7 @@ angular.module('stSpots')
           };
 
           scope.zoom = function(direction) {
-            camera.navigate(keyevents[direction]);
+            scope.camera.navigate(keyevents[direction]);
             refreshCanvas();
           };
 
@@ -196,6 +196,8 @@ angular.module('stSpots')
               document.body.removeChild(a);
             }
           };
+
+          scope.uploadImage(true);
 
         }
       };

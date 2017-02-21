@@ -44,7 +44,7 @@
                     type: 'mouse',
                     eventType: self.logicHandler.mouseEvent.down,
                     data: {
-                        position: self.mousePos,
+                        position: self.camera.mouseToCameraPosition(self.mousePos),
                         button: e.button,
                         ctrl: e.ctrlKey
                     }
@@ -59,7 +59,7 @@
                     type: 'mouse',
                     eventType: self.logicHandler.mouseEvent.up,
                     data: {
-                        position: self.mousePos,
+                        position: self.camera.mouseToCameraPosition(self.mousePos),
                         button: e.button,
                         ctrl: e.ctrlKey
                     }
@@ -84,8 +84,8 @@
                     type: 'mouse',
                     eventType: thisEventType,
                     data: {
-                        position: self.mousePos,
-                        difference: distanceMoved,
+                        position: self.camera.mouseToCameraPosition(self.mousePos),
+                        difference: self.camera.mouseToCameraScale(distanceMoved),
                         button: mouseButton,
                         ctrl: e.ctrlKey
                     }
@@ -106,7 +106,7 @@
                     type: 'mouse',
                     eventType: self.logicHandler.mouseEvent.wheel,
                     data: {
-                        position: self.mousePos,
+                        position: self.camera.mouseToCameraPosition(self.mousePos),
                         direction: direction
                     }
 
