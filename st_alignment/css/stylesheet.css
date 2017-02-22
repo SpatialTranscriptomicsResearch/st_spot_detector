@@ -15,10 +15,28 @@ body {
     background-color: #eeeeee;
 }
 
+h1 {
+    font-size: 18px;
+}
+
+h2 {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.nomargin {
+    padding: 0;
+    margin: 0;
+}
+
 .spinner, .error-text {
     width: 600px;
     margin: 200px auto;
     text-align: center;
+}
+
+ul.btn-group {
+  padding: 0.5em 0;
 }
 
 .fullscreen {

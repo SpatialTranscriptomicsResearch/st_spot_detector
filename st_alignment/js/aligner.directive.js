@@ -8,8 +8,10 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
         scope.aligner.rotationPointColor = 'rgba(255, 0, 0, 1.0)';
         scope.aligner.rotationPointRadius = 16;
 
+        // Due to https://bugs.jqueryui.com/ticket/7498, see
+        // https://github.com/angular-ui/ui-sortable#floating
         scope.aligner.layerListOptions = {
-          axis: 'x'
+          'ui-floating': true
         };
 
 

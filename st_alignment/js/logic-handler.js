@@ -39,5 +39,19 @@ var LogicHandler = (function() {
     getMouseButton() {
       return mouseButton;
     }
+
+    _recordMousePosition() {
+      this._mousePosition = Vec2.Vec2(0, 0);
+      var processMouseEvent_ = this.processMouseEvent;
+      this.processMouseEvent = (function() {
+        return function(e, data) {
+          this._mousePosition = data.position;
+          return processMouseEvent_.apply(this, [e, data]);
+        };
+      })();
+    }
+
+    // TODO: implement
+    _recordKeyStates() {}
   };
 })();

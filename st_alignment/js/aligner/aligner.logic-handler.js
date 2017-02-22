@@ -24,6 +24,7 @@
     }
 
     setInnerLH(lh) {
+      lh.master = this;
       this._innerLH = lh;
     }
 
@@ -51,7 +52,7 @@
 
     _fallbackFromInner(fun, identifier) {
       return function(...args) {
-        var ret = this._innerLH[identifier](this, ...args);
+        var ret = this._innerLH[identifier].apply(this._innerLH, [...args]);
         if (ret === RET_CONTINUE)
           return fun.apply(this, [...args]);
         return ret;
@@ -69,30 +70,34 @@
 
 
   this.AlignerMoveLH = class extends LogicHandler {
-    processKeydownEvent(that, e) {
+    constructor() {
+      super();
+      this.master = null;
+    }
+    processKeydownEvent(e) {
       // TODO: this is a quick fix to make sure that the cursor changes to its
       // fallback state when the fallback key, ctrl, is pressed. This should
       // probably be done in some cleaner way.
       if (e == keyevents.ctrl)
-        that.processMouseEvent(undefined, {
+        this.master.processMouseEvent(undefined, {
           ctrl: true
         });
       return RET_CONTINUE;
     }
-    processKeyupEvent(that, e) {
+    processKeyupEvent(e) {
       // TODO: see above
       if (e == keyevents.ctrl)
-        that.processMouseEvent(undefined, {
+        this.master.processMouseEvent(undefined, {
           ctrl: false
         });
       return RET_CONTINUE;
     }
-    processMouseEvent(that, e, data) {
+    processMouseEvent(e, data) {
       if (e == this.mouseEvent.wheel || data.ctrl)
         return RET_CONTINUE;
       if (e == this.mouseEvent.drag)
-        that._layerManager.move(data.difference, false);
-      that._cursor('move');
+        this.master._layerManager.move(data.difference, false);
+      this.master._cursor('move');
     }
   };
 
@@ -100,29 +105,36 @@
   this.AlignerRotateLH = class extends LogicHandler {
     constructor(rp, hovering) {
       super();
+      this._fallback = false;
       this._rp = rp;
       this._hovering = hovering;
       this._movingRp = false;
       this._movingRpOffset = undefined;
+      this._curCursor = 'none';
+
+      this.master = null;
+
+      this._recordMousePosition();
     }
-    processKeydownEvent(that, e) {
-      // TODO: see above
-      if (e == keyevents.ctrl)
-        that.processMouseEvent(undefined, {
-          ctrl: true
-        });
+    processKeydownEvent(e) {
+      if (e != keyevents.ctrl)
+        return;
+      this._fallback = true;
+      this.master._cursor('grab');
       return RET_CONTINUE;
     }
-    processKeyupEvent(that, e) {
-      // TODO: see above
-      if (e == keyevents.ctrl)
-        that.processMouseEvent(undefined, {
-          ctrl: false
-        });
-      return RET_CONTINUE;
+    processKeyupEvent(e) {
+      if (e == keyevents.ctrl) {
+        this._fallback = false;
+        this.master._cursor(this._curCursor);
+        return;
+      }
+      if (this._fallback)
+        return RET_CONTINUE;
+      return;
     }
-    processMouseEvent(that, e, data) {
-      if (e == this.mouseEvent.wheel || data.ctrl)
+    processMouseEvent(e, data) {
+      if (this._fallback || e == this.mouseEvent.wheel)
         return RET_CONTINUE;
 
       switch (e) {
@@ -130,11 +142,11 @@
           if (this._movingRp) {
             this._rp.x = data.position.x + this._movingRpOffset.x;
             this._rp.y = data.position.y + this._movingRpOffset.y;
-            that._refresh();
+            this.master._refresh();
           } else { // !this._movingRp
             var to = Vec2.subtract(data.position, this._rp),
               from = Vec2.subtract(to, data.difference);
-            that._layerManager.rotate(
+            this.master._layerManager.rotate(
               Vec2.angleBetween(from, to),
               math.transpose(math.matrix([
                 [this._rp.x, this._rp.y, 1]
@@ -148,7 +160,7 @@
           if (data.button == this.mouseButton.right) {
             this._rp.x = data.position.x;
             this._rp.y = data.position.y;
-            that._refresh();
+            this.master._refresh();
           }
           if (this._hovering(data.position)) {
             this._movingRp = true;
@@ -162,11 +174,15 @@
       }
 
       if (!this._hovering(data.position))
-        that._cursor('move');
+        this._setCursor('move');
       else if (this._movingRp)
-        that._cursor('grabbing');
+        this._setCursor('grabbing');
       else
-        that._cursor('grab');
+        this._setCursor('grab');
+    }
+    _setCursor(cursor) {
+      this._curCursor = cursor;
+      this.master._cursor(cursor);
     }
   };
 
