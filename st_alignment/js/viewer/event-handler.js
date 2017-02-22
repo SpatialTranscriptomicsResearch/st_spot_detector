@@ -19,21 +19,30 @@
   
     EventHandler.prototype = {
         passEventToLogicHandler: function(evt) {
-            if(self.scopeData.state == 'state_predetection' ||
-                self.scopeData.state == 'state_adjustment' ||
-                self.scopeData.state == 'state_alignment') {
-                if(evt.type == 'mouse') {
-                    self.logicHandler.processMouseEvent(self.scopeData.state, evt.eventType, evt.data);
-                }
-                else if(evt.type == 'key') {
-                    if(evt.keyDirection == 'down') {
-                        self.logicHandler.processKeydownEvent(self.scopeData.state, evt.keyEvent);
-                    }
-                    else if(evt.keyDirection == 'up') {
-                        self.logicHandler.processKeyupEvent(self.scopeData.state, evt.keyEvent);
-                    }
-                }
+          // TODO: clean up
+          if(self.scopeData.state == 'state_predetection' ||
+            self.scopeData.state == 'state_adjustment') {
+            if(evt.type == 'mouse') {
+              self.logicHandler.processMouseEvent(self.scopeData.state, evt.eventType, evt.data);
             }
+            else if(evt.type == 'key') {
+              if(evt.keyDirection == 'down') {
+                self.logicHandler.processKeydownEvent(self.scopeData.state, evt.keyEvent);
+              }
+              else if(evt.keyDirection == 'up') {
+                self.logicHandler.processKeyupEvent(self.scopeData.state, evt.keyEvent);
+              }
+            }
+          }
+          else if(self.scopeData.state == 'state_alignment') {
+            if(evt.type == 'mouse')
+              self.logicHandler.processMouseEvent(evt.eventType, evt.data);
+            else if(evt.type == 'key')
+              if(evt.keyDirection == 'down')
+                self.logicHandler.processKeydownEvent(evt.keyEvent);
+              else if(evt.keyDirection == 'up')
+                self.logicHandler.processKeyupEvent(evt.keyEvent);
+          }
         },
         setUpMouseEvents: function(canvas, camera) {
             canvas.onmousedown = function(e) {

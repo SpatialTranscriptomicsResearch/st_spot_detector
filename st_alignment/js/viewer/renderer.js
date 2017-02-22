@@ -74,7 +74,6 @@
             brightness = (brightness + 100) / 100;
             filters.push(`brightness(${brightness})`);
           }
-          console.log(brightness);
           if (contrast && contrast !== 0) {
             contrast = Math.pow((contrast + 100) / 100, 5);
             filters.push(`contrast(${contrast})`);

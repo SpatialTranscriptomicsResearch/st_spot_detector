@@ -14,7 +14,8 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
 
 
         scope.aligner.logicHandler = new AlignerLH(
-          scope.camera, scope.layerManager, scope.refreshFunc);
+          scope.camera, scope.layerManager, scope.refreshFunc, scope.setCanvasCursor
+        );
 
 
         // TODO: Need to clone array in order to avoid infinite recursion when
@@ -72,7 +73,7 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
               scope.aligner.logicHandler.setInnerLH(this.logicHandler);
             }
           })
-          .addTool('rotate', {
+          .addTool('rotate', ({
             rotationPoint: Vec2.Vec2(1000, 1000), // TODO: this should not be hardcoded
             drawRotationPoint: function(ctx) {
               ctx.save();
@@ -102,22 +103,26 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
 
               ctx.restore();
             },
-            isHovering: function(pos) {
-              if (Vec2.distanceBetween(pos, this.rotationPoint) < scope
-                .aligner.rotationPointRadius)
-                return true;
-              return false;
+            isHovering: function(self) {
+              return function(pos) {
+                if (Vec2.distanceBetween(pos, self.rotationPoint) <
+                  scope.aligner.rotationPointRadius)
+                  return true;
+                return false;
+              };
             },
             logicHandler: undefined,
             onActive: function() {
               scope.aligner.logicHandler.setInnerLH(this.logicHandler);
             },
             init: function() {
-              this.logicHandler = new AlignerRotateLH(this.rotationPoint, this.isHovering);
+              this.isHovering = this.isHovering(this);
+              this.logicHandler = new AlignerRotateLH(this.rotationPoint,
+                this.isHovering);
               delete this.init;
               return this;
             }
-          }.init());
+          }).init());
       },
       templateUrl: '../aligner.html'
     };

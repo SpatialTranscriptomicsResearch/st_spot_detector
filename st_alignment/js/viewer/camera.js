@@ -83,6 +83,7 @@
       } else if (dir === keyevents.zin) {
         scaleFactor =  1 / self.scaleFactor; // 1.05
       } else if (dir === keyevents.zout) {
+        movement = Vec2.scale(movement, -1);
         scaleFactor = self.scaleFactor; // 0.95
       }
 

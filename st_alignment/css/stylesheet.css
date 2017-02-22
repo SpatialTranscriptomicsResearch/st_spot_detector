@@ -64,13 +64,13 @@ canvas:active {
     cursor:         nwse-resize;
 }
 
-.grabbable {
+.grab {
     cursor: -webkit-grab;
     cursor:    -moz-grab;
     cursor:         grab;
 }
 
-.grabbed {
+.grabbing {
     cursor: -webkit-grabbing;
     cursor:    -moz-grabbing;
     cursor:         grabbing;
@@ -80,6 +80,14 @@ canvas:active {
     cursor: -webkit-pointer;
     cursor:    -moz-pointer;
     cursor:         pointer;
+}
+
+.move {
+  cursor: move;
+}
+
+.none {
+  cursor: none;
 }
 
 .menu-wrapper {

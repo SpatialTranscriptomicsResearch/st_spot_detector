@@ -164,7 +164,7 @@ angular.module('stSpots')
         } else if ($scope.data.state === 'state_alignment') {
           toastr.options.timeOut = "2000";
           var toasts = ["\\-_-/"];
-          displayToasts(toasts);
+          // displayToasts(toasts);
         } else if ($scope.data.state === 'state_predetection') {
           // toastr["info"](
           //     "Adjust the lines to frame the spots, as shown:<br>" + 

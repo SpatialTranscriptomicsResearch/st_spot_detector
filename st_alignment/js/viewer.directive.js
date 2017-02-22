@@ -37,6 +37,8 @@ angular.module('stSpots')
           var calibrator = new Calibrator(scope.camera);
 
           scope.setCanvasCursor = function(cursor) {
+            if (arguments.length === 0)
+              return scope.classes.canvas;
             scope.$apply(function() {
               scope.classes.canvas = cursor;
             });
