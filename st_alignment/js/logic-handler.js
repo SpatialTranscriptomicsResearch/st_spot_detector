@@ -40,18 +40,67 @@ var LogicHandler = (function() {
       return mouseButton;
     }
 
+    // Utility functions
     _recordMousePosition() {
       this._mousePosition = Vec2.Vec2(0, 0);
-      var processMouseEvent_ = this.processMouseEvent;
+      var oldM = this.processMouseEvent;
       this.processMouseEvent = (function() {
         return function(e, data) {
           this._mousePosition = data.position;
-          return processMouseEvent_.apply(this, [e, data]);
+          return oldM.apply(this, [e, data]);
         };
       })();
     }
 
-    // TODO: implement
-    _recordKeyStates() {}
+    _recordKeyStates() {
+      var keys = {};
+      var codeToKey = {};
+      for (var key in keyevents) {
+        keys[key] = false;
+        codeToKey[keyevents[key]] = key;
+      }
+      keys.mouseLeft = false;
+      keys.mouseRight = false;
+      this._keystates = Object.seal(keys);
+
+      var oldKD = this.processKeydownEvent;
+      this.processKeydownEvent = function(e) {
+        if (codeToKey[e] in keys)
+          keys[codeToKey[e]] = true;
+        return oldKD.apply(this, [e]);
+      };
+
+      var oldKU = this.processKeyupEvent;
+      this.processKeyupEvent = function(e) {
+        if (codeToKey[e] in keys)
+          keys[codeToKey[e]] = false;
+        return oldKU.apply(this, [e]);
+      };
+
+      var oldM = this.processMouseEvent;
+      this.processMouseEvent = function(e, data) {
+        if (e == mouseEvent.down) {
+          switch(data.button) {
+            case mouseButton.left:
+              keys.mouseLeft = true;
+              break;
+            case mouseButton.right:
+              keys.mouseRight = true;
+              break;
+          }
+        }
+        else if (e == mouseEvent.up) {
+          switch(data.button) {
+            case mouseButton.left:
+              keys.mouseLeft = false;
+              break;
+            case mouseButton.right:
+              keys.mouseRight = false;
+              break;
+          }
+        }
+        return oldM.apply(this, [e, data]);
+      };
+    }
   };
 })();
