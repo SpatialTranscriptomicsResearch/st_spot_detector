@@ -33,10 +33,10 @@ var LogicHandler = (function() {
     }
 
     // Getters for static members
-    getMouseEvent() {
+    static getMouseEvent() {
       return mouseEvent;
     }
-    getMouseButton() {
+    static getMouseButton() {
       return mouseButton;
     }
 
