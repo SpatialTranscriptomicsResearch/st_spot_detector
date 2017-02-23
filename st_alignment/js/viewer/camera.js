@@ -67,9 +67,11 @@
       self.updateViewport();
     },
     navigate: function(dir, zoomCenter) {
+      if (dir === undefined)
+        return;
+
       var center = zoomCenter || canvasCenter; // the position to which the camera will zoom towards
       var movement = Vec2.subtract(center, self.position); // distance between position and canvas center
-      movement = Vec2.scale(movement, 1 - self.scaleFactor); // scaling it down for slight movement
 
       var scaleFactor = 1.0;
       if (dir === keyevents.left) {
@@ -83,9 +85,10 @@
       } else if (dir === keyevents.zin) {
         scaleFactor =  1 / self.scaleFactor; // 1.05
       } else if (dir === keyevents.zout) {
-        movement = Vec2.scale(movement, -1);
         scaleFactor = self.scaleFactor; // 0.95
       }
+
+      movement = Vec2.scale(movement, 1 - 1 / scaleFactor); // scaling it down for slight movement
 
       if ((scaleFactor > 1.0 && self.scale == self.maxScale) ||
         (scaleFactor < 1.0 && self.scale == self.minScale)) {
