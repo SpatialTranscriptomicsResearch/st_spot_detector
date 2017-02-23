@@ -15,9 +15,7 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
         };
 
 
-        scope.aligner.logicHandler = new AlignerLH(
-          scope.camera, scope.layerManager, scope.refreshFunc, scope.setCanvasCursor
-        );
+        scope.aligner.logicHandler = new AlignerLHAdapter();
 
 
         // TODO: Need to clone array in order to avoid infinite recursion when
@@ -70,9 +68,12 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
         // TODO: move tool objects to separate files
         scope.toolsManager
           .addTool('move', {
-            logicHandler: new AlignerMoveLH(),
+            logicHandler: new AlignerLHMove(
+              scope.camera, scope.layerManager, scope.refreshFunc,
+              scope.setCanvasCursor
+            ),
             onActive: function() {
-              scope.aligner.logicHandler.setInnerLH(this.logicHandler);
+              scope.aligner.logicHandler.setLH(this.logicHandler);
             }
           })
           .addTool('rotate', ({
@@ -115,12 +116,14 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
             },
             logicHandler: undefined,
             onActive: function() {
-              scope.aligner.logicHandler.setInnerLH(this.logicHandler);
+              scope.aligner.logicHandler.setLH(this.logicHandler);
             },
             init: function() {
               this.isHovering = this.isHovering(this);
-              this.logicHandler = new AlignerRotateLH(this.rotationPoint,
-                this.isHovering);
+              this.logicHandler = new AlignerLHRotate(
+                scope.camera, scope.layerManager, scope.refreshFunc,
+                scope.setCanvasCursor,
+                this.rotationPoint, this.isHovering);
               delete this.init;
               return this;
             }

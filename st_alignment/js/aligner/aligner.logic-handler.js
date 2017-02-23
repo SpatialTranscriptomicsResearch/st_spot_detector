@@ -1,188 +1,158 @@
+class AlignerLHAdapter extends LogicHandler {
+  constructor(lh) {
+    super();
+    this.setLH(lh);
+  }
+  setLH(lh) {
+    this.lh = lh;
+  }
+  processKeydownEvent(e) {
+    this.lh.processKeydownEvent(e);
+  }
+  processKeyupEvent(e) {
+    this.lh.processKeyupEvent(e);
+  }
+  processMouseEvent(e, data) {
+    this.lh.processMouseEvent(e, data);
+  }
+}
+
 (function() {
 
-  const RET_CONTINUE = 1;
-
-
-  this.AlignerLH = class extends LogicHandler {
+  class AlignerLHDefault extends LogicHandler {
     constructor(camera, layerManager, refreshFunc, cursorFunc) {
       super();
       this._camera = camera;
       this._layerManager = layerManager;
       this._refresh = refreshFunc;
       this._cursor = cursorFunc;
-      this._prevCursor = undefined;
-      this._innerLH = undefined;
-      for (var identifier of [
-          'processKeydownEvent',
-          'processKeyupEvent',
-          'processMouseEvent'
-        ]) {
-        this[identifier] = this._fallbackFromInner(this[identifier],
-          identifier);
-        // this[identifier] = this._addRefreshHook(this[identifier]);
-      }
+
+      this._recordKeyStates();
     }
 
-    setInnerLH(lh) {
-      lh.master = this;
-      this._innerLH = lh;
+    processKeydownEvent(e) {
+      this._refreshCursor();
     }
-
-    processKeydownEvent(e) {}
-    processKeyupEvent(e) {}
+    processKeyupEvent(e) {
+      this._refreshCursor();
+    }
     processMouseEvent(e, data) {
       switch (e) {
         case this.mouseEvent.down:
-          this._cursor('grabbing');
           break;
         case this.mouseEvent.drag:
           this._camera.pan(data.difference);
-          this._refresh(false);
+          this._refresh();
           break;
         case this.mouseEvent.wheel:
           this._camera.navigate(data.direction, data.position);
-          this._cursor();
-          this._refresh(false);
-          break;
-        default:
-          this._cursor('grab');
+          this._refresh();
           break;
       }
+      this._refreshCursor();
     }
 
-    _fallbackFromInner(fun, identifier) {
-      return function(...args) {
-        var ret = this._innerLH[identifier].apply(this._innerLH, [...args]);
-        if (ret === RET_CONTINUE)
-          return fun.apply(this, [...args]);
-        return ret;
-      };
+    _refreshCursor() {
+      if (this._keystates.mouseLeft)
+        this._cursor('grabbing');
+      else
+        this._cursor('grab');
     }
+  }
 
-    _addRefreshHook(fun) {
-      return function(...args) {
-        var ret = fun.apply(this, [...args]);
-        this._refresh();
-        return ret;
-      };
-    }
-  };
-
-
-  this.AlignerMoveLH = class extends LogicHandler {
-    constructor() {
-      super();
-      this.master = null;
-    }
+  this.AlignerLHMove = class extends AlignerLHDefault {
     processKeydownEvent(e) {
-      // TODO: this is a quick fix to make sure that the cursor changes to its
-      // fallback state when the fallback key, ctrl, is pressed. This should
-      // probably be done in some cleaner way.
       if (e == keyevents.ctrl)
-        this.master.processMouseEvent(undefined, {
-          ctrl: true
-        });
-      return RET_CONTINUE;
+        return super.processKeydownEvent(e);
     }
     processKeyupEvent(e) {
-      // TODO: see above
       if (e == keyevents.ctrl)
-        this.master.processMouseEvent(undefined, {
-          ctrl: false
-        });
-      return RET_CONTINUE;
+        this._cursor('move');
     }
     processMouseEvent(e, data) {
       if (e == this.mouseEvent.wheel || data.ctrl)
-        return RET_CONTINUE;
+        return super.processMouseEvent(e, data);
       if (e == this.mouseEvent.drag)
-        this.master._layerManager.move(data.difference, false);
-      this.master._cursor('move');
+        this._layerManager.move(data.difference, false);
+      this._cursor('move');
     }
   };
 
 
-  this.AlignerRotateLH = class extends LogicHandler {
-    constructor(rp, hovering) {
-      super();
-      this._fallback = false;
+  this.AlignerLHRotate = class extends AlignerLHDefault {
+    constructor(camera, layerManager, refreshFunc, cursorFunc, rp, hovering) {
+      super(camera, layerManager, refreshFunc, cursorFunc);
       this._rp = rp;
       this._hovering = hovering;
-      this._movingRp = false;
-      this._movingRpOffset = undefined;
-      this._curCursor = 'none';
 
-      this.master = null;
+      this._curState = 'def';
 
       this._recordMousePosition();
+      this._recordKeyStates();
     }
     processKeydownEvent(e) {
-      if (e != keyevents.ctrl)
-        return;
-      this._fallback = true;
-      this.master._cursor('grab');
-      return RET_CONTINUE;
+      if (this._keystates.ctrl)
+        return super.processKeydownEvent(e);
+      this._refreshState();
     }
     processKeyupEvent(e) {
-      if (e == keyevents.ctrl) {
-        this._fallback = false;
-        this.master._cursor(this._curCursor);
-        return;
-      }
-      if (this._fallback)
-        return RET_CONTINUE;
-      return;
+      if (this._keystates.ctrl)
+        return super.processKeyupEvent(e);
+      this._refreshState();
     }
     processMouseEvent(e, data) {
-      if (this._fallback || e == this.mouseEvent.wheel)
-        return RET_CONTINUE;
+      if (this._keystates.ctrl || e == this.mouseEvent.wheel)
+        return super.processMouseEvent(e, data);
 
       switch (e) {
         case this.mouseEvent.drag:
-          if (this._movingRp) {
-            this._rp.x = data.position.x + this._movingRpOffset.x;
-            this._rp.y = data.position.y + this._movingRpOffset.y;
-            this.master._refresh();
-          } else { // !this._movingRp
+          if (this._curState == 'rotate') {
             var to = Vec2.subtract(data.position, this._rp),
               from = Vec2.subtract(to, data.difference);
-            this.master._layerManager.rotate(
+            this._layerManager.rotate(
               Vec2.angleBetween(from, to),
               math.transpose(math.matrix([
                 [this._rp.x, this._rp.y, 1]
-              ])),
-              false
+              ]))
             );
+          } else
+          if (this._curState == 'dragRP') {
+            this._rp.x -= data.difference.x;
+            this._rp.y -= data.difference.y;
+            this._refresh();
           }
-          return; // since no need to update cursor
+          break;
 
         case this.mouseEvent.down:
           if (data.button == this.mouseButton.right) {
             this._rp.x = data.position.x;
             this._rp.y = data.position.y;
-            this.master._refresh();
+            this._refresh();
           }
-          if (this._hovering(data.position)) {
-            this._movingRp = true;
-            this._movingRpOffset = Vec2.subtract(this._rp, data.position);
-          }
-          break;
-
-        case this.mouseEvent.up:
-          this._movingRp = false;
           break;
       }
 
-      if (!this._hovering(data.position))
-        this._setCursor('move');
-      else if (this._movingRp)
-        this._setCursor('grabbing');
-      else
-        this._setCursor('grab');
+      this._refreshState();
     }
-    _setCursor(cursor) {
-      this._curCursor = cursor;
-      this.master._cursor(cursor);
+
+    _refreshState() {
+      if (this._hovering(this._mousePosition)) {
+        if (this._keystates.mouseLeft) {
+          this._curState = 'dragRP';
+          this._cursor('grabbing');
+        } else {
+          this._curState = 'hoverRP';
+          this._cursor('grab');
+        }
+      } else {
+        if (this._keystates.mouseLeft) {
+          this._curState = 'rotate';
+          this._cursor('move');
+        } else {
+          this._curState = 'def';
+          this._cursor('move');
+        }
+      }
     }
   };
 
