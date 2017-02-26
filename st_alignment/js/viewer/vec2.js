@@ -80,6 +80,16 @@ var Vec2 = (function() {
             sign = a.x * b.y - a.y * b.x > 0 ? 1 : -1;
 
             return sign * angle;
+        },
+        vec2ToMathjs(v) {
+          return math.matrix([[v.x], [v.y], [1]]);
+        },
+        mathjsToVec2(v) {
+          var [x, y] = [
+            math.subset(v, math.index(0, 0)),
+            math.subset(v, math.index(1, 0))
+          ];
+          return Vec2.Vec2(x, y);
         }
-    }
+    };
 })();

@@ -11,7 +11,17 @@
     {{ layer }}
   </li>
 </ul>
-<h2 class="nomargin">Filters</h2>
+<h2 class="nomargin">Tools</h2>
+<ul class="btn-group">
+  <li class="btn"
+      ng-repeat="tool in toolsManager.getTools()"
+      ng-click="toolsManager.activeTool(tool)"
+      ng-class="{'active': tool == toolsManager.activeTool() }"
+      >
+    {{ tool }}
+  </li>
+</ul>
+<h2 class="nomargin">Adjustments</h2>
 <div>
   Opacity:
   <input type="range"
@@ -45,12 +55,11 @@
          ng-model-options="{ getterSetter: true }"
          />
 </div>
-<ul class="btn-group">
-  <li class="btn"
-      ng-repeat="tool in toolsManager.getTools()"
-      ng-click="toolsManager.activeTool(tool)"
-      ng-class="{'active': tool == toolsManager.activeTool() }"
-      >
-    {{ tool }}
-  </li>
-</ul>
+<h2 class="nomargin">Filters</h2>
+<div>
+  Equalization:
+  <input type="checkbox"
+         style="float: right;"
+         disabled="true"
+         />
+</div>

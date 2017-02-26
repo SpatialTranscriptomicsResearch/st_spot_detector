@@ -1,5 +1,3 @@
-'use strict';
-
 (function() {
     var self;
     var Tilemap = function() {
@@ -74,32 +72,29 @@
                 }
             }
         },
-        getRenderableImages: function(tilePosition, tilemapLevel, radius) {
-            radius = radius || 100;
+        getRenderableImages: function(layer, tilePosition, tilemapLevel, radius) {
+            radius = radius || 3;
             var tilePositions = self.getSurroundingTilePositions(tilePosition, tilemapLevel, radius);
-            var images = self.getImagesAtTilePositions(tilePositions, tilemapLevel);
+            var images = self.getImagesAtTilePositions(layer, tilePositions, tilemapLevel);
             return images;
         },
-        getImagesAtTilePositions: function(tilePositions, tilemapLevel) {
+        getImagesAtTilePositions: function(layer, tilePositions, tilemapLevel) {
             /* given a set of tile positions and a tile map level,
                the relevant images are returned from the tile map */
-            var images = {};
-            for(var l in self.tilemaps) {
-                images[l] = [];
-                for(var i = 0; i < tilePositions.length; ++i) {
-                    var tile = Vec2.Vec2(tilePositions[i].x,
-                        tilePositions[i].y);
-                    try {
-                      var image = self.tilemaps[l][tilemapLevel][tile.x][tile.y];
-                    }
-                    catch(err) { continue; }
-                    image.renderPosition = Vec2.scale(Vec2.multiply(tile,
-                        self.tilesize), tilemapLevel);
-                    image.scaledSize = Vec2.scale(self.tilesize, tilemapLevel);
-                    images[l].push(image);
-                }
+          var images = [], image;
+          for(var i = 0; i < tilePositions.length; ++i) {
+            var tile = Vec2.Vec2(tilePositions[i].x,
+              tilePositions[i].y);
+            try {
+              image = self.tilemaps[layer][tilemapLevel][tile.x][tile.y];
             }
-            return images;
+            catch(err) { continue; }
+            image.renderPosition = Vec2.scale(Vec2.multiply(tile,
+              self.tilesize), tilemapLevel);
+            image.scaledSize = Vec2.scale(self.tilesize, tilemapLevel);
+            images.push(image);
+          }
+          return images;
         },
         getSurroundingTilePositions: function(tilePosition, tilemapLevel, radius) {
             /* given a specific tile position, the surrounding valid

@@ -50,7 +50,8 @@ angular.module('stSpots')
           var spotAdjuster = new SpotAdjuster(
             scope.camera, spots, calibrator.calibrationData);
           scope.defLogicHandler =
-            new DefLogicHandler(fgcvs, scope.camera, scope.layerManager, scope.toolsManager,
+            new DefLogicHandler(fgcvs, scope.camera, scope.layerManager,
+              scope.toolsManager,
               spotSelector, spotAdjuster, calibrator, refreshCanvas, scope.setCanvasCursor
             );
           scope.eventHandler = new EventHandler(scope.data, fgcvs,
@@ -96,10 +97,23 @@ angular.module('stSpots')
               redraw = true;
             }
 
-            tilePosition = tilemap.getTilePosition(scope.camera.position,
-              tilemapLevel);
-            images = tilemap.getRenderableImages(tilePosition,
-              tilemapLevel);
+            images = {};
+            for (var layer of scope.layerManager.getLayers()) {
+              var position = math.multiply(
+                //scope.layerManager.getModifier(layer, tmat),
+                math.eye(3),
+                math.matrix([
+                  [scope.camera.position.x],
+                  [scope.camera.position.y],
+                  [1]
+                ])
+              );
+              tilePosition =
+                tilemap.getTilePosition(Vec2.mathjsToVec2(position),
+                  tilemapLevel);
+              images[layer] = tilemap.getRenderableImages(tilePosition,
+                tilemapLevel);
+            }
 
             renderer.renderImages(images, redraw);
 
@@ -119,7 +133,9 @@ angular.module('stSpots')
               }
             }
           }
-          scope.refreshFunc = function() { refreshCanvas(true); };
+          scope.refreshFunc = function() {
+            refreshCanvas(true);
+          };
 
           scope.addSpots = function() {
             logicHandler.addingSpots = true;
