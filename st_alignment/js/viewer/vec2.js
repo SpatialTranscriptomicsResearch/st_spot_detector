@@ -81,10 +81,19 @@ var Vec2 = (function() {
 
             return sign * angle;
         },
-        vec2ToMathjs(v) {
+        test2: function(v1, v2, fun) {
+          return Vec2.Vec2(fun(v1.x, v2.x), fun(v1.y, v2.y));
+        },
+        all: function(v) {
+          return v.x && v.y;
+        },
+        any: function(v) {
+          return v.x || v.y;
+        },
+        vec2ToMathjs: function(v) {
           return math.matrix([[v.x], [v.y], [1]]);
         },
-        mathjsToVec2(v) {
+        mathjsToVec2: function(v) {
           var [x, y] = [
             math.subset(v, math.index(0, 0)),
             math.subset(v, math.index(1, 0))

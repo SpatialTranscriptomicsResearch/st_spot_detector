@@ -40,13 +40,16 @@ class AlignerLHAdapter extends LogicHandler {
       switch (e) {
         case this.mouseEvent.down:
           break;
+        case this.mouseEvent.up:
+          this._refresh(true);
+          break;
         case this.mouseEvent.drag:
           this._camera.pan(data.difference);
-          this._refresh();
+          this._refresh(false);
           break;
         case this.mouseEvent.wheel:
           this._camera.navigate(data.direction, data.position);
-          this._refresh();
+          this._refresh(false);
           break;
       }
       this._refreshCursor();
@@ -65,15 +68,18 @@ class AlignerLHAdapter extends LogicHandler {
       if (e == keyevents.ctrl)
         return super.processKeydownEvent(e);
     }
-    processKeyupEvent(e) {
-      if (e == keyevents.ctrl)
-        this._cursor('move');
-    }
     processMouseEvent(e, data) {
       if (e == this.mouseEvent.wheel || data.ctrl)
         return super.processMouseEvent(e, data);
       if (e == this.mouseEvent.drag)
         this._layerManager.move(data.difference, false);
+      else if (e == this.mouseEvent.up)
+        this._refresh(true);
+      this._refreshCursor();
+    }
+    _refreshCursor() {
+      if (this._keystates.ctrl)
+        return super._refreshCursor();
       this._cursor('move');
     }
   };
@@ -113,13 +119,14 @@ class AlignerLHAdapter extends LogicHandler {
               Vec2.angleBetween(from, to),
               math.transpose(math.matrix([
                 [this._rp.x, this._rp.y, 1]
-              ]))
+              ])),
+              false
             );
           } else
           if (this._curState == 'dragRP') {
             this._rp.x -= data.difference.x;
             this._rp.y -= data.difference.y;
-            this._refresh();
+            this._refresh(false);
           }
           break;
 
@@ -127,8 +134,12 @@ class AlignerLHAdapter extends LogicHandler {
           if (data.button == this.mouseButton.right) {
             this._rp.x = data.position.x;
             this._rp.y = data.position.y;
-            this._refresh();
+            this._refresh(false);
           }
+          break;
+
+        case this.mouseEvent.up:
+          this._refresh(true);
           break;
       }
 
@@ -137,21 +148,35 @@ class AlignerLHAdapter extends LogicHandler {
 
     _refreshState() {
       if (this._hovering(this._mousePosition)) {
-        if (this._keystates.mouseLeft) {
+        if (this._keystates.mouseLeft)
           this._curState = 'dragRP';
-          this._cursor('grabbing');
-        } else {
+        else
           this._curState = 'hoverRP';
-          this._cursor('grab');
-        }
       } else {
-        if (this._keystates.mouseLeft) {
+        if (this._keystates.mouseLeft)
           this._curState = 'rotate';
-          this._cursor('move');
-        } else {
+        else
           this._curState = 'def';
+      }
+      this._refreshCursor();
+    }
+
+    _refreshCursor() {
+      if (this._keystates.ctrl)
+        return super._refreshCursor();
+      switch (this._curState) {
+        case 'dragRP':
+          this._cursor('grabbing');
+          break;
+        case 'hoverRP':
+          this._cursor('grab');
+          break;
+        case 'rotate':
           this._cursor('move');
-        }
+          break;
+        case 'def':
+          this._cursor('move');
+          break;
       }
     }
   };

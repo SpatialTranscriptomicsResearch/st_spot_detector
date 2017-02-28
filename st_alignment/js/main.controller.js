@@ -201,9 +201,13 @@ angular.module('stSpots')
           $scope.visible.canvas = false;
           $scope.visible.errorText = false;
         } else if ($scope.data.state === 'state_alignment') {
-          $scope.visible.menuBar = $scope.visible.zoomBar =
-            $scope.visible.canvas = true;
-          $scope.visible.spinner = $scope.visible.errorText = false;
+          $scope.visible.menuBar =
+            $scope.visible.zoomBar =
+            $scope.visible.canvas =
+            true;
+          $scope.visible.spinner =
+            $scope.visible.errorText =
+            false;
           logicHandler_ = $scope.aligner.logicHandler;
         } else if ($scope.data.state === 'state_predetection') {
           $scope.visible.menuBar = true;

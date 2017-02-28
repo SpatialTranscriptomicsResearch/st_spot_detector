@@ -72,6 +72,20 @@
                 }
             }
         },
+        getImages: function(layer, tilemapLevel, topleft, bottomright) {
+          var images = [];
+          for (var c = topleft.x; c < bottomright.x + 1; ++c)
+            for (var r = topleft.y; r < bottomright.y + 1; ++r) {
+              var tile = this.getImagesAtTilePositions(
+                  layer,
+                  [Vec2.Vec2(c, r)],
+                  tilemapLevel
+                )[0];
+              if (tile !== undefined)
+                images.push(tile);
+            }
+          return images;
+        },
         getRenderableImages: function(layer, tilePosition, tilemapLevel, radius) {
             radius = radius || 3;
             var tilePositions = self.getSurroundingTilePositions(tilePosition, tilemapLevel, radius);
@@ -85,13 +99,13 @@
           for(var i = 0; i < tilePositions.length; ++i) {
             var tile = Vec2.Vec2(tilePositions[i].x,
               tilePositions[i].y);
-            try {
+            try { // TODO: clean up
               image = self.tilemaps[layer][tilemapLevel][tile.x][tile.y];
+              image.renderPosition = Vec2.scale(Vec2.multiply(tile,
+                self.tilesize), tilemapLevel);
+              image.scaledSize = Vec2.scale(self.tilesize, tilemapLevel);
             }
             catch(err) { continue; }
-            image.renderPosition = Vec2.scale(Vec2.multiply(tile,
-              self.tilesize), tilemapLevel);
-            image.scaledSize = Vec2.scale(self.tilesize, tilemapLevel);
             images.push(image);
           }
           return images;

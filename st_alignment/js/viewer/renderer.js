@@ -1,11 +1,14 @@
+/* jshint loopfunc: true */
+
 (function() {
 
   var self;
-  var Renderer = function(fgcontext, camera, layerManager) {
+  var Renderer = function(fgcontext, camera, layerManager, tilemap) {
     self = this;
     self.ctx = fgcontext;
     self.camera = camera;
     self.layerManager = layerManager;
+    self.tilemap = tilemap;
     self.bgColor = 'black';
     self.spotColorHSL = "6, 78%, 57%"; // red
     self.spotColorA = "0.60";
@@ -15,7 +18,7 @@
     self.calibrationLineWidth = 6.0;
     self.calibrationLineWidthHighlighted = 10.0;
     self.spotSize = 11;
-    self.preCamera = new Map();
+    self.cache = new Map();
   };
 
   Renderer.prototype = {
@@ -30,57 +33,181 @@
     clearCanvas: function(ctx) {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     },
-    // TODO: detect which layers that need to be redrawn and redraw only those.
-    renderImages: function(images, redraw) {
-      var i, l, ctx, tmat, translation, rotation, canvas, filters;
+    cleanUpCache: function() {
+      var seen = {},
+        layer;
+      for (layer in self.layerManager.getLayers())
+        seen.layer = true;
+      for (layer in self.cache.keys())
+        if (seen.layer !== true)
+          self.cache.delete(layer);
+    },
+    getTilemapLevel: function() {
+      // TODO: This could be done in O(1) if we maintain a map floor(zoom
+      // level) -> tilemaplevel (as long as tilemap levels belong to N).
+      // Alternatively, we could do a binary tree search in O(log n)
+      var i = 0,
+        cur;
+      do {
+        cur = self.tilemap.tilemapLevels[i++];
+        if (i >= self.tilemap.tilemapLevels.length)
+          break;
+      } while (cur < 1 / self.camera.scale);
+      return cur;
+    },
+    renderImages: function() {
+      // TODO: this should probably be split into multiple functions
+      // TODO: don't top declare variables
+      var i, l, ctx, translation, rotation, canvas;
 
-      for (l of self.layerManager.getLayers()) {
-        var mod = self.layerManager.getModifiers(l);
+      var tilemapLevel = self.getTilemapLevel();
+
+      for (var layer of self.layerManager.getLayers()) {
+
+        var mod = self.layerManager.getModifiers(layer);
         if (!mod.get('visible'))
           continue;
 
-        if (!self.preCamera.has(l)) {
-          canvas = $('<canvas />')[0];
-          self.preCamera.set(l, canvas);
+
+        var redraw = false;
+
+
+        // Load modifiers
+        var tmat = mod.get('tmat');
+
+
+        // Get cache
+        var cache;
+        if (!self.cache.has(layer)) {
+          cache = {
+            canvas: $('<canvas />')[0],
+            tilemapLevel: tilemapLevel,
+            boundaries: {
+              topleft: Vec2.Vec2(Infinity, Infinity),
+              bottomright: Vec2.Vec2(-Infinity, -Infinity)
+            },
+            destructiveModifiers: {
+              equalize: null
+            }
+          };
+          self.cache.set(layer, cache);
           redraw = true;
-        }
-        else canvas = self.preCamera.get(l);
+        } else cache = self.cache.get(layer);
 
-        filters = [];
+
+        // Transform viewport boundaries to tilemap space
+        // TODO: consider keeping track of inverse in LayerManager instead of
+        // recomputing it each time
+        // TODO: could probably also use some kind of convex hull algo to find
+        // the right tiles, though don't think performance would improve?
+        var tmat_ = math.inv(tmat);
+        var bounds = [
+            Vec2.Vec2(0, 0),
+            Vec2.Vec2(self.ctx.canvas.width, 0),
+            Vec2.Vec2(0, self.ctx.canvas.height),
+            Vec2.Vec2(self.ctx.canvas.width, self.ctx.canvas.height)
+          ]
+          .map(v => self.camera.mouseToCameraPosition(v))
+          .map(v => Vec2.vec2ToMathjs(v))
+          .map(v => math.multiply(tmat_, v))
+          .map(v => Vec2.mathjsToVec2(v))
+          .map(v => self.tilemap.getTilePosition(v, tilemapLevel));
+
+        var topleft = Vec2.Vec2();
+        topleft.x = Math.min(...bounds.map(v => v.x));
+        topleft.y = Math.min(...bounds.map(v => v.y));
+
+        var bottomright = Vec2.Vec2();
+        bottomright.x = Math.max(...bounds.map(v => v.x));
+        bottomright.y = Math.max(...bounds.map(v => v.y));
+
+
+        // Force redraw if we're at a new tilemap level
+        if (tilemapLevel !== cache.tilemapLevel)
+          redraw = true;
+
+
+        // Make sure cache boundaries larger than current ditos
+        if (!Vec2.all(Vec2.test2(
+            cache.boundaries.topleft,
+            topleft,
+            (c1, c2) => c1 <= c2)))
+          redraw = true;
+        if (!Vec2.all(Vec2.test2(
+            cache.boundaries.bottomright,
+            bottomright,
+            (c1, c2) => c1 >= c2)))
+          redraw = true;
+
+
+        // Force redraw if destructive modifiers have been updated
+        for (var dmod in cache.destructiveModifiers)
+          if (mod.get(dmod) !== cache.destructiveModifiers[dmod]) {
+            redraw = true;
+            break;
+          }
+
+
+        // Redraw if necessary
         if (redraw) {
+
+          // Update cache
+          cache.tilemapLevel = tilemapLevel;
+          cache.boundaries.topleft = topleft;
+          cache.boundaries.bottomright = bottomright;
+          for (dmod in cache.destructiveModifiers) {
+            var dmodCur = mod.get(dmod);
+            if (dmodCur !== cache.destructiveModifiers[dmod])
+              cache.destructiveModifiers[dmod] = dmodCur;
+          }
+
+          var images = self.tilemap.getImages(
+            layer, tilemapLevel, topleft, bottomright);
+
           var [height, width] = ['y', 'x'].map(function(s) {
-            return images[l].reduce((acc, val) => Math.max(acc, val.renderPosition[
-              s] + val.scaledSize[s]), 0);
+            return images.reduce((acc, val) => Math.max(acc,
+              val.renderPosition[s] + val.scaledSize[s]), 0);
           });
-          canvas.width = width;
-          canvas.height = height;
+          cache.canvas.width = width;
+          cache.canvas.height = height;
 
-          ctx = canvas.getContext('2d');
+          ctx = cache.canvas.getContext('2d');
 
-          for (i = 0; i < images[l].length; ++i)
-            ctx.drawImage(images[l][i], images[l][i].renderPosition.x,
-              images[l][i].renderPosition.y,
-              images[l][i].scaledSize.x,
-              images[l][i].scaledSize.y);
+          for (i = 0; i < images.length; ++i)
+            ctx.drawImage(images[i], images[i].renderPosition.x,
+              images[i].renderPosition.y,
+              images[i].scaledSize.x,
+              images[i].scaledSize.y);
 
           // var imageData = ctx_.getImageData(0, 0, ctx_.canvas.width, ctx_
           //   .canvas.height);
-
-          var [brightness, contrast] = [
-            'brightness', 'contrast'
-          ].map(s => mod.get(s));
-
-          if (brightness && brightness !== 0) {
-            brightness = (brightness + 100) / 100;
-            filters.push(`brightness(${brightness})`);
-          }
-          if (contrast && contrast !== 0) {
-            contrast = Math.pow((contrast + 100) / 100, 5);
-            filters.push(`contrast(${contrast})`);
-          }
         }
 
-        tmat = mod.get('tmat');
+
+        // Load context
+        ctx = self.layerManager.getCanvas(layer).getContext('2d');
+
+
+        // Apply non-destructive/css filters
+        var [brightness, contrast] = [
+          'brightness', 'contrast'
+        ].map(s => mod.get(s));
+
+        var filters = [];
+        if (brightness && brightness !== 0) {
+          brightness = (brightness + 100) / 100;
+          filters.push(`brightness(${brightness})`);
+        }
+        if (contrast && contrast !== 0) {
+          contrast = Math.pow((contrast + 100) / 100, 5);
+          filters.push(`contrast(${contrast})`);
+        }
+
+        if (filters.length > 0)
+          ctx.filter = filters.join(" ");
+        $(ctx.canvas).css('opacity', mod.get('alpha'));
+
+
         translation = tmat.subset(math.index([0, 1], 2));
         translation = Vec2.Vec2(
           math.subset(translation, math.index(0, 0)),
@@ -90,17 +217,14 @@
         if (math.subset(tmat, math.index(1, 0)) < 0)
           rotation = -rotation;
 
-        ctx = self.layerManager.getCanvas(l).getContext('2d');
-
-        if (filters.length > 0)
-          ctx.filter = filters.join(" ");
-        $(ctx.canvas).css('opacity', mod.get('alpha'));
-
         self.clearCanvas(ctx);
         self.camera.begin(translation, rotation, ctx);
-        ctx.drawImage(canvas, 0, 0);
+        ctx.drawImage(cache.canvas, 0, 0);
         self.camera.end(ctx);
+
       }
+
+      self.cleanUpCache();
     },
     renderSpots: function(spots) {
       self.camera.begin();

@@ -19,7 +19,6 @@ angular.module('stSpots')
           };
 
           var tilemap = new Tilemap();
-          var scaleManager = new ScaleManager();
           var curScale = null;
 
           var tilemapLevel = 2;
@@ -32,7 +31,8 @@ angular.module('stSpots')
             .addModifier('brightness', 0)
             .addModifier('contrast', 0);
 
-          var renderer = new Renderer(fgctx, scope.camera, scope.layerManager);
+          var renderer = new Renderer(fgctx, scope.camera, scope.layerManager,
+            tilemap);
 
           var calibrator = new Calibrator(scope.camera);
 
@@ -88,34 +88,25 @@ angular.module('stSpots')
             if (redraw === undefined)
               redraw = true;
 
-            scaleManager.updateScaleLevel(scope.camera.scale);
-            tilemapLevel = 1 / scaleManager.currentScaleLevel;
+            // images = {};
+            // for (var layer of scope.layerManager.getLayers()) {
+            //   var position = math.multiply(
+            //     math.inv(scope.layerManager.getModifier(layer, 'tmat')),
+            //     math.matrix([
+            //       [scope.camera.position.x],
+            //       [scope.camera.position.y],
+            //       [1]
+            //     ])
+            //   );
+            //   tilePosition = tilemap.getTilePosition(Vec2.mathjsToVec2(
+            //     position), tilemapLevel);
+            //   images[layer] = tilemap.getRenderableImages(layer, tilePosition,
+            //     tilemapLevel);
+            // }
 
-            // Always redraw if we get to a new tilemap level
-            if (tilemapLevel != curScale) {
-              curScale = tilemapLevel;
-              redraw = true;
-            }
+            // renderer.renderImages(images, redraw);
 
-            images = {};
-            for (var layer of scope.layerManager.getLayers()) {
-              var position = math.multiply(
-                //scope.layerManager.getModifier(layer, tmat),
-                math.eye(3),
-                math.matrix([
-                  [scope.camera.position.x],
-                  [scope.camera.position.y],
-                  [1]
-                ])
-              );
-              tilePosition =
-                tilemap.getTilePosition(Vec2.mathjsToVec2(position),
-                  tilemapLevel);
-              images[layer] = tilemap.getRenderableImages(tilePosition,
-                tilemapLevel);
-            }
-
-            renderer.renderImages(images, redraw);
+            renderer.renderImages();
 
             renderer.clearCanvas(fgctx);
             if (scope.data.state == 'state_predetection') {
@@ -133,8 +124,9 @@ angular.module('stSpots')
               }
             }
           }
-          scope.refreshFunc = function() {
-            refreshCanvas(true);
+          // TODO: clean up
+          scope.refreshFunc = function(redraw) {
+            refreshCanvas(redraw);
           };
 
           scope.addSpots = function() {
@@ -170,9 +162,6 @@ angular.module('stSpots')
               };
               scope.camera.scale = 1 / tilemapLevel;
               scope.camera.updateViewport();
-
-              scaleManager.setTilemapLevels(tilemap.tilemapLevels,
-                tilemapLevel);
 
               callback();
             });
