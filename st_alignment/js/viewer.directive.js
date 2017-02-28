@@ -84,28 +84,7 @@ angular.module('stSpots')
             refreshCanvas();
           };
 
-          function refreshCanvas(redraw) {
-            if (redraw === undefined)
-              redraw = true;
-
-            // images = {};
-            // for (var layer of scope.layerManager.getLayers()) {
-            //   var position = math.multiply(
-            //     math.inv(scope.layerManager.getModifier(layer, 'tmat')),
-            //     math.matrix([
-            //       [scope.camera.position.x],
-            //       [scope.camera.position.y],
-            //       [1]
-            //     ])
-            //   );
-            //   tilePosition = tilemap.getTilePosition(Vec2.mathjsToVec2(
-            //     position), tilemapLevel);
-            //   images[layer] = tilemap.getRenderableImages(layer, tilePosition,
-            //     tilemapLevel);
-            // }
-
-            // renderer.renderImages(images, redraw);
-
+          function refreshCanvas() {
             renderer.renderImages();
 
             renderer.clearCanvas(fgctx);
@@ -125,8 +104,8 @@ angular.module('stSpots')
             }
           }
           // TODO: clean up
-          scope.refreshFunc = function(redraw) {
-            refreshCanvas(redraw);
+          scope.refreshFunc = function() {
+            refreshCanvas();
           };
 
           scope.addSpots = function() {
