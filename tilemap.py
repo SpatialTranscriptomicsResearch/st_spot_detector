@@ -10,8 +10,8 @@ class Tilemap:
         # do not change these two tileWidth and tileHeight values:
         # can lead to offset point rendering and bad quality images etc.
         # a fix would be nice!
-        self.tileWidth = 124
-        self.tileHeight = 124
+        self.tileWidth = 496
+        self.tileHeight = 496
         self.tilemaps = {}
 
     def wrapped_tiles(self):

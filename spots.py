@@ -44,9 +44,9 @@ class Spots:
         """
 
         missing_spots = []
-        threshold_distance = 18  # this can be adjusted for stringency
+        threshold_distance = 72  # this can be adjusted for stringency
 
-        # these arrays are used to calculate the average position at which
+        # these arrays are us72 to calculate the average position at which
         # each spot column and row are at within the spot array
         row_position_sum = [0.0] * self.array_size['y']
         col_position_sum = [0.0] * self.array_size['x']
@@ -191,7 +191,7 @@ class Spots:
             whiteness = 0
             whiteness_threshold = 200.0
 
-            pixels = get_surrounding_pixels(pixel_position, 5)
+            pixels = get_surrounding_pixels(pixel_position, 20)
             for pixel in pixels:
                 # calculating the "whiteness" of area at that position
                 # these should all be 255 if white, 0 if black

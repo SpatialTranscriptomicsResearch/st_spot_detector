@@ -21,9 +21,9 @@ angular.module('stSpots')
           var tilemap = new Tilemap();
           var curScale = null;
 
-          var tilemapLevel = 2;
+          var tilemapLevel = 8;
           var tilemapLevels = [];
-          var tilePosition;
+          var tilePosition4
 
           scope.camera = new Camera(fgctx);
 
@@ -137,8 +137,8 @@ angular.module('stSpots')
 
             tilemap.loadTilemap(tilemapData, function() {
               scope.camera.position = {
-                x: 1000,
-                y: 1000
+                x: 4000,
+                y: 4000
               };
               scope.camera.scale = 1 / tilemapLevel;
               scope.camera.updateViewport();

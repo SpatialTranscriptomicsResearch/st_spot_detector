@@ -6,8 +6,8 @@
         self = this;
         self.camera = camera;
         self.calibrationData = {
-            TL: Vec2.Vec2( 318,  132),
-            BR: Vec2.Vec2(1723, 1644),
+            TL: Vec2.Vec2(1276,  528),
+            BR: Vec2.Vec2(6894, 6578),
             arraySize: Vec2.Vec2(33, 35),
             brightness: 0,
             contrast: 200,
@@ -15,7 +15,7 @@
             highlighted: []
         };
         self.selected = [];
-        self.thresholdSelectionDistance = 50;
+        self.thresholdSelectionDistance = 200;
     };
     Calibrator.prototype = {
         detectHighlight: function(position) {

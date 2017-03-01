@@ -17,7 +17,7 @@
     self.spotSelectionColor = 'rgba(150, 150, 150, 0.95)'; // grey
     self.calibrationLineWidth = 6.0;
     self.calibrationLineWidthHighlighted = 10.0;
-    self.spotSize = 11;
+    self.spotSize = 44;
     self.cache = new Map();
   };
 
@@ -77,6 +77,7 @@
       return computeHistogram(canvas);
     },
     drawImages: function(images, ctx) {
+      console.log(images.length);
       for (i = 0; i < images.length; ++i)
         ctx.drawImage(
           images[i],
@@ -110,7 +111,7 @@
         var cache;
         if (!self.cache.has(layer)) {
           cache = {
-            canvas: $('<canvas />')[0],
+            canvas: $('<canvas width=10000 height=10000 />')[0],
             tilemapLevel: tilemapLevel,
             boundaries: {
               topleft: Vec2.Vec2(Infinity, Infinity),
@@ -200,12 +201,13 @@
           var images = self.tilemap.getImages(
             layer, tilemapLevel, topleft, bottomright);
 
-          var [height, width] = ['y', 'x'].map(function(s) {
-            return images.reduce((acc, val) => Math.max(acc,
-              val.renderPosition[s] + val.scaledSize[s]), 0);
-          });
-          cache.canvas.width = width;
-          cache.canvas.height = height;
+          // var [height, width] = ['y', 'x'].map(function(s) {
+          //   return images.reduce((acc, val) => Math.max(acc,
+          //     val.renderPosition[s] + val.scaledSize[s]), 0);
+          // });
+          // cache.canvas.width = width;
+          // cache.canvas.height = height;
+          // console.log(`${width}x${height}`);
 
           ctx = cache.canvas.getContext('2d');
 
@@ -304,13 +306,13 @@
       }
       self.camera.begin();
       self.ctx.strokeStyle = self.calibrationColor;
-      drawLine(0, data.TL.y, 2000, data.TL.y, data.highlighted.includes(
+      drawLine(0, data.TL.y, 8000, data.TL.y, data.highlighted.includes(
         'T'));
-      drawLine(data.TL.x, 0, data.TL.x, 2000, data.highlighted.includes(
+      drawLine(data.TL.x, 0, data.TL.x, 8000, data.highlighted.includes(
         'L'));
-      drawLine(0, data.BR.y, 2000, data.BR.y, data.highlighted.includes(
+      drawLine(0, data.BR.y, 8000, data.BR.y, data.highlighted.includes(
         'B'));
-      drawLine(data.BR.x, 0, data.BR.x, 2000, data.highlighted.includes(
+      drawLine(data.BR.x, 0, data.BR.x, 8000, data.highlighted.includes(
         'R'));
       self.camera.end();
     },

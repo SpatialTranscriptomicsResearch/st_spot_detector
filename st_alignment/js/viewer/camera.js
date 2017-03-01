@@ -15,9 +15,9 @@
     self.maxScale = 5.00;
     self.positionBoundaries = {
       "minX": 0,
-      "maxX": 2000,
+      "maxX": 8000,
       "minY": 0,
-      "maxY": 2000
+      "maxY": 8000
     };
     self.updateViewport();
   };
@@ -50,7 +50,8 @@
     },
     applyTranslation: function(ctx) {
       // move offset code to updateViewport() function
-      ctx.translate(-self.position.x + self.positionOffset.x, -self.position.y +
+      ctx.translate(-self.position.x + self.positionOffset.x, -self.position
+        .y +
         self.positionOffset.y);
     },
     updateViewport: function() {
@@ -70,7 +71,12 @@
       if (dir === undefined)
         return;
 
-      var center = zoomCenter || canvasCenter; // the position to which the camera will zoom towards
+      var center = zoomCenter || self.mouseToCameraPosition(
+        Vec2.Vec2(
+          self.context.canvas.width / 2,
+          self.context.canvas.height / 2
+        )
+      ); // the position to which the camera will zoom towards
       var movement = Vec2.subtract(center, self.position); // distance between position and canvas center
 
       var scaleFactor = 1.0;
@@ -83,7 +89,7 @@
       } else if (dir === keyevents.down) {
         movement.y += self.navFactor;
       } else if (dir === keyevents.zin) {
-        scaleFactor =  1 / self.scaleFactor; // 1.05
+        scaleFactor = 1 / self.scaleFactor; // 1.05
       } else if (dir === keyevents.zout) {
         scaleFactor = self.scaleFactor; // 0.95
       }
@@ -116,9 +122,11 @@
     },
     clampValues: function() {
       // keep the scale and position values within reasonable limits
-      self.position = Vec2.clampD(self.position, 'x', self.positionBoundaries.minX,
+      self.position = Vec2.clampD(self.position, 'x', self.positionBoundaries
+        .minX,
         self.positionBoundaries.maxX);
-      self.position = Vec2.clampD(self.position, 'y', self.positionBoundaries.minY,
+      self.position = Vec2.clampD(self.position, 'y', self.positionBoundaries
+        .minY,
         self.positionBoundaries.maxY);
       self.scale = Math.max(self.scale, self.minScale);
       self.scale = Math.min(self.scale, self.maxScale);
