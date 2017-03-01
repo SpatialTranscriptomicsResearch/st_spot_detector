@@ -55,6 +55,36 @@
       } while (cur < 1 / self.camera.scale);
       return cur;
     },
+    computeHistogram: function(layer, tilemapLevel) {
+      tilemapLevel = tilemapLevel || 1;
+      var [height, width] = [
+        self.tilemap.rows[tilemapLevel],
+        self.tilemap.cols[tilemapLevel]
+      ];
+      var canvas = $(`<canvas height=${
+        height * self.tilemap.tilesize.y
+      } width=${
+        width * self.tilemap.tilesize.x
+      } />`)[0],
+        ctx = canvas.getContext('2d');
+      var images = self.tilemap.getImages(
+        layer,
+        tilemapLevel,
+        Vec2.Vec2(0, 0),
+        Vec2.Vec2(width, height)
+      );
+      self.drawImages(images, ctx);
+      return computeHistogram(canvas);
+    },
+    drawImages: function(images, ctx) {
+      for (i = 0; i < images.length; ++i)
+        ctx.drawImage(
+          images[i],
+          images[i].renderPosition.x,
+          images[i].renderPosition.y,
+          images[i].scaledSize.x,
+          images[i].scaledSize.y);
+    },
     renderImages: function() {
       // TODO: this should probably be split into multiple functions
       // TODO: don't top declare variables
@@ -88,7 +118,8 @@
             },
             destructiveModifiers: {
               equalize: null
-            }
+            },
+            histogram: null
           };
           self.cache.set(layer, cache);
           redraw = true;
@@ -127,7 +158,7 @@
           redraw = true;
 
 
-        // Make sure cache boundaries larger than current ditos
+        // Make sure cache boundaries are larger than current ditos
         if (!Vec2.all(Vec2.test2(
             cache.boundaries.topleft,
             topleft,
@@ -151,6 +182,11 @@
         // Redraw if necessary
         if (redraw) {
 
+          // Recompute histogram if it's not already defined
+          if (cache.histogram === null) {
+            cache.histogram = self.computeHistogram(layer);
+          }
+
           // Update cache
           cache.tilemapLevel = tilemapLevel;
           cache.boundaries.topleft = topleft;
@@ -173,14 +209,11 @@
 
           ctx = cache.canvas.getContext('2d');
 
-          for (i = 0; i < images.length; ++i)
-            ctx.drawImage(images[i], images[i].renderPosition.x,
-              images[i].renderPosition.y,
-              images[i].scaledSize.x,
-              images[i].scaledSize.y);
+          self.drawImages(images, ctx);
 
-          // var imageData = ctx_.getImageData(0, 0, ctx_.canvas.width, ctx_
-          //   .canvas.height);
+          // Apply destructive modifiers
+          if (mod.get('equalize'))
+            equalize(ctx.canvas, cache.histogram);
         }
 
 

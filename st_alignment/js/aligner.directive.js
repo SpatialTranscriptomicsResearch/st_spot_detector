@@ -40,7 +40,7 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
 
 
         scope.aligner.brightness = function(value) {
-          if (arguments.length) {
+          if (arguments.length > 0) {
             scope.layerManager.setModifier(null, 'brightness', parseInt(
               value));
             return true;
@@ -53,7 +53,7 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
 
 
         scope.aligner.contrast = function(value) {
-          if (arguments.length) {
+          if (arguments.length > 0) {
             scope.layerManager.setModifier(null, 'contrast', parseInt(
               value));
             return true;
@@ -62,6 +62,18 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
           if (layers.length === 0)
             return 0;
           return scope.layerManager.getModifier(layers[0], 'contrast');
+        };
+
+
+        scope.aligner.equalize = function(value) {
+          if (arguments.length > 0) {
+            scope.layerManager.setModifier(null, 'equalize', value);
+            return true;
+          }
+          var layers = scope.layerManager.getActiveLayers();
+          if (layers.length === 0)
+            return false;
+          return scope.layerManager.getModifier(layers[0], 'equalize');
         };
 
 

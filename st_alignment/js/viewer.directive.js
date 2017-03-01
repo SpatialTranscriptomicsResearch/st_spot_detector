@@ -29,7 +29,8 @@ angular.module('stSpots')
 
           scope.layerManager = new LayerManager(layerContainer, refreshCanvas)
             .addModifier('brightness', 0)
-            .addModifier('contrast', 0);
+            .addModifier('contrast', 0)
+            .addModifier('equalize', false);
 
           var renderer = new Renderer(fgctx, scope.camera, scope.layerManager,
             tilemap);

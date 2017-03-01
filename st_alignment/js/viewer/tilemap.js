@@ -11,19 +11,18 @@
             self.tilesize = Vec2.Vec2(tilemap.tileWidth, tilemap.tileHeight);
             self.tilemaps = {};
 
-            self.rows = {};
-            self.cols = {};
+            [self.rows, self.cols] = [{}, {}];
             // TODO: make this better
             for(var l in tilemap.tilemaps) {
                 for(var t in tilemap.tilemaps[l]) {
-                    if(self.rows[t] === undefined)
+                    if (self.rows[t] === undefined)
                         self.rows[t] = tilemap.tilemaps[l][t].length;
-                    else if(self.rows[t] != tilemap.tilemaps[l][t].length)
+                    else if (self.rows[t] != tilemap.tilemaps[l][t].length)
                         throw "tile sizes differ";
 
-                    if(self.cols[t] === undefined)
+                    if (self.cols[t] === undefined)
                         self.cols[t] = tilemap.tilemaps[l][t][0].length;
-                    else if(self.cols[t] != tilemap.tilemaps[l][t][0].length)
+                    else if (self.cols[t] != tilemap.tilemaps[l][t][0].length)
                         throw "tile sizes differ";
                 }
             }
