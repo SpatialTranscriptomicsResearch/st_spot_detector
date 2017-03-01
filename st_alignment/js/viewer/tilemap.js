@@ -73,8 +73,8 @@
         },
         getImages: function(layer, tilemapLevel, topleft, bottomright) {
           var images = [];
-          for (var c = topleft.x; c < bottomright.x + 1; ++c)
-            for (var r = topleft.y; r < bottomright.y + 1; ++r) {
+          for (var c = topleft.x; c < bottomright.x; ++c)
+            for (var r = topleft.y; r < bottomright.y; ++r) {
               var tile = this.getImagesAtTilePositions(
                   layer,
                   [Vec2.Vec2(c, r)],

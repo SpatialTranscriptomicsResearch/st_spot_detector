@@ -10,7 +10,7 @@
     self.scale = initialScale || 0.05;
     self.positionOffset = self.calculateOffset();
     self.navFactor = 60;
-    self.scaleFactor = 0.95;
+    self.scaleFactor = 0.90;
     self.minScale = 0.01;
     self.maxScale = 5.00;
     self.positionBoundaries = {
@@ -41,6 +41,19 @@
       ctx.translate(translation.x, translation.y);
       ctx.rotate(rotation);
     },
+    getTransform: function() {
+      var scale = math.matrix([
+        [self.scale, 0, 0],
+        [0, self.scale, 0],
+        [0, 0, 1],
+      ]);
+      var offset = math.matrix([
+        [1, 0, -self.position.x + self.positionOffset.x],
+        [0, 1, -self.position.y + self.positionOffset.y],
+        [0, 0, 1]
+      ]);
+      return math.multiply(scale, offset);
+    },
     end: function(ctx) {
       ctx = ctx || self.context;
       ctx.restore();
@@ -51,8 +64,7 @@
     applyTranslation: function(ctx) {
       // move offset code to updateViewport() function
       ctx.translate(-self.position.x + self.positionOffset.x, -self.position
-        .y +
-        self.positionOffset.y);
+        .y + self.positionOffset.y);
     },
     updateViewport: function() {
       self.clampValues();

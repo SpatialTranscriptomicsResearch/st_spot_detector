@@ -23,7 +23,6 @@ angular.module('stSpots')
 
           var tilemapLevel = 8;
           var tilemapLevels = [];
-          var tilePosition4
 
           scope.camera = new Camera(fgctx);
 

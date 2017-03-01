@@ -61,11 +61,13 @@
         self.tilemap.rows[tilemapLevel],
         self.tilemap.cols[tilemapLevel]
       ];
-      var canvas = $(`<canvas height=${
+      var canvas = $(
+          `<canvas height=${
         height * self.tilemap.tilesize.y
       } width=${
         width * self.tilemap.tilesize.x
-      } />`)[0],
+      } />`
+        )[0],
         ctx = canvas.getContext('2d');
       var images = self.tilemap.getImages(
         layer,
@@ -77,14 +79,14 @@
       return computeHistogram(canvas);
     },
     drawImages: function(images, ctx) {
-      console.log(images.length);
       for (i = 0; i < images.length; ++i)
         ctx.drawImage(
           images[i],
           images[i].renderPosition.x,
           images[i].renderPosition.y,
           images[i].scaledSize.x,
-          images[i].scaledSize.y);
+          images[i].scaledSize.y
+        );
     },
     renderImages: function() {
       // TODO: this should probably be split into multiple functions
@@ -104,14 +106,16 @@
 
 
         // Load modifiers
-        var tmat = mod.get('tmat');
+        console.log(mod.get('tmat').subset(math.index(0, 0)));
+        var tmat = math.multiply(self.camera.getTransform(), mod.get(
+          'tmat'));
 
 
         // Get cache
         var cache;
         if (!self.cache.has(layer)) {
           cache = {
-            canvas: $('<canvas width=10000 height=10000 />')[0],
+            canvas: $('<canvas />')[0],
             tilemapLevel: tilemapLevel,
             boundaries: {
               topleft: Vec2.Vec2(Infinity, Infinity),
@@ -120,7 +124,8 @@
             destructiveModifiers: {
               equalize: null
             },
-            histogram: null
+            histogram: null,
+            tmat: null
           };
           self.cache.set(layer, cache);
           redraw = true;
@@ -139,7 +144,6 @@
             Vec2.Vec2(0, self.ctx.canvas.height),
             Vec2.Vec2(self.ctx.canvas.width, self.ctx.canvas.height)
           ]
-          .map(v => self.camera.mouseToCameraPosition(v))
           .map(v => Vec2.vec2ToMathjs(v))
           .map(v => math.multiply(tmat_, v))
           .map(v => Vec2.mathjsToVec2(v))
@@ -150,8 +154,8 @@
         topleft.y = Math.min(...bounds.map(v => v.y));
 
         var bottomright = Vec2.Vec2();
-        bottomright.x = Math.max(...bounds.map(v => v.x));
-        bottomright.y = Math.max(...bounds.map(v => v.y));
+        bottomright.x = Math.max(...bounds.map(v => v.x)) + 1;
+        bottomright.y = Math.max(...bounds.map(v => v.y)) + 1;
 
 
         // Force redraw if we're at a new tilemap level
@@ -181,12 +185,12 @@
 
 
         // Redraw if necessary
+        // TODO: redrawing should be done in a web worker
         if (redraw) {
 
           // Recompute histogram if it's not already defined
-          if (cache.histogram === null) {
+          if (cache.histogram === null)
             cache.histogram = self.computeHistogram(layer);
-          }
 
           // Update cache
           cache.tilemapLevel = tilemapLevel;
@@ -197,31 +201,68 @@
             if (dmodCur !== cache.destructiveModifiers[dmod])
               cache.destructiveModifiers[dmod] = dmodCur;
           }
+          cache.tmat = tmat;
 
           var images = self.tilemap.getImages(
             layer, tilemapLevel, topleft, bottomright);
 
-          // var [height, width] = ['y', 'x'].map(function(s) {
-          //   return images.reduce((acc, val) => Math.max(acc,
-          //     val.renderPosition[s] + val.scaledSize[s]), 0);
-          // });
-          // cache.canvas.width = width;
-          // cache.canvas.height = height;
-          // console.log(`${width}x${height}`);
+          let [margx, margy] = [
+            self.ctx.canvas.width, self.ctx.canvas.height].map(
+          cache.canvas.width = self.ctx.canvas.width;
+          cache.canvas.height = self.ctx.canvas.height;
+
+          // TODO: clean up!
+          var scale = (function() {
+            var v = [0, 1].map(i => tmat.subset(math.index(0, i)));
+            return Math.sqrt(math.dot(v, v));
+          })();
+          var [tx, ty] = [0, 1].map(i => tmat.subset(math.index(i, 2)) / scale);
+          rotation = Math.acos(math.subset(tmat, math.index(0, 0)) / scale);
+          if (math.subset(tmat, math.index(1, 0)) < 0)
+            rotation = -rotation;
 
           ctx = cache.canvas.getContext('2d');
 
+          self.clearCanvas(ctx);
+          ctx.save();
+          ctx.scale(scale, scale);
+          ctx.translate(tx, ty);
+          ctx.rotate(rotation);
           self.drawImages(images, ctx);
+          ctx.restore();
 
           // Apply destructive modifiers
           if (mod.get('equalize'))
             equalize(ctx.canvas, cache.histogram);
-        }
 
+        }
 
         // Load context
         ctx = self.layerManager.getCanvas(layer).getContext('2d');
 
+        self.clearCanvas(ctx);
+        if (redraw)
+          ctx.drawImage(cache.canvas, 0, 0);
+        else {
+          tmat = math.multiply(tmat, math.inv(cache.tmat));
+          // TODO: clean up!
+          let scale = (function() {
+            var v = [0, 1].map(i => tmat.subset(math.index(0, i)));
+            return Math.sqrt(math.dot(v, v));
+          })();
+          let [tx, ty] = [0, 1].map(i => tmat.subset(math.index(i, 2)) / scale);
+          rotation = Math.acos(math.subset(tmat, math.index(0, 0)) / scale);
+          if (math.subset(tmat, math.index(1, 0)) < 0)
+            rotation = -rotation;
+
+          self.clearCanvas(ctx);
+          ctx.save();
+          ctx.scale(scale, scale);
+          ctx.translate(tx, ty);
+          ctx.rotate(rotation);
+          ctx.drawImage(cache.canvas, 0, 0);
+          ctx.restore();
+        }
 
         // Apply non-destructive/css filters
         var [brightness, contrast] = [
@@ -241,21 +282,6 @@
         if (filters.length > 0)
           ctx.filter = filters.join(" ");
         $(ctx.canvas).css('opacity', mod.get('alpha'));
-
-
-        translation = tmat.subset(math.index([0, 1], 2));
-        translation = Vec2.Vec2(
-          math.subset(translation, math.index(0, 0)),
-          math.subset(translation, math.index(1, 0))
-        );
-        rotation = Math.acos(math.subset(tmat, math.index(0, 0)));
-        if (math.subset(tmat, math.index(1, 0)) < 0)
-          rotation = -rotation;
-
-        self.clearCanvas(ctx);
-        self.camera.begin(translation, rotation, ctx);
-        ctx.drawImage(cache.canvas, 0, 0);
-        self.camera.end(ctx);
 
       }
 
