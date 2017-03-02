@@ -63,6 +63,7 @@ class AlignerLHAdapter extends LogicHandler {
     }
   }
 
+
   this.AlignerLHMove = class extends AlignerLHDefault {
     processKeydownEvent(e) {
       if (e == keyevents.ctrl)
@@ -80,7 +81,10 @@ class AlignerLHAdapter extends LogicHandler {
     _refreshCursor() {
       if (this._keystates.ctrl)
         return super._refreshCursor();
-      this._cursor('move');
+      if (this._keystates.mouseLeft || this._keystates.mouseRight)
+        this._cursor('move');
+      else
+        this._cursor('auto');
     }
   };
 
@@ -174,7 +178,7 @@ class AlignerLHAdapter extends LogicHandler {
           this._cursor('move');
           break;
         case 'def':
-          this._cursor('move');
+          this._cursor('auto');
           break;
       }
     }

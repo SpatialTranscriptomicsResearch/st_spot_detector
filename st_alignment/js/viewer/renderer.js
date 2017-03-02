@@ -106,7 +106,6 @@
 
 
         // Load modifiers
-        console.log(mod.get('tmat').subset(math.index(0, 0)));
         var tmat = math.multiply(self.camera.getTransform(), mod.get(
           'tmat'));
 
@@ -186,8 +185,9 @@
 
         // Redraw if necessary
         // TODO: redrawing should be done in a web worker
+        // TODO: clean up!
+        var marg;
         if (redraw) {
-
           // Recompute histogram if it's not already defined
           if (cache.histogram === null)
             cache.histogram = self.computeHistogram(layer);
@@ -201,40 +201,38 @@
             if (dmodCur !== cache.destructiveModifiers[dmod])
               cache.destructiveModifiers[dmod] = dmodCur;
           }
-          cache.tmat = tmat;
 
           var images = self.tilemap.getImages(
             layer, tilemapLevel, topleft, bottomright);
 
-          let [margx, margy] = [
-            self.ctx.canvas.width, self.ctx.canvas.height].map(
-          cache.canvas.width = self.ctx.canvas.width;
-          cache.canvas.height = self.ctx.canvas.height;
+          marg = [500, 500]
+            .map(v => v / 2)
+            .map(v => Math.ceil(v));
 
-          // TODO: clean up!
-          var scale = (function() {
-            var v = [0, 1].map(i => tmat.subset(math.index(0, i)));
-            return Math.sqrt(math.dot(v, v));
-          })();
-          var [tx, ty] = [0, 1].map(i => tmat.subset(math.index(i, 2)) / scale);
-          rotation = Math.acos(math.subset(tmat, math.index(0, 0)) / scale);
-          if (math.subset(tmat, math.index(1, 0)) < 0)
-            rotation = -rotation;
+          cache.tmat = math.multiply(math.matrix([
+            [1, 0, marg[0]],
+            [0, 1, marg[1]],
+            [0, 0, 1]
+          ]), tmat);
+
+          cache.canvas.width = self.ctx.canvas.width + 2 * marg[0];
+          cache.canvas.height = self.ctx.canvas.height + 2 * marg[1];
 
           ctx = cache.canvas.getContext('2d');
-
           self.clearCanvas(ctx);
           ctx.save();
-          ctx.scale(scale, scale);
-          ctx.translate(tx, ty);
-          ctx.rotate(rotation);
+          ctx.translate(marg[0], marg[1]);
+          ctx.transform(
+            ...tmat.subset(math.index([0, 1],0))._data,
+            ...tmat.subset(math.index([0, 1],1))._data,
+            ...tmat.subset(math.index([0, 1],2))._data
+          );
           self.drawImages(images, ctx);
           ctx.restore();
 
           // Apply destructive modifiers
           if (mod.get('equalize'))
             equalize(ctx.canvas, cache.histogram);
-
         }
 
         // Load context
@@ -242,24 +240,17 @@
 
         self.clearCanvas(ctx);
         if (redraw)
-          ctx.drawImage(cache.canvas, 0, 0);
+          ctx.drawImage(cache.canvas, -marg[0], -marg[1]);
         else {
           tmat = math.multiply(tmat, math.inv(cache.tmat));
-          // TODO: clean up!
-          let scale = (function() {
-            var v = [0, 1].map(i => tmat.subset(math.index(0, i)));
-            return Math.sqrt(math.dot(v, v));
-          })();
-          let [tx, ty] = [0, 1].map(i => tmat.subset(math.index(i, 2)) / scale);
-          rotation = Math.acos(math.subset(tmat, math.index(0, 0)) / scale);
-          if (math.subset(tmat, math.index(1, 0)) < 0)
-            rotation = -rotation;
 
           self.clearCanvas(ctx);
           ctx.save();
-          ctx.scale(scale, scale);
-          ctx.translate(tx, ty);
-          ctx.rotate(rotation);
+          ctx.transform(
+            ...tmat.subset(math.index([0, 1],0))._data,
+            ...tmat.subset(math.index([0, 1],1))._data,
+            ...tmat.subset(math.index([0, 1],2))._data
+          );
           ctx.drawImage(cache.canvas, 0, 0);
           ctx.restore();
         }
