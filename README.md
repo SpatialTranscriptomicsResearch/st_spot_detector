@@ -25,7 +25,11 @@ A modern browser with HTML5 support is required for the front-end interface. The
     ```
 
 ### Server setup (all `pip` and `Python` commands assume Python 2)
-1. Install the tissue recognition library. Follow the instructions [here.](https://github.com/ludvb/tissue_recognition)
+1. Install the necessary packages (OS-dependent command)
+    e.g. on Ubuntu/Debian
+    ```
+        sudo apt-get install python2.7 python-pip
+    ```
 
 2. Create and activate a Python virtual environment 
 
@@ -34,18 +38,67 @@ A modern browser with HTML5 support is required for the front-end interface. The
     virtualenv venv
     source venv/bin/activate
     ```
-    
+
 3. Install the dependencies in requirements.txt.
 
     ```
     pip install -r requirements.txt
     ```
 
-4. Run the server
+4. Install the tissue recognition library (still within the Python virtual environment). Follow the instructions [here.](https://github.com/ludvb/tissue_recognition)
+
+5. Set up uWSGI
+    a uWSGI daemon can be installed, e.g. on Ubuntu/Debian
+    ```
+    sudo apt-get install uwsgi uwsgi-core uwsgi-plugin-python
+    ```
+    or it may be installed within the Python virtual environment
+    ```
+    pip install uwsgi
+    ```
+
+6. Edit the uWSGI configuration file uwsg-server-config.ini
+    The following lines require editing
+    ```
+    chdir = /path/to/server/file/directory/
+    logto = /path/to/log/file/directory/%n.log
+    plugin = /path/to/python/plugin/ 
+    virtualenv = /path/to/virtual/env
+    ```
+
+    They may for example look like
+    ```
+    chdir = /home/user/st_aligner/
+    logto = /home/user/.st_log/%n.log
+    plugin = /usr/lib/uwsgi/plugins/python_plugin.so
+    virtualenv = /home/user/st_aligner/venv/
+    ```
+
+7. Run the server
+    uWSGI may then either be daemonized, e.g. on Ubuntu/Debian
 
     ```
-    python server.py
+    # the file must be copied to the uwsgi directory
+    sudo cp uwsgi-server-config.ini /etc/uwsgi/apps-available/
+    # and symlinked to the apps-enabled folder
+    sudo ln -s /etc/uwsgi/apps-available/uwsgi-server-config.ini /etc/uwsgi/apps-enabled/uwsgi-server-config.ini
+    # then the service may be started
+    sudo service uwsgi start
     ```
+    or run locally
+    ```
+    uwsgi uwsgi-server-config.ini
+    ```
+
+8. Optional
+    The server may be configured to run with nginx or Apache (not covered here).
+    It may also be desirable to configure port-forwarding to be able to access the web tool through port 80, e.g. on Ubuntu/Debian
+    ```
+    sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -i eth0 -j DNAT --to 0.0.0.0:8080
+
+    ```
+
+For any queries or concerns, feel free to contact the authors at the addresses given below.
 
 ### Client interface
 1. Select the desired Cy3 fluorescent image to undergo spot detection and click "Upload Image" (takes a minute or two). An HE image may also be uploaded if desired; it is necessary that the two images have been previously aligned in Photoshop or similar. The images may be cropped, as long as the outer frame is totally intact, but they may not be scaled down.
