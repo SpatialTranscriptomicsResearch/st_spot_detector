@@ -70,9 +70,9 @@ class ImageProcessor:
         else:
             scaled_image = image
 
-        for x in range(0, tilemapHeight):
+        for y in range(0, tilemapWidth):
             new_row = []
-            for y in range(0, tilemapWidth):
+            for x in range(0, tilemapHeight):
                 widthOffset = tileWidth * x
                 heightOffset = tileHeight * y
 

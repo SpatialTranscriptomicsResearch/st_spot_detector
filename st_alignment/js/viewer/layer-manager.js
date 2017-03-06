@@ -81,7 +81,7 @@ var LayerManager = (function() {
       if (name in this._active)
         delete this._active[name];
 
-      let idx = this._layerOrder.find(name);
+      let idx = this._layerOrder.indexOf(name);
       this._layerOrder.splice(idx, 1);
 
       this._layers.delete(name);

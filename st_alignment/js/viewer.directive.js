@@ -91,7 +91,7 @@ angular.module('stSpots')
           function refreshCanvas() {
             renderer.renderImages();
 
-            renderer.clearCanvas(fgctx);
+            fgctx.clearRect(0, 0, fgctx.canvas.width, fgctx.canvas.height);
             if (scope.data.state == 'state_predetection') {
               renderer.renderCalibrationPoints(calibrator.calibrationData);
             } else if (scope.data.state == 'state_alignment' &&
@@ -136,12 +136,10 @@ angular.module('stSpots')
 
           scope.receiveTilemap = function(data, callback) {
             var callback_ = (function() {
-              var num = Object.keys(data.tilemaps).length;
-              var cur = 0;
+              var left = Object.keys(data.tilemaps).length;
               return function() {
-                if (++cur < num)
-                  return;
-                callback();
+                if (--left === 0)
+                  callback();
               };
             })();
 
@@ -150,18 +148,13 @@ angular.module('stSpots')
 
             var [width, height] = ['width', 'height'].map(s =>
               $(fgcvs).attr(s));
-            for (let layer of Object.keys(data.tilemaps)) {
-              let worker = new Worker('js/viewer/rendering/worker.js');
-              worker.postMessage([RWMSG.INIT, data.tilemaps[layer]]);
-              worker.onmessage = callback_;
-
+            for (let layer of Object.keys(data.tilemaps))
               scope.layerManager.addLayer(
                 layer,
                 `<canvas id='layer-{name}' class='fullscreen' width='${width}'
                   height='${height}' />`,
-                worker
+                new Tilemap(data.tilemaps[layer], callback_)
               );
-            }
           };
 
           scope.zoom = function(direction) {

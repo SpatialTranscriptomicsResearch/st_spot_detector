@@ -28,9 +28,6 @@
         self.spotColorA = color;
       }
     },
-    clearCanvas: function(ctx) {
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    },
     cleanUpCache: function() {
       var seen = {},
         layer;
@@ -42,8 +39,7 @@
     },
     getTilemapLevel: function(tilemap) {
       // TODO: This could be done in O(1) if we maintain a map floor(zoom
-      // level) -> tilemaplevel (as long as tilemap levels belong to N).
-      // Alternatively, we could do a binary tree search in O(log n)
+      // level) -> tilemaplevel (as long as tilemap levels belong to N).  Alternatively, we could do a binary tree search in O(log n)
       var tilemapLevels = tilemap.getZoomLevels();
       var i = 0,
         cur;
@@ -54,230 +50,83 @@
       } while (cur < 1 / self.camera.scale);
       return cur;
     },
-    //computeHistogram: function(layer, tilemapLevel) {
-    //  tilemapLevel = tilemapLevel || 1;
-    //  var [height, width] = [
-    //    self.tilemap.rows[tilemapLevel],
-    //    self.tilemap.cols[tilemapLevel]
-    //  ];
-    //  var canvas = $(
-    //      `<canvas height=${
-    //    height * self.tilemap.tilesize.y
-    //  } width=${
-    //    width * self.tilemap.tilesize.x
-    //  } />`
-    //    )[0],
-    //    ctx = canvas.getContext('2d');
-    //  var images = self.tilemap.getImages(
-    //    layer,
-    //    tilemapLevel,
-    //    Vec2.Vec2(0, 0),
-    //    Vec2.Vec2(width, height)
-    //  );
-    //  self.drawImages(images, ctx);
-    //  return computeHistogram(canvas);
-    //},
-    drawImages: function(images, ctx) {
-      for (i = 0; i < images.length; ++i)
-        ctx.drawImage(
-          images[i],
-          images[i].renderPosition.x,
-          images[i].renderPosition.y,
-          images[i].scaledSize.x,
-          images[i].scaledSize.y
-        );
-    },
     renderImages: function() {
-      console.log('lasd');
+      for (let layer of self.layerManager.getLayers()) {
+        let modifiers = self.layerManager.getModifiers(layer);
+        if (!modifiers.get('visible'))
+          continue;
+
+        let tilemap = self.layerManager.getData(layer)[0],
+          canvas = self.layerManager.getCanvas(layer),
+          context = canvas.getContext('2d');
+
+        let tileSize = tilemap.getTileSize(),
+          z = self.getTilemapLevel(tilemap);
+
+        let tmat = math.multiply(
+            self.camera.getTransform(), modifiers.get('tmat')),
+          tmat_ = math.inv(tmat);
+
+        // TODO: should be possible to pass parameters to filters
+        let filters = ['equalize'].filter(f => modifiers.get(f));
+
+        let bounds = [
+            [0, 0, 1],
+            [canvas.width, 0, 1],
+            [0, canvas.height, 1],
+            [canvas.width, canvas.height, 1]
+          ]
+          .map(v => math.matrix(v))
+          .map(v => math.transpose(v))
+          .map(v => math.multiply(tmat_, v))
+          .map(v => math.subset(v, math.index([0, 1])))
+          .map(v => math.dotDivide(v, tileSize))
+          .map(v => math.dotDivide(v, z))
+          .map(v => math.floor(v))
+          .map(v => v._data);
+
+        let [
+          [cmin, rmin],
+          [cmax, rmax]
+        ] = [
+          math.min(bounds, 0),
+          math.max(bounds, 0)
+        ];
+
+        //context.clearRect(0, 0, canvas.width, canvas.height);
+
+        context.save();
+
+        context.transform(
+          ...tmat.subset(math.index([0, 1], 0))._data,
+          ...tmat.subset(math.index([0, 1], 1))._data,
+          ...tmat.subset(math.index([0, 1], 2))._data
+        );
+
+        for (let r = rmin; r <= rmax; ++r)
+          for (let c = cmin; c <= cmax; ++c) {
+            let tile;
+            try {
+              tile = tilemap.getTile(z, r, c, filters, self.renderImages);
+            } catch (err) {
+              // console.log(err);
+              continue;
+            }
+            if (tile.msg === Tilemap.MSG.SUCCESS) {
+              context.save();
+              context.scale(tile.zoom, tile.zoom);
+              context.drawImage(
+                tile.bitmap,
+                c * tileSize[1],
+                r * tileSize[0]
+              );
+              context.restore();
+            }
+          }
+
+        context.restore();
+      }
     },
-    //renderImages: function() {
-    //  // TODO: this should probably be split into multiple functions
-    //  // TODO: don't top declare variables
-    //  var i, l, ctx, translation, rotation, canvas;
-
-    //  for (var layer of self.layerManager.getLayers()) {
-
-    //    var mod = self.layerManager.getModifiers(layer);
-    //    if (!mod.get('visible'))
-    //      continue;
-
-    //    var redraw = false;
-
-    //    var tilemap = self.layerManager.getData(layer)[0];
-    //    var tilemapLevel = self.getTilemapLevel(tilemap);
-
-    //    // Load modifiers
-    //    var tmat = math.multiply(self.camera.getTransform(), mod.get(
-    //      'tmat'));
-
-    //    // Get cache
-    //    var cache;
-    //    if (!self.cache.has(layer)) {
-    //      cache = {
-    //        canvas: $('<canvas />')[0],
-    //        tilemapLevel: tilemapLevel,
-    //        boundaries: {
-    //          topleft: Vec2.Vec2(Infinity, Infinity),
-    //          bottomright: Vec2.Vec2(-Infinity, -Infinity)
-    //        },
-    //        destructiveModifiers: {
-    //          equalize: null
-    //        },
-    //        histogram: null,
-    //        tmat: null
-    //      };
-    //      self.cache.set(layer, cache);
-    //      redraw = true;
-    //    } else cache = self.cache.get(layer);
-
-
-    //    // Transform viewport boundaries to tilemap space
-    //    // TODO: consider keeping track of inverse in LayerManager instead of
-    //    // recomputing it each time
-    //    // TODO: could probably also use some kind of convex hull algo to find
-    //    // the right tiles, though don't think performance would improve?
-    //    var tmat_ = math.inv(tmat);
-    //    var bounds = [
-    //        [0, 0],
-    //        [self.ctx.canvas.width, 0],
-    //        [0, self.ctx.canvas.height],
-    //        [self.ctx.canvas.width, self.ctx.canvas.height]
-    //      ]
-    //      .map(v => math.transpose(math.matrix(v)))
-    //      .map(v => math.multiply(tmat_, v))
-    //      .map(v => math.subset(v, math.index([0, 1], 0))._data)
-    //      .map(v => self.tilemap.getTilePosition(v, tilemapLevel));
-
-    //    var topleft = Vec2.Vec2();
-    //    topleft.x = Math.min(...bounds.map(v => v.x));
-    //    topleft.y = Math.min(...bounds.map(v => v.y));
-
-    //    var bottomright = Vec2.Vec2();
-    //    bottomright.x = Math.max(...bounds.map(v => v.x)) + 1;
-    //    bottomright.y = Math.max(...bounds.map(v => v.y)) + 1;
-
-
-    //    // Force redraw if we're at a new tilemap level
-    //    if (tilemapLevel !== cache.tilemapLevel)
-    //      redraw = true;
-
-
-    //    // Make sure cache boundaries are larger than current ditos
-    //    if (!Vec2.all(Vec2.test2(
-    //        cache.boundaries.topleft,
-    //        topleft,
-    //        (c1, c2) => c1 <= c2)))
-    //      redraw = true;
-    //    if (!Vec2.all(Vec2.test2(
-    //        cache.boundaries.bottomright,
-    //        bottomright,
-    //        (c1, c2) => c1 >= c2)))
-    //      redraw = true;
-
-
-    //    // Force redraw if destructive modifiers have been updated
-    //    for (var dmod in cache.destructiveModifiers)
-    //      if (mod.get(dmod) !== cache.destructiveModifiers[dmod]) {
-    //        redraw = true;
-    //        break;
-    //      }
-
-
-    //    // Redraw if necessary
-    //    // TODO: redrawing should be done in a web worker
-    //    // TODO: clean up!
-    //    var marg;
-    //    if (redraw) {
-    //      // Recompute histogram if it's not already defined
-    //      if (cache.histogram === null)
-    //        cache.histogram = self.computeHistogram(layer);
-
-    //      // Update cache
-    //      cache.tilemapLevel = tilemapLevel;
-    //      cache.boundaries.topleft = topleft;
-    //      cache.boundaries.bottomright = bottomright;
-    //      for (dmod in cache.destructiveModifiers) {
-    //        var dmodCur = mod.get(dmod);
-    //        if (dmodCur !== cache.destructiveModifiers[dmod])
-    //          cache.destructiveModifiers[dmod] = dmodCur;
-    //      }
-
-    //      var images = self.tilemap.getImages(
-    //        layer, tilemapLevel, topleft, bottomright);
-
-    //      marg = [500, 500]
-    //        .map(v => v / 2)
-    //        .map(v => Math.ceil(v));
-
-    //      cache.tmat = math.multiply(math.matrix([
-    //        [1, 0, marg[0]],
-    //        [0, 1, marg[1]],
-    //        [0, 0, 1]
-    //      ]), tmat);
-
-    //      cache.canvas.width = self.ctx.canvas.width + 2 * marg[0];
-    //      cache.canvas.height = self.ctx.canvas.height + 2 * marg[1];
-
-    //      ctx = cache.canvas.getContext('2d');
-    //      self.clearCanvas(ctx);
-    //      ctx.save();
-    //      ctx.translate(marg[0], marg[1]);
-    //      ctx.transform(
-    //        ...tmat.subset(math.index([0, 1],0))._data,
-    //        ...tmat.subset(math.index([0, 1],1))._data,
-    //        ...tmat.subset(math.index([0, 1],2))._data
-    //      );
-    //      self.drawImages(images, ctx);
-    //      ctx.restore();
-
-    //      // Apply destructive modifiers
-    //      if (mod.get('equalize'))
-    //        equalize(ctx.canvas, cache.histogram);
-    //    }
-
-    //    // Load context
-    //    ctx = self.layerManager.getCanvas(layer).getContext('2d');
-
-    //    self.clearCanvas(ctx);
-    //    if (redraw)
-    //      ctx.drawImage(cache.canvas, -marg[0], -marg[1]);
-    //    else {
-    //      tmat = math.multiply(tmat, math.inv(cache.tmat));
-
-    //      self.clearCanvas(ctx);
-    //      ctx.save();
-    //      ctx.transform(
-    //        ...tmat.subset(math.index([0, 1],0))._data,
-    //        ...tmat.subset(math.index([0, 1],1))._data,
-    //        ...tmat.subset(math.index([0, 1],2))._data
-    //      );
-    //      ctx.drawImage(cache.canvas, 0, 0);
-    //      ctx.restore();
-    //    }
-
-    //    // Apply non-destructive/css filters
-    //    var [brightness, contrast] = [
-    //      'brightness', 'contrast'
-    //    ].map(s => mod.get(s));
-
-    //    var filters = [];
-    //    if (brightness && brightness !== 0) {
-    //      brightness = (brightness + 100) / 100;
-    //      filters.push(`brightness(${brightness})`);
-    //    }
-    //    if (contrast && contrast !== 0) {
-    //      contrast = Math.pow((contrast + 100) / 100, 5);
-    //      filters.push(`contrast(${contrast})`);
-    //    }
-
-    //    if (filters.length > 0)
-    //      ctx.filter = filters.join(" ");
-    //    $(ctx.canvas).css('opacity', mod.get('alpha'));
-
-    //  }
-
-    //  self.cleanUpCache();
-    //},
     renderSpots: function(spots) {
       self.camera.begin();
       for (var i = 0; i < spots.length; ++i) {
@@ -288,7 +137,8 @@
           self.ctx.fillStyle = self.selectedSpotColor;
         } else {
           var spotColor =
-            'hsla(' + self.spotColorHSL + ',' + self.spotColorA + ')';
+            'hsla(' + self.spotColorHSL + ',' + self.spotColorA +
+            ')';
           self.ctx.fillStyle = spotColor;
         }
         self.ctx.arc(spot.renderPosition.x, spot.renderPosition.y,
@@ -323,16 +173,21 @@
       }
       self.camera.begin();
       self.ctx.strokeStyle = self.calibrationColor;
-      drawLine(0, data.TL.y, 8000, data.TL.y, data.highlighted.includes('T'));
-      drawLine(data.TL.x, 0, data.TL.x, 8000, data.highlighted.includes('L'));
-      drawLine(0, data.BR.y, 8000, data.BR.y, data.highlighted.includes('B'));
-      drawLine(data.BR.x, 0, data.BR.x, 8000, data.highlighted.includes('R'));
+      drawLine(0, data.TL.y, 8000, data.TL.y, data.highlighted.includes(
+        'T'));
+      drawLine(data.TL.x, 0, data.TL.x, 8000, data.highlighted.includes(
+        'L'));
+      drawLine(0, data.BR.y, 8000, data.BR.y, data.highlighted.includes(
+        'B'));
+      drawLine(data.BR.x, 0, data.BR.x, 8000, data.highlighted.includes(
+        'R'));
       self.camera.end();
     },
     renderSpotSelection: function(rectCoords) {
       self.ctx.strokeStyle = self.spotSelectionColor;
       self.ctx.setLineDash([4, 3]);
-      self.ctx.strokeRect(rectCoords.TL.x, rectCoords.TL.y, rectCoords.WH
+      self.ctx.strokeRect(rectCoords.TL.x, rectCoords.TL.y,
+        rectCoords.WH
         .x,
         rectCoords.WH.y);
     }

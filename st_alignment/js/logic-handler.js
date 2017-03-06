@@ -21,7 +21,7 @@ var LogicHandler = (function() {
       this.mouseButton = mouseButton;
     }
 
-    // Abstract classes
+    // Abstract methods
     processKeydownEvent(e) {
       throw "Abstract method not implemented.";
     }
