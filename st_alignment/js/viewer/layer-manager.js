@@ -48,16 +48,14 @@ var LayerManager = (function() {
       return this;
     }
 
-    addLayer(name, template) {
+    addLayer(name, template, ...data) {
       if (this._layers.has(name))
         throw "Layer " + name + " already exists!";
 
-      var el, mod;
-
-      el = (template || DEF_TEMPLATE).replace("{name}", name);
+      var el = (template || DEF_TEMPLATE).replace("{name}", name);
       el = $(el)[0];
 
-      mod = new Map(this._defmod.entries());
+      var mod = new Map(this._defmod.entries());
 
       this._layers.set(name, Object.create(null, {
         el: {
@@ -65,6 +63,9 @@ var LayerManager = (function() {
         },
         mod: {
           value: mod
+        },
+        data: {
+          value: data
         }
       }));
 
@@ -73,8 +74,18 @@ var LayerManager = (function() {
       return this;
     }
 
-    // TODO: implement
-    deleteLayer(name) {}
+    deleteLayer(name) {
+      if (!this._layers.has(name))
+        throw "Layer " + name + " does not exist!";
+
+      if (name in this._active)
+        delete this._active[name];
+
+      let idx = this._layerOrder.find(name);
+      this._layerOrder.splice(idx, 1);
+
+      this._layers.delete(name);
+    }
 
     getLayers() {
       var ret = [];
@@ -107,11 +118,19 @@ var LayerManager = (function() {
     }
 
     getCanvas(layer) {
-      var ret = this._layers.get(layer).el;
-      if (ret === undefined)
+      layer = this._layers.get(layer);
+      if (layer === undefined)
         throw "Failed to get canvas for layer " + layer +
           " (does it exist?).";
-      return ret;
+      return layer.el;
+    }
+
+    getData(layer) {
+      layer = this._layers.get(layer);
+      if (layer === undefined)
+        throw "Failed to get data for layer " + layer +
+          " (does it exist?).";
+      return layer.data;
     }
 
     addModifier(name, value) {

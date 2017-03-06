@@ -18,21 +18,25 @@ angular.module('stSpots')
             e.preventDefault();
           };
 
-          var tilemap = new Tilemap();
           var curScale = null;
 
-          var tilemapLevel = 8;
-          var tilemapLevels = [];
-
           scope.camera = new Camera(fgctx);
+
+          // TODO this should be placed somewhere else...
+          scope.camera.position = {
+            x: 4000,
+            y: 4000
+          };
+          scope.camera.scale = 1 / 2;
+          scope.camera.updateViewport();
+
 
           scope.layerManager = new LayerManager(layerContainer, refreshCanvas)
             .addModifier('brightness', 0)
             .addModifier('contrast', 0)
             .addModifier('equalize', false);
 
-          var renderer = new Renderer(fgctx, scope.camera, scope.layerManager,
-            tilemap);
+          var renderer = new Renderer(fgctx, scope.camera, scope.layerManager);
 
           var calibrator = new Calibrator(scope.camera);
 
@@ -130,29 +134,33 @@ angular.module('stSpots')
             refreshCanvas();
           };
 
-          scope.receiveTilemap = function(tilemapData, callback) {
+          scope.receiveTilemap = function(data, callback) {
+            var callback_ = (function() {
+              var num = Object.keys(data.tilemaps).length;
+              var cur = 0;
+              return function() {
+                if (++cur < num)
+                  return;
+                callback();
+              };
+            })();
+
+            for (let layer of scope.layerManager.getLayers())
+              scope.layerManager.deleteLayer(layer);
+
             var [width, height] = ['width', 'height'].map(s =>
               $(fgcvs).attr(s));
+            for (let layer of Object.keys(data.tilemaps)) {
+              let worker = new Worker('js/viewer/rendering/worker.js');
+              worker.postMessage([RWMSG.INIT, data.tilemaps[layer]]);
+              worker.onmessage = callback_;
 
-            tilemap.loadTilemap(tilemapData, function() {
-              scope.camera.position = {
-                x: 4000,
-                y: 4000
-              };
-              scope.camera.scale = 1 / tilemapLevel;
-              scope.camera.updateViewport();
-
-              callback();
-            });
-
-            for (var layer in tilemapData.tilemaps) {
-              try {
-                layer = scope.layerManager.addLayer(
-                  layer,
-                  `<canvas id='layer-{name}' class='fullscreen' width='${width}'
-                  height='${height}' />`
-                );
-              } catch (e) {}
+              scope.layerManager.addLayer(
+                layer,
+                `<canvas id='layer-{name}' class='fullscreen' width='${width}'
+                  height='${height}' />`,
+                worker
+              );
             }
           };
 
