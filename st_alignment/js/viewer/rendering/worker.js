@@ -4,23 +4,25 @@
   const FILTERS_DIR = './filters/';
 
   importScripts('rwmsg.js');
+  importScripts(FILTERS_DIR + 'filter.js');
+  importScripts(FILTERS_DIR + 'filters.js');
 
-  var filters;
   var histogram;
 
   onmessage = function(e, t) {
     var [id, data] = e.data;
     switch (id) {
       case RWMSG.INIT:
-        [filters, histogram] = data;
+        histogram = data;
         importFilters();
         postMessage([RWMSG.SUCESS, null]);
         break;
       case RWMSG.PROCESS_TILE:
-        data = new Uint8ClampedArray(data);
+        let image = new Uint8ClampedArray(data[0]);
+        let filters = data[1];
         let ret;
         try {
-          ret = render(data);
+          ret = render(image, filters);
         } catch (err) {
           console.log(err);
         }
@@ -38,19 +40,17 @@
     }
   };
 
-  // TODO: This seems a bit hackish, would be better to have a 'plugin' file
-  // that maps filter => script file
   var importFilters = function() {
-    for (let filter of filters) {
-      console.log("Importing " + filter + "...");
-      importScripts(filter);
-      console.log(filter);
+    for (let filter of FILTERS) {
+      let filename = FILTERS_DIR + filter + ".js";
+      //console.log("Importing " + filename + "...");
+      importScripts(filename);
     }
   };
 
-  var render = function(data) {
+  var render = function(data, filters) {
     for (let filter of filters)
-      filter.apply(data, histogram);
+      self[filter].apply(data, histogram);
     return data;
   };
 })();

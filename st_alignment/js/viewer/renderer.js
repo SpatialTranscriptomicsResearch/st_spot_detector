@@ -41,13 +41,13 @@
       // TODO: This could be done in O(1) if we maintain a map floor(zoom
       // level) -> tilemaplevel (as long as tilemap levels belong to N).  Alternatively, we could do a binary tree search in O(log n)
       var tilemapLevels = tilemap.getZoomLevels();
-      var i = 0,
+      var i = tilemapLevels.length,
         cur;
       do {
-        cur = tilemapLevels[i++];
-        if (i >= tilemapLevels.length)
+        cur = tilemapLevels[--i];
+        if (i <= 0)
           break;
-      } while (cur < 1 / self.camera.scale);
+      } while (cur > 1 / self.camera.scale);
       return cur;
     },
     renderImages: function() {
@@ -80,20 +80,17 @@
           .map(v => math.transpose(v))
           .map(v => math.multiply(tmat_, v))
           .map(v => math.subset(v, math.index([0, 1])))
-          .map(v => math.dotDivide(v, tileSize))
-          .map(v => math.dotDivide(v, z))
-          .map(v => math.floor(v))
           .map(v => v._data);
 
-        let [
-          [cmin, rmin],
-          [cmax, rmax]
-        ] = [
-          math.min(bounds, 0),
-          math.max(bounds, 0)
-        ];
+        let tiles = tilemap.getTilesIn(
+          z,
+          ...math.min(bounds, 0),
+          ...math.max(bounds, 0),
+          filters,
+          self.renderImages
+        );
 
-        //context.clearRect(0, 0, canvas.width, canvas.height);
+        context.clearRect(0, 0, canvas.width, canvas.height);
 
         context.save();
 
@@ -103,26 +100,18 @@
           ...tmat.subset(math.index([0, 1], 2))._data
         );
 
-        for (let r = rmin; r <= rmax; ++r)
-          for (let c = cmin; c <= cmax; ++c) {
-            let tile;
-            try {
-              tile = tilemap.getTile(z, r, c, filters, self.renderImages);
-            } catch (err) {
-              // console.log(err);
-              continue;
-            }
-            if (tile.msg === Tilemap.MSG.SUCCESS) {
-              context.save();
-              context.scale(tile.zoom, tile.zoom);
-              context.drawImage(
-                tile.bitmap,
-                c * tileSize[1],
-                r * tileSize[0]
-              );
-              context.restore();
-            }
-          }
+        for (let tile of tiles)
+          context.drawImage(
+            tile.image,
+            tile.sx,
+            tile.sy,
+            tile.sWidth,
+            tile.sHeight,
+            tile.dx,
+            tile.dy,
+            tile.dWidth,
+            tile.dHeight
+          );
 
         context.restore();
       }

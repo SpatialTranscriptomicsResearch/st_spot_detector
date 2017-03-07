@@ -9,6 +9,21 @@
   const WORKER_PATH = 'js/viewer/rendering/worker.js';
 
 
+  this.Tile = class {
+    constructor(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
+      this.image = image;
+      this.sx = sx;
+      this.sy = sy;
+      this.sWidth = sWidth;
+      this.sHeight = sHeight;
+      this.dx = dx;
+      this.dy = dy;
+      this.dWidth = dWidth;
+      this.dHeight = dHeight;
+    }
+  };
+
+
   this.Tilemap = class {
 
     constructor(data, callback, ...args) {
@@ -20,6 +35,9 @@
 
       if (data !== undefined)
         this.loadTilemap(data, callback, ...args);
+
+      this._worker = new Worker(WORKER_PATH);
+      this._worker.postMessage([RWMSG.INIT, [filters, this._histogram]]);
     }
 
     loadTilemap(data, callback, ...args) {
@@ -37,6 +55,8 @@
           ];
           //this._histogram = this.getHistogram(this._zoomLevels[0]);
           // FIXME: chrome crashes when computing histogram on zoom level 0
+          // probably OK to compute it at higher zoom level, although the 'black
+          // border' problem needs to be fixed then.
           this._histogram = this.getHistogram(this._zoomLevels[4]);
           if (callback !== undefined)
             callback(...args);
@@ -76,7 +96,11 @@
       var context = canvas.getContext('2d');
       for (let i = 0; i < r; ++i)
         for (let j = 0; j < c; ++j)
-          context.drawImage(this._orig[z][i][j], 0, 0);
+          context.drawImage(
+            this._orig[z][i][j],
+            j * this._tileSize[1],
+            i * this._tileSize[0]
+          );
 
       var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -99,31 +123,23 @@
         if (ret !== 0)
           return {
             msg: Tilemap.MSG.SUCCESS,
-            bitmap: this._cache.get(id),
-            zoom: z
+            tile: this._createTileObject(ret, z, r, c)
           };
         else
           return {
             msg: Tilemap.MSG.IGNORED,
-            bitmap: null,
-            zoom: null
+            tile: this._createTileObject(this._getTile(z, r, c), z, r, c)
           };
       }
 
       this._cache.set(id, 0);
-
-      var tile;
-      try {
-        tile = this._orig[z][r][c];
-      } catch (err) {
-        throw `Tile does not exist! (${z}x${r}x${c}, ${err})`;
-      }
 
       // We need to pre-draw the tile to the canvas, since the worker API does
       // not have access to the DOM.
       // It will be better to draw to an OffscreenCanvas in the worker once it
       // has wider browser support:
       // https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas#Browser_compatibility
+      var tile = this._getTile(z, r, c);
       var canvas = document.createElement('canvas');
       [canvas.width, canvas.height] = this._tileSize;
       var context = canvas.getContext('2d');
@@ -152,17 +168,68 @@
 
       return {
         msg: Tilemap.MSG.WAIT,
-        bitmap: null,
-        zoom: null
+        tile: _createTileObject(tile, z, r, c)
       };
+    }
+
+    getTilesIn(z, xmin, ymin, xmax, ymax, filters, callback, ...args) {
+      var [
+        [cmin, rmin],
+        [cmax, rmax]
+      ] = [
+        [xmin, ymin],
+        [xmax, ymax]
+      ]
+      .map(v => math.dotDivide(v, this._tileSize))
+        .map(v => math.dotDivide(v, z))
+        .map(v => math.floor(v));
+
+      var tiles = [];
+      for (let r = rmin; r <= rmax; ++r)
+        for (let c = cmin; c <= cmax; ++c) {
+          try {
+            let ret = this.getTile(z, r, c, filters, callback, ...args);
+            if (ret.msg === Tilemap.MSG.ERROR)
+              throw new Exception();
+            tiles.push(ret.tile);
+          } catch (err) {
+            continue;
+          }
+        }
+      return tiles;
+    }
+
+    _getTile(z, r, c) {
+      try {
+        let tile = this._orig[z][r][c];
+        if (!(tile instanceof ImageBitmap))
+          throw new Exception();
+        return tile;
+      } catch (err) {
+        throw `Tile does not exist! (${z}x${r}x${c}, ${err})`;
+      }
+    }
+
+    _createTileObject(image, z, r, c) {
+      return new Tile(
+        image,
+        0,
+        0,
+        this._tileSize[1],
+        this._tileSize[0],
+        z * c * this._tileSize[1],
+        z * r * this._tileSize[0],
+        z * this._tileSize[1],
+        z * this._tileSize[0]
+      );
     }
   };
 
   this.Tilemap.MSG = Object.freeze({
+    ERROR: -1,
     SUCCESS: 0,
     WAIT: 1,
-    IGNORED: 2,
-    ERROR: -1
+    IGNORED: 2
   });
 
 }).call(this);
