@@ -146,14 +146,27 @@ angular.module('stSpots')
             for (let layer of scope.layerManager.getLayers())
               scope.layerManager.deleteLayer(layer);
 
-            var [width, height] = ['width', 'height'].map(s =>
-              $(fgcvs).attr(s));
+            var [width, height] = [
+              'width', 'height'].map(s => $(fgcvs).attr(s));
             for (let layer of Object.keys(data.tilemaps))
               scope.layerManager.addLayer(
                 layer,
                 `<canvas id='layer-{name}' class='fullscreen' width='${width}'
                   height='${height}' />`,
-                new Tilemap(data.tilemaps[layer], callback_)
+                new Tilemap(
+                  data.tilemaps[layer], [callback_], [
+                    (tile, lm, c) => renderer.drawTile(
+                      lm.getCanvas(layer).getContext('2d'),
+                      math.multiply(
+                        c.getTransform(),
+                        lm.getModifier(layer, 'tmat')
+                      ),
+                      tile
+                    ),
+                    scope.layerManager,
+                    scope.camera
+                  ]
+                )
               );
           };
 
@@ -166,7 +179,8 @@ angular.module('stSpots')
             var spotDataString = spots.exportSpots(type, selection);
 
             var blob = new Blob([spotDataString]);
-            var filename = "spot_data-" + new Date().toISOString().slice(0,
+            var filename = "spot_data-" + new Date().toISOString().slice(
+              0,
               10) + ".tsv";
 
             // the next 11 lines are adapted from https://github.com/mholt/PapaParse/issues/175

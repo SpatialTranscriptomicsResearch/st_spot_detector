@@ -10,16 +10,18 @@
   var histogram;
 
   onmessage = function(e, t) {
-    var [id, data] = e.data;
-    switch (id) {
+    var [msg, data] = e.data;
+    switch (msg) {
       case RWMSG.INIT:
-        histogram = data;
         importFilters();
         postMessage([RWMSG.SUCESS, null]);
         break;
+      case RWMSG.SET_HISTOGRAM:
+        histogram = data;
+        break;
       case RWMSG.PROCESS_TILE:
-        let image = new Uint8ClampedArray(data[0]);
-        let filters = data[1];
+        let image = new Uint8ClampedArray(data[2]);
+        let [id, filters] = [data[0], data[1]];
         let ret;
         try {
           ret = render(image, filters);
@@ -29,7 +31,7 @@
         if (ret === undefined)
           postMessage([RWMSG.ERROR, null]);
         else
-          postMessage([RWMSG.SUCESS, ret.buffer], [ret.buffer]);
+          postMessage([RWMSG.SUCESS, [id, ret.buffer]], [ret.buffer]);
         break;
       case RWMSG.CLOSE:
         close();

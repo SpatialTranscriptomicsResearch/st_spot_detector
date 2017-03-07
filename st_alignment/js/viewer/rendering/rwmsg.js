@@ -3,7 +3,8 @@ var RWMSG = Object.freeze({
   ERROR: 1,
 
   INIT: 10,
-  PROCESS_TILE: 11,
+  SET_HISTOGRAM: 11,
+  PROCESS_TILE: 12,
 
   CLOSE: 99
 });

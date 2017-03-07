@@ -67,54 +67,61 @@
             self.camera.getTransform(), modifiers.get('tmat')),
           tmat_ = math.inv(tmat);
 
-        // TODO: should be possible to pass parameters to filters
         let filters = ['equalize'].filter(f => modifiers.get(f));
 
+        let [alpha, brightness, contrast] = [
+          'alpha', 'brightness', 'contrast'
+        ].map(s => modifiers.get(s));
+
+        $(canvas).css('opacity', alpha);
+
         let bounds = [
-            [0, 0, 1],
-            [canvas.width, 0, 1],
-            [0, canvas.height, 1],
+            [0,            0,             1],
+            [canvas.width, 0,             1],
+            [0,            canvas.height, 1],
             [canvas.width, canvas.height, 1]
           ]
           .map(v => math.matrix(v))
-          .map(v => math.transpose(v))
+          //.map(v => math.transpose(v))
           .map(v => math.multiply(tmat_, v))
           .map(v => math.subset(v, math.index([0, 1])))
           .map(v => v._data);
+
+        context.clearRect(0, 0, canvas.width, canvas.height);
 
         let tiles = tilemap.getTilesIn(
           z,
           ...math.min(bounds, 0),
           ...math.max(bounds, 0),
-          filters,
-          self.renderImages
-        );
-
-        context.clearRect(0, 0, canvas.width, canvas.height);
-
-        context.save();
-
-        context.transform(
-          ...tmat.subset(math.index([0, 1], 0))._data,
-          ...tmat.subset(math.index([0, 1], 1))._data,
-          ...tmat.subset(math.index([0, 1], 2))._data
+          filters
         );
 
         for (let tile of tiles)
-          context.drawImage(
-            tile.image,
-            tile.sx,
-            tile.sy,
-            tile.sWidth,
-            tile.sHeight,
-            tile.dx,
-            tile.dy,
-            tile.dWidth,
-            tile.dHeight
-          );
-
-        context.restore();
+          self.drawTile(context, tmat, tile);
       }
+    },
+    drawTile: function(context, tmat, tile) {
+      context.save();
+
+      context.transform(
+        ...tmat.subset(math.index([0, 1], 0))._data,
+        ...tmat.subset(math.index([0, 1], 1))._data,
+        ...tmat.subset(math.index([0, 1], 2))._data
+      );
+
+      context.drawImage(
+        tile.image,
+        tile.sx,
+        tile.sy,
+        tile.sWidth,
+        tile.sHeight,
+        tile.dx,
+        tile.dy,
+        tile.dWidth,
+        tile.dHeight
+      );
+
+      context.restore();
     },
     renderSpots: function(spots) {
       self.camera.begin();

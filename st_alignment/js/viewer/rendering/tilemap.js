@@ -26,42 +26,86 @@
 
   this.Tilemap = class {
 
-    constructor(data, callback, ...args) {
+    constructor(data, callback1, callback2) {
       this._tileSize = new Array(2);
       this._zoomLevels = [];
       this._orig = {};
       this._cache = new Map();
       this._histogram = new Array(256);
 
+      var [cb1, ...args1] = callback1;
+      var [cb2, ...args2] = callback2;
+
       if (data !== undefined)
-        this.loadTilemap(data, callback, ...args);
+        this.loadTilemap(data, cb1, ...args1);
 
       this._worker = new Worker(WORKER_PATH);
-      this._worker.postMessage([RWMSG.INIT, [filters, this._histogram]]);
+      this._worker.onmessage = (e, t) => {
+        if (e[0] === RWMSG.ERROR)
+          throw new Exception(e[1]);
+
+        this._worker.onmessage = (e, t) => {
+          var [
+            msg, [
+              [z, r, c, filters], tile
+            ]
+          ] = e.data;
+          if (msg !== RWMSG.SUCESS)
+            return;
+          this._arrayBufferToBitmap(tile).then(
+            (im) => {
+              this._cache.set(
+                this._serializeId(z, r, c, filters),
+                im
+              );
+              cb2(this._createTileObject(im, z, r, c), ...args2);
+            }
+          );
+        };
+      };
+      this._worker.postMessage([RWMSG.INIT, null]);
     }
 
     loadTilemap(data, callback, ...args) {
-      this._cache.clear();
 
       var numLeft = 0;
       for (let t of Object.values(data))
         numLeft += t.reduce((acc, r) => acc + r.length, 0);
 
-      var callback_ = (function() {
+      var callback_ = () => {
         if (--numLeft === 0) {
           [this._tileSize[0], this._tileSize[1]] = [
             this._orig[this._zoomLevels[0]][0][0].width,
             this._orig[this._zoomLevels[0]][0][0].height
           ];
-          //this._histogram = this.getHistogram(this._zoomLevels[0]);
+
+          // tileCanvas is used as a "throw-away" canvas for the conversion
+          // between ArrayBuffer and ImageBitmap. It is only used in the
+          // _arrayBufferToBitmap and _bitmapToArrayBuffer routines.
+          // Nevertheless, we create it here only once, since creating DOM
+          // elements is costly.
+          // TODO: It will be better to draw to an OffscreenCanvas in the worker
+          // once there is wider browser support:
+          // https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas#Browser_compatibility
+          // Optimally, all rendering work (apart from drawing the
+          // OffscreenCanvas to the DOM canvas) should be done in worker
+          // threads.
+          this._tileCanvas = document.createElement('canvas');
+          this._tileContext = this._tileCanvas.getContext('2d');
+          [this._tileCanvas.height, this._tileCanvas.width] = this._tileSize;
+
           // FIXME: chrome crashes when computing histogram on zoom level 0
-          // probably OK to compute it at higher zoom level, although the 'black
-          // border' problem needs to be fixed then.
+          // probably OK to compute it at a higher zoom level, although the
+          // 'black border' problem needs to be fixed.
           this._histogram = this.getHistogram(this._zoomLevels[4]);
+          this._worker.postMessage([RWMSG.SET_HISTOGRAM, this._histogram]);
+
+          this._cache.clear();
+
           if (callback !== undefined)
             callback(...args);
         }
-      }).bind(this);
+      };
 
       for (let [z, tiles] of Object.entries(data)) {
         this._zoomLevels.push(parseInt(z));
@@ -72,13 +116,14 @@
           for (let c = 0; c < tiles[r].length; ++c) {
             createImageBitmap(
               dataURItoBlob(tiles[r][c])
-            ).then(function(im) {
+            ).then((im) => {
               imarr[c] = im;
-              callback_();
+              callback_(...args);
             });
           }
         }
       }
+
       this._zoomLevels.sort((a, b) => a > b ? 1 : -1);
     }
 
@@ -115,9 +160,9 @@
       return this._zoomLevels;
     }
 
-    getTile(z, r, c, filters, callback, ...args) {
+    getTile(z, r, c, filters) {
       filters = filters || [];
-      var id = `${z}-${r}-${c}-${filters.join('')}`;
+      var id = this._serializeId(z, r, c, filters);
       if (this._cache.has(id)) {
         let ret = this._cache.get(id);
         if (ret !== 0)
@@ -134,37 +179,15 @@
 
       this._cache.set(id, 0);
 
-      // We need to pre-draw the tile to the canvas, since the worker API does
-      // not have access to the DOM.
-      // It will be better to draw to an OffscreenCanvas in the worker once it
-      // has wider browser support:
-      // https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas#Browser_compatibility
       var tile = this._getTile(z, r, c);
-      var canvas = document.createElement('canvas');
-      [canvas.width, canvas.height] = this._tileSize;
-      var context = canvas.getContext('2d');
-      context.drawImage(tile, 0, 0);
-      var data = context.getImageData(0, 0, ...this._tileSize);
-
-      var worker = new Worker(WORKER_PATH);
-      worker.onmessage = (function(e) {
-        worker.onmessage = (function(e) {
-          let imageData = new ImageData(
-            new Uint8ClampedArray(e.data[1]),
-            ...this._tileSize
-          );
-          context.putImageData(imageData, 0, 0);
-          createImageBitmap(canvas).then((function(im) {
-            this._cache.set(id, im);
-            callback(...args);
-          }).bind(this));
-          worker.postMessage([RWMSG.CLOSE, null]);
-        }).bind(this);
-        worker.postMessage(
-          [RWMSG.PROCESS_TILE, data.data.buffer], [data.data.buffer]
+      this._bitmapToArrayBuffer(tile)
+        .then(
+          (data) => this._worker.postMessage(
+            [RWMSG.PROCESS_TILE, [
+              [z, r, c, filters], filters, data
+            ]], [data]
+          )
         );
-      }).bind(this);
-      worker.postMessage([RWMSG.INIT, [filters, this._histogram]]);
 
       return {
         msg: Tilemap.MSG.WAIT,
@@ -172,7 +195,7 @@
       };
     }
 
-    getTilesIn(z, xmin, ymin, xmax, ymax, filters, callback, ...args) {
+    getTilesIn(z, xmin, ymin, xmax, ymax, filters) {
       var [
         [cmin, rmin],
         [cmax, rmax]
@@ -188,7 +211,7 @@
       for (let r = rmin; r <= rmax; ++r)
         for (let c = cmin; c <= cmax; ++c) {
           try {
-            let ret = this.getTile(z, r, c, filters, callback, ...args);
+            let ret = this.getTile(z, r, c, filters);
             if (ret.msg === Tilemap.MSG.ERROR)
               throw new Exception();
             tiles.push(ret.tile);
@@ -210,6 +233,10 @@
       }
     }
 
+    _serializeId(z, r, c, filters) {
+      return `${z};${r};${c};${filters.join(',')}`;
+    }
+
     _createTileObject(image, z, r, c) {
       return new Tile(
         image,
@@ -223,7 +250,34 @@
         z * this._tileSize[0]
       );
     }
+
+    _arrayBufferToBitmap(data) {
+      return new Promise((resolve, reject) => {
+        data = new ImageData(
+          new Uint8ClampedArray(data),
+          ...this._tileSize
+        );
+        this._tileContext.putImageData(data, 0, 0);
+        createImageBitmap(this._tileCanvas)
+          .then((im) => resolve(im))
+          .catch((err) => reject(err));
+      });
+    }
+
+    // Not asynchronous, but use Promise API to keep symmetry with
+    // _arrayBufferToBitmap
+    _bitmapToArrayBuffer(bitmap) {
+      return new Promise((resolve, reject) => {
+        this._tileContext.drawImage(bitmap, 0, 0);
+        resolve(
+          this._tileContext.getImageData(
+            0, 0, ...this._tileSize
+          ).data.buffer
+        );
+      });
+    }
   };
+
 
   this.Tilemap.MSG = Object.freeze({
     ERROR: -1,
