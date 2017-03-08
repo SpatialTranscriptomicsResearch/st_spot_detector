@@ -10,7 +10,7 @@
     self.scale = initialScale || 0.05;
     self.positionOffset = self.calculateOffset();
     self.navFactor = 60;
-    self.scaleFactor = 0.90;
+    self.scaleFactor = 0.80;
     self.minScale = 0.01;
     self.maxScale = 5.00;
     self.positionBoundaries = {
@@ -23,6 +23,7 @@
   };
 
   Camera.prototype = {
+    // TODO: not in use
     begin: function(translation, rotation, ctx) {
       translation = translation || 0;
       rotation = rotation || 0;
@@ -32,27 +33,6 @@
 
       self.applyScale(ctx);
       self.applyTranslation(ctx);
-
-      // Add offsets
-      // Note: We assume that the parameter values are such that the rotation
-      // occurs before the translation. This is also what happens here, since
-      // we're doing the transformations using ctx.save() -> transforms ->
-      // ctx.restore().
-      ctx.translate(translation.x, translation.y);
-      ctx.rotate(rotation);
-    },
-    getTransform: function() {
-      var scale = math.matrix([
-        [self.scale, 0, 0],
-        [0, self.scale, 0],
-        [0, 0, 1],
-      ]);
-      var offset = math.matrix([
-        [1, 0, -self.position.x + self.positionOffset.x],
-        [0, 1, -self.position.y + self.positionOffset.y],
-        [0, 0, 1]
-      ]);
-      return math.multiply(scale, offset);
     },
     end: function(ctx) {
       ctx = ctx || self.context;
@@ -65,6 +45,21 @@
       // move offset code to updateViewport() function
       ctx.translate(-self.position.x + self.positionOffset.x, -self.position
         .y + self.positionOffset.y);
+    },
+    getTransform: function() {
+      return math.matrix([
+        [
+          self.scale,
+          0,
+          self.scale * (-self.position.x + self.positionOffset.x)
+        ],
+        [
+          0,
+          self.scale,
+          self.scale * (-self.position.y + self.positionOffset.y)
+        ],
+        [0, 0, 1]
+      ]);
     },
     updateViewport: function() {
       self.clampValues();

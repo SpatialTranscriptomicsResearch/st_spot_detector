@@ -3,7 +3,6 @@ class Brightness extends Filter {
     if (p === 0)
       return;
     let brightness = p * 2.55;
-    console.log(brightness);
     for (let i = 0; i < d.length;) {
       d[i] = d[i++] + brightness;
       d[i] = d[i++] + brightness;

@@ -60,31 +60,27 @@
         let canvas = self.layerManager.getCanvas(layer),
           context = canvas.getContext('2d');
 
-        /*
-        let filters2d = [];
+        let tmat = math.multiply(
+          self.camera.getTransform(),
+          modifiers.get('tmat')
+        );
 
-        let brightness = modifiers.get('brightness');
-        brightness = (brightness + 100) / 100;
-        filters2d.push(`brightness(${brightness})`);
-
-        let contrast = modifiers.get('contrast');
-        contrast = Math.pow((contrast + 100) / 100, 5);
-        filters2d.push(`contrast(${contrast})`);
-
-        context.filter = filters2d.join('');
-        */
+        // Experimental:
+        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/currentTransform
+        // It would be easy to implement a polyfill for this by storing the most
+        // recent transform. However, this is not really needed at the moment,
+        // since the rendered tiles are cached in the main thread and can thus
+        // be retrieved relatively quickly anyway. Nevertheless, in the future,
+        // once OffscreenCanvas is supported, all rendering work can be done in
+        // a web worker (without the need for caching). In this case, doing a
+        // 'quick update' before the rendering completes is probably a good
+        // idea.
+        if (context.currentTransform !== undefined)
+          self.quickUpdate(context, tmat);
 
         $(canvas).css('opacity', modifiers.get('alpha'));
 
-        let tmat = math.multiply(
-          self.camera.getTransform(), modifiers.get('tmat')
-        );
-
-        context.setTransform(
-          ...tmat.subset(math.index([0, 1], 0))._data,
-          ...tmat.subset(math.index([0, 1], 1))._data,
-          ...tmat.subset(math.index([0, 1], 2))._data
-        );
+        context.setTransform(...utils.mathjsToTransform(tmat));
 
         let bounds = [
             [0, 0, 1],
@@ -108,8 +104,20 @@
         );
 
         for (let tile of tiles)
-          self.drawTile(context, tmat, tile.tile);
+          if ((tile.flags & (
+              Tilemap.FLAG.SUCCESS |
+              Tilemap.FLAG.NULL)) !== 0)
+            self.drawTile(context, tmat, tile.tile);
       }
+    },
+    quickUpdate: function(context, tmat) {
+      var tmatOld = utils.transformToMathjs(context.currentTransform);
+      var tmatDiff = math.multiply(tmat, math.inv(tmatOld));
+
+      context.save();
+      context.setTransform(...utils.mathjsToTransform(tmatDiff));
+      context.drawImage(context.canvas, 0, 0);
+      context.restore();
     },
     drawTile: function(context, tmat, tile) {
       context.drawImage(

@@ -58,29 +58,34 @@ class ImageProcessor:
 
         photoWidth = image.size[0]
         photoHeight = image.size[1]
-        tileWidth = 256;
-        tileHeight = 256;
-        tilemapWidth = int((photoWidth / tilemap_level) / tileWidth) + 1
-        tilemapHeight = int((photoHeight / tilemap_level) / tileHeight) + 1
+        tileWidth = 256
+        tileHeight = 256
 
         if(tilemap_level != 1):
             newPhotoWidth = int(photoWidth / tilemap_level)
             newPhotoHeight = int(photoHeight / tilemap_level)
             scaled_image = image.resize((newPhotoWidth, newPhotoHeight))
         else:
+            newPhotoWidth = photoWidth
+            newPhotoHeight = photoHeight
             scaled_image = image
 
-        for y in range(0, tilemapWidth):
+        tilemapWidth = int(newPhotoWidth / tileWidth) + 1
+        tilemapHeight = int(newPhotoHeight / tileHeight) + 1
+
+        for y in range(0, tilemapHeight):
             new_row = []
-            for x in range(0, tilemapHeight):
+            for x in range(0, tilemapWidth):
                 widthOffset = tileWidth * x
                 heightOffset = tileHeight * y
 
                 image_tile = scaled_image.crop((
                     widthOffset, 
                     heightOffset, 
-                    widthOffset + tileWidth, 
+                    widthOffset + tileWidth,
                     heightOffset + tileHeight
+                    # min(widthOffset + tileWidth, newPhotoWidth),
+                    # min(heightOffset + tileHeight, newPhotoHeight)
                 ))
 
                 new_row.append(self.Image_to_jpeg_URI(image_tile))

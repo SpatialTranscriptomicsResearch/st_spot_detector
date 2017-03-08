@@ -88,9 +88,9 @@
           // TODO: It will be better to draw to an OffscreenCanvas in the worker
           // once there is wider browser support:
           // https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas#Browser_compatibility
-          // Optimally, all rendering work (apart from drawing the
-          // OffscreenCanvas to the DOM canvas) should be done in worker
-          // threads.
+          // Optimally, all rendering work (apart from the quickUpdate and
+          // drawing the OffscreenCanvas to the DOM canvas) should be done in
+          // worker threads.
           this._tileCanvas = document.createElement('canvas');
           this._tileContext = this._tileCanvas.getContext('2d');
           [this._tileCanvas.height, this._tileCanvas.width] = this._tileSize;
@@ -124,7 +124,7 @@
           this._orig[z].push(imarr);
           for (let c = 0; c < tiles[r].length; ++c) {
             createImageBitmap(
-              dataURItoBlob(tiles[r][c])
+              utils.dataURItoBlob(tiles[r][c])
             ).then((im) => {
               imarr[c] = im;
               callback_(...args);
@@ -138,8 +138,8 @@
 
     getHistogram(z) {
       var [r, c] = [
-        this._orig[z].length,
-        this._orig[z][0].length
+        this._orig[z].length - 1, // FIXME: black border problem....
+        this._orig[z][0].length - 1
       ];
 
       var canvas = document.createElement('canvas');
@@ -158,7 +158,7 @@
 
       var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
-      return computeHistogram(imageData.data);
+      return utils.computeHistogram(imageData.data);
     }
 
     getTileSize() {
@@ -170,25 +170,26 @@
     }
 
     getTile(z, r, c, filters) {
-      filters = filters || [];
+      if (filters === undefined)
+        filters = [];
+
       var id = this._serializeId(z, r, c, filters);
       if (this._cache.has(id)) {
         let ret = this._cache.get(id);
         if (ret !== 0)
           return {
-            msg: Tilemap.FLAG.SUCCESS,
+            flags: Tilemap.FLAG.SUCCESS,
             tile: this._createTileObject(ret, z, r, c)
           };
         else
           return {
-            msg: Tilemap.FLAG.IGNORED,
-            tile: this._createTileObject(this._getTile(z, r, c), z, r, c)
+            flags: Tilemap.FLAG.IGNORED,
+            tile: null
           };
       }
 
-      this._cache.set(id, 0);
-
       var tile = this._getTile(z, r, c);
+
       this._bitmapToArrayBuffer(tile)
         .then(
           (data) => this._worker.postMessage(
@@ -198,9 +199,11 @@
           )
         );
 
+      this._cache.set(id, 0);
+
       return {
-        msg: Tilemap.FLAG.WAIT,
-        tile: this._createTileObject(tile, z, r, c)
+        flags: Tilemap.FLAG.WAIT,
+        tile: null
       };
     }
 
@@ -221,12 +224,12 @@
         for (let c = cmin; c <= cmax; ++c) {
           try {
             let ret = this.getTile(z, r, c, filters);
-            if (ret.msg === Tilemap.FLAG.ERROR)
+            if (ret.flags === Tilemap.FLAG.ERROR)
               throw new Exception();
             tiles.push(ret);
           } catch (err) {
             tiles.push({
-              msg: Tilemap.FLAG.NULL,
+              flags: Tilemap.FLAG.NULL,
               tile: this._createTileObject(this._nullTile, z, r, c)
             });
           }
@@ -292,11 +295,11 @@
 
 
   this.Tilemap.FLAG = Object.freeze({
+    ERROR: 1 << 0,
     SUCCESS: 1 << 1,
     WAIT: 1 << 2,
     IGNORED: 1 << 3,
-    NULL: 1 << 4,
-    ERROR: 1 << 15
+    NULL: 1 << 4
   });
 
 }).call(this);
