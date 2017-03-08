@@ -51,8 +51,8 @@
   };
 
   var render = function(data, filters) {
-    for (let filter of filters)
-      self[filter].apply(data, histogram);
+    for (let [filter, param] of filters)
+      self[filter].apply(data, histogram, param);
     return data;
   };
 })();

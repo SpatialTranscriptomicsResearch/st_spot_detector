@@ -1,5 +1,7 @@
 var FILTERS = [
-  'equalize'
+  'equalize',
+  'brightness',
+  'contrast'
 ];
 
 FILTERS = Object.freeze(FILTERS);

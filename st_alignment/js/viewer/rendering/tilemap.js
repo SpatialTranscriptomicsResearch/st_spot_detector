@@ -1,12 +1,12 @@
 /* jshint loopfunc: true */
 
-// TODO: limit cache size
 (function() {
   "use strict";
 
 
   // TODO: Move to some kind of global config file
   const WORKER_PATH = 'js/viewer/rendering/worker.js';
+  const CACHE_MAX_SIZE = 200;
 
 
   this.Tile = class {
@@ -58,6 +58,8 @@
                 this._serializeId(z, r, c, filters),
                 im
               );
+              while (this._cache.size > CACHE_MAX_SIZE)
+                this._cache.delete(this._cache.keys().next().value);
               cb2(this._createTileObject(im, z, r, c), ...args2);
             }
           );
@@ -67,7 +69,6 @@
     }
 
     loadTilemap(data, callback, ...args) {
-
       var numLeft = 0;
       for (let t of Object.values(data))
         numLeft += t.reduce((acc, r) => acc + r.length, 0);
@@ -81,9 +82,9 @@
 
           // tileCanvas is used as a "throw-away" canvas for the conversion
           // between ArrayBuffer and ImageBitmap. It is only used in the
-          // _arrayBufferToBitmap and _bitmapToArrayBuffer routines.
-          // Nevertheless, we create it here only once, since creating DOM
-          // elements is costly.
+          // _arrayBufferToBitmap and _bitmapToArrayBuffer routines (and below
+          // for creating the null tile). Nevertheless, we create it here only
+          // once, since creating DOM elements is costly.
           // TODO: It will be better to draw to an OffscreenCanvas in the worker
           // once there is wider browser support:
           // https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas#Browser_compatibility
@@ -99,11 +100,19 @@
           // 'black border' problem needs to be fixed.
           this._histogram = this.getHistogram(this._zoomLevels[4]);
           this._worker.postMessage([RWMSG.SET_HISTOGRAM, this._histogram]);
+          // TODO: should wait for worker to pass back success
 
-          this._cache.clear();
+          this._tileContext.fillRect(
+            0, 0, this._tileSize[1], this._tileSize[0]
+          );
+          createImageBitmap(this._tileCanvas).then((im) => {
+            this._nullTile = im;
 
-          if (callback !== undefined)
-            callback(...args);
+            this._cache.clear();
+
+            if (callback !== undefined)
+              callback(...args);
+          });
         }
       };
 
@@ -167,12 +176,12 @@
         let ret = this._cache.get(id);
         if (ret !== 0)
           return {
-            msg: Tilemap.MSG.SUCCESS,
+            msg: Tilemap.FLAG.SUCCESS,
             tile: this._createTileObject(ret, z, r, c)
           };
         else
           return {
-            msg: Tilemap.MSG.IGNORED,
+            msg: Tilemap.FLAG.IGNORED,
             tile: this._createTileObject(this._getTile(z, r, c), z, r, c)
           };
       }
@@ -190,8 +199,8 @@
         );
 
       return {
-        msg: Tilemap.MSG.WAIT,
-        tile: _createTileObject(tile, z, r, c)
+        msg: Tilemap.FLAG.WAIT,
+        tile: this._createTileObject(tile, z, r, c)
       };
     }
 
@@ -212,11 +221,14 @@
         for (let c = cmin; c <= cmax; ++c) {
           try {
             let ret = this.getTile(z, r, c, filters);
-            if (ret.msg === Tilemap.MSG.ERROR)
+            if (ret.msg === Tilemap.FLAG.ERROR)
               throw new Exception();
-            tiles.push(ret.tile);
+            tiles.push(ret);
           } catch (err) {
-            continue;
+            tiles.push({
+              msg: Tilemap.FLAG.NULL,
+              tile: this._createTileObject(this._nullTile, z, r, c)
+            });
           }
         }
       return tiles;
@@ -234,7 +246,7 @@
     }
 
     _serializeId(z, r, c, filters) {
-      return `${z};${r};${c};${filters.join(',')}`;
+      return `${z};${r};${c};${JSON.stringify(filters)}`;
     }
 
     _createTileObject(image, z, r, c) {
@@ -279,11 +291,12 @@
   };
 
 
-  this.Tilemap.MSG = Object.freeze({
-    ERROR: -1,
-    SUCCESS: 0,
-    WAIT: 1,
-    IGNORED: 2
+  this.Tilemap.FLAG = Object.freeze({
+    SUCCESS: 1 << 1,
+    WAIT: 1 << 2,
+    IGNORED: 1 << 3,
+    NULL: 1 << 4,
+    ERROR: 1 << 15
   });
 
 }).call(this);

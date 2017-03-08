@@ -17,6 +17,7 @@
     self.calibrationLineWidth = 6.0;
     self.calibrationLineWidthHighlighted = 10.0;
     self.spotSize = 44;
+    self.cache = new Map();
   };
 
   Renderer.prototype = {
@@ -56,59 +57,61 @@
         if (!modifiers.get('visible'))
           continue;
 
-        let tilemap = self.layerManager.getData(layer)[0],
-          canvas = self.layerManager.getCanvas(layer),
+        let canvas = self.layerManager.getCanvas(layer),
           context = canvas.getContext('2d');
 
-        let tileSize = tilemap.getTileSize(),
-          z = self.getTilemapLevel(tilemap);
+        /*
+        let filters2d = [];
+
+        let brightness = modifiers.get('brightness');
+        brightness = (brightness + 100) / 100;
+        filters2d.push(`brightness(${brightness})`);
+
+        let contrast = modifiers.get('contrast');
+        contrast = Math.pow((contrast + 100) / 100, 5);
+        filters2d.push(`contrast(${contrast})`);
+
+        context.filter = filters2d.join('');
+        */
+
+        $(canvas).css('opacity', modifiers.get('alpha'));
 
         let tmat = math.multiply(
-            self.camera.getTransform(), modifiers.get('tmat')),
-          tmat_ = math.inv(tmat);
+          self.camera.getTransform(), modifiers.get('tmat')
+        );
 
-        let filters = ['equalize'].filter(f => modifiers.get(f));
-
-        let [alpha, brightness, contrast] = [
-          'alpha', 'brightness', 'contrast'
-        ].map(s => modifiers.get(s));
-
-        $(canvas).css('opacity', alpha);
+        context.setTransform(
+          ...tmat.subset(math.index([0, 1], 0))._data,
+          ...tmat.subset(math.index([0, 1], 1))._data,
+          ...tmat.subset(math.index([0, 1], 2))._data
+        );
 
         let bounds = [
-            [0,            0,             1],
-            [canvas.width, 0,             1],
-            [0,            canvas.height, 1],
+            [0, 0, 1],
+            [canvas.width, 0, 1],
+            [0, canvas.height, 1],
             [canvas.width, canvas.height, 1]
           ]
           .map(v => math.matrix(v))
-          //.map(v => math.transpose(v))
-          .map(v => math.multiply(tmat_, v))
+          .map(v => math.multiply(math.inv(tmat), v))
           .map(v => math.subset(v, math.index([0, 1])))
           .map(v => v._data);
 
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        let filters = FILTERS.map(s => [s, modifiers.get(s)]);
+        let tilemap = self.layerManager.getData(layer)[0];
 
         let tiles = tilemap.getTilesIn(
-          z,
+          self.getTilemapLevel(tilemap),
           ...math.min(bounds, 0),
           ...math.max(bounds, 0),
           filters
         );
 
         for (let tile of tiles)
-          self.drawTile(context, tmat, tile);
+          self.drawTile(context, tmat, tile.tile);
       }
     },
     drawTile: function(context, tmat, tile) {
-      context.save();
-
-      context.transform(
-        ...tmat.subset(math.index([0, 1], 0))._data,
-        ...tmat.subset(math.index([0, 1], 1))._data,
-        ...tmat.subset(math.index([0, 1], 2))._data
-      );
-
       context.drawImage(
         tile.image,
         tile.sx,
@@ -120,8 +123,6 @@
         tile.dWidth,
         tile.dHeight
       );
-
-      context.restore();
     },
     renderSpots: function(spots) {
       self.camera.begin();

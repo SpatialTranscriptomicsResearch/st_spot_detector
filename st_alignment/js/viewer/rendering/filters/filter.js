@@ -5,7 +5,7 @@ class Filter {
           "Call of new on abstract class Filter not allowed.");
     }
 
-    apply(d, h) {
+    apply(d, h, p) {
       throw "Abstract method not implemented.";
     }
 }
