@@ -28,7 +28,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
 1. Install the necessary packages (OS-dependent command)
     e.g. on Ubuntu/Debian
     ```
-        sudo apt-get install python2.7 python-pip
+        sudo apt install python2.7 python-pip
     ```
 
 2. Create and activate a Python virtual environment 
@@ -50,7 +50,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
 5. Set up uWSGI
     a uWSGI daemon can be installed, e.g. on Ubuntu/Debian
     ```
-    sudo apt-get install uwsgi uwsgi-core uwsgi-plugin-python
+    sudo apt install uwsgi uwsgi-core uwsgi-plugin-python
     ```
     or it may be installed within the Python virtual environment
     ```
