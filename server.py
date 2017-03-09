@@ -201,6 +201,9 @@ def get_tiles():
 
         session_cache.image[key] = image
 
+    import json
+    with open('/tmp/response.json', 'w') as f:
+        json.dump(tilemap.wrapped_tiles(), f)
     return tilemap.wrapped_tiles()
 
 @app.route('/<filepath:path>')

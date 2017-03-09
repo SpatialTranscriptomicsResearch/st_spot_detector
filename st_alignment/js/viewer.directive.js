@@ -24,10 +24,10 @@ angular.module('stSpots')
 
           // TODO this should be placed somewhere else...
           scope.camera.position = {
-            x: 4000,
-            y: 4000
+            x: 4096,
+            y: 4096
           };
-          scope.camera.scale = 1 / 2;
+          scope.camera.scale = 1 / 10;
           scope.camera.updateViewport();
 
 
@@ -136,7 +136,7 @@ angular.module('stSpots')
 
           scope.receiveTilemap = function(data, callback) {
             var callback_ = (function() {
-              var left = Object.keys(data.tilemaps).length;
+              var left = Object.keys(data).length;
               return function() {
                 if (--left === 0)
                   callback();
@@ -148,13 +148,13 @@ angular.module('stSpots')
 
             var [width, height] = [
               'width', 'height'].map(s => $(fgcvs).attr(s));
-            for (let layer of Object.keys(data.tilemaps))
+            for (let layer of Object.keys(data))
               scope.layerManager.addLayer(
                 layer,
                 `<canvas id='layer-{name}' class='fullscreen' width='${width}'
                   height='${height}' />`,
                 new Tilemap(
-                  data.tilemaps[layer], [callback_], [
+                  data[layer], [callback_], [
                     (tile, lm, c) => renderer.drawTile(
                       lm.getCanvas(layer).getContext('2d'),
                       math.multiply(

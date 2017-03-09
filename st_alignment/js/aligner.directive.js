@@ -6,7 +6,7 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
       restrict: 'E',
       link: function(scope, element, attrs, controllers) {
         scope.aligner.rotationPointColor = 'rgba(255, 0, 0, 1.0)';
-        scope.aligner.rotationPointRadius = 16;
+        scope.aligner.rotationPointRadius = 64;
 
         // Due to https://bugs.jqueryui.com/ticket/7498, see
         // https://github.com/angular-ui/ui-sortable#floating
@@ -89,7 +89,7 @@ angular.module('aligner', ['ui.sortable']).directive('alignmentWidget',
             }
           })
           .addTool('rotate', ({
-            rotationPoint: Vec2.Vec2(1000, 1000), // TODO: this should not be hardcoded
+            rotationPoint: Vec2.Vec2(4096, 4096), // TODO: this should not be hardcoded
             drawRotationPoint: function(ctx) {
               ctx.save();
 

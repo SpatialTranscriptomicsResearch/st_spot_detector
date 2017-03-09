@@ -172,10 +172,10 @@ class ImageProcessor:
         width, height = image.size
         aspect_ratio = float(width) / float(height)
         if(aspect_ratio >= 1.0):
-            new_width = 8000
+            new_width = 8192
             new_height = int(float(new_width) / aspect_ratio)
         else:
-            new_height = 8000
+            new_height = 8192
             new_width = int(float(new_height) * aspect_ratio)
         scaled_image = image.resize((new_width, new_height), Image.ANTIALIAS)
 

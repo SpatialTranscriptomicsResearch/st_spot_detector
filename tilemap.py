@@ -10,18 +10,19 @@ class Tilemap:
         # do not change these two tileWidth and tileHeight values:
         # can lead to offset point rendering and bad quality images etc.
         # a fix would be nice!
-        self.tileWidth = 496
-        self.tileHeight = 496
+        # self.tileWidth = 256
+        # self.tileHeight = 256
         self.tilemaps = {}
 
     def wrapped_tiles(self):
-        dict_wrapper = {
-            'tilemapLevels': self.tilemapLevels,
-            'tileWidth': self.tileWidth,
-            'tileHeight': self.tileHeight,
-            'tilemaps': self.tilemaps
-        }
-        return dict_wrapper
+        # dict_wrapper = {
+        #     'tilemapLevels': self.tilemapLevels,
+        #     'tileWidth': self.tileWidth,
+        #     'tileHeight': self.tileHeight,
+        #     'tilemaps': self.tilemaps
+        # }
+        # return dict_wrapper
+        return self.tilemaps
 
     def put_tiles_at(self, tilemap_level, tiles, layer='default'):
         """This takes a 2D array of tiles and inserts it into
