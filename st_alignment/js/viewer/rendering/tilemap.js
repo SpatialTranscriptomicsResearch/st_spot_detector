@@ -9,6 +9,58 @@
   const CACHE_MAX_SIZE = 200;
 
 
+  class JobQueue {
+    constructor(executor, rejector, timeout) {
+      this._executor = executor;
+      this._rejector = rejector;
+
+      this._timeout = timeout;
+      this._counter = 0;
+
+      this._processing = new Map();
+      this._queueing = new Map();
+
+      return this;
+    }
+
+    push(id, ...args) {
+      if (this._processing.has(id)) {
+        if (this._queueing.has(id))
+          this._rejector(id);
+        this._queueing.set(id, args);
+        return this;
+      }
+      return this._start(id, args);
+    }
+
+    pop(id) {
+      if (this._queueing.has(id)) {
+        let args = this._queueing.get(id);
+        this._queueing.delete(id);
+        return this._start(id, args);
+      }
+      this._processing.delete(id);
+      return this;
+    }
+
+    _start(id, args) {
+      this._counter = (this._counter + 1) % Number.MAX_SAFE_INTEGER;
+      this._processing.set(id, this._counter);
+      this._executor(id, ...args);
+      if (this._timeout !== -1) {
+        let counter = this._counter;
+        setTimeout(() => {
+          if (this._processing.get(id) === counter) {
+            console.log(`executor timed out (${id})`);
+            this.pop(id);
+          }
+        }, this._timeout);
+      }
+      return this;
+    }
+  }
+
+
   this.Tile = class {
     constructor(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
       this.image = image;
@@ -30,8 +82,8 @@
       this._tileSize = new Array(2);
       this._zoomLevels = [];
       this._orig = {};
-      this._cache = new Map();
       this._histogram = new Array(256);
+      this._cache = new Map();
 
       var [cb1, ...args1] = callback1;
       var [cb2, ...args2] = callback2;
@@ -40,6 +92,22 @@
         this.loadTilemap(data, cb1, ...args1);
 
       this._worker = new Worker(WORKER_PATH);
+
+      this._queue = new JobQueue(
+        (id, z, r, c, filters, tile) => {
+          this._bitmapToArrayBuffer(tile)
+            .then(
+              (data) => this._worker.postMessage(
+                [RWMSG.PROCESS_TILE, [
+                  [z, r, c, filters], filters, data
+                ]], [data]
+              )
+            );
+        },
+        (id) => this._cache.delete(id),
+        1000
+      );
+
       this._worker.onmessage = (e, t) => {
         if (e[0] === RWMSG.ERROR)
           throw new Exception(e[1]);
@@ -50,14 +118,16 @@
               [z, r, c, filters], tile
             ]
           ] = e.data;
+          var id = this._serializeId(z, r, c, filters);
+
+          this._queue.pop(id);
+
           if (msg !== RWMSG.SUCESS)
             return;
+
           this._arrayBufferToBitmap(tile).then(
             (im) => {
-              this._cache.set(
-                this._serializeId(z, r, c, filters),
-                im
-              );
+              this._cache.set(id, im);
               while (this._cache.size > CACHE_MAX_SIZE)
                 this._cache.delete(this._cache.keys().next().value);
               cb2(this._createTileObject(im, z, r, c), ...args2);
@@ -123,12 +193,11 @@
           let imarr = new Array(tiles[r].length);
           this._orig[z].push(imarr);
           for (let c = 0; c < tiles[r].length; ++c) {
-            createImageBitmap(
-              utils.dataURItoBlob(tiles[r][c])
-            ).then((im) => {
-              imarr[c] = im;
-              callback_(...args);
-            });
+            createImageBitmap(utils.dataURItoBlob(tiles[r][c]))
+              .then((im) => {
+                imarr[c] = im;
+                callback_(...args);
+              });
           }
         }
       }
@@ -156,7 +225,8 @@
             i * this._tileSize[0]
           );
 
-      var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      var imageData = context.getImageData(0, 0, canvas.width, canvas
+        .height);
 
       return utils.computeHistogram(imageData.data);
     }
@@ -189,17 +259,8 @@
       }
 
       var tile = this._getTile(z, r, c);
-
-      this._bitmapToArrayBuffer(tile)
-        .then(
-          (data) => this._worker.postMessage(
-            [RWMSG.PROCESS_TILE, [
-              [z, r, c, filters], filters, data
-            ]], [data]
-          )
-        );
-
       this._cache.set(id, 0);
+      this._queue.push(id, z, r, c, filters, tile);
 
       return {
         flags: Tilemap.FLAG.WAIT,
@@ -230,7 +291,8 @@
           } catch (err) {
             tiles.push({
               flags: Tilemap.FLAG.NULL,
-              tile: this._createTileObject(this._nullTile, z, r, c)
+              tile: this._createTileObject(this._nullTile, z, r,
+                c)
             });
           }
         }

@@ -1,3 +1,7 @@
+<!--
+  aligner.html
+  ============
+-->
 <h2 class="nomargin">Layers</h2>
 <ul class="btn-group nomargin"
      ui-sortable="aligner.layerListOptions"
@@ -24,7 +28,8 @@
 <h2 class="nomargin">Adjustments</h2>
 <div>
   Opacity:
-  <input type="range"
+  <input id="opacity"
+         type="range"
          min="0"
          max="1"
          defaultValue="0.5"
@@ -35,7 +40,8 @@
 </div>
 <div>
   Brightness:
-  <input type="range"
+  <input id="brightness"
+         type="range"
          min="-100"
          max="100"
          defaultValue="0"
@@ -46,7 +52,8 @@
 </div>
 <div>
   Contrast:
-  <input type="range"
+  <input id="contrast"
+         type="range"
          min="-100"
          max="100"
          defaultValue="0"
@@ -58,7 +65,8 @@
 <h2 class="nomargin">Filters</h2>
 <div>
   Equalize:
-  <input type="checkbox"
+  <input id="equalize"
+         type="checkbox"
          style="float: right;"
          ng-model="aligner.equalize"
          ng-model-options="{ getterSetter: true }"

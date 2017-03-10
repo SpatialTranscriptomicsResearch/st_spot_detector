@@ -111,6 +111,10 @@ angular.module('stSpots')
           scope.refreshFunc = function() {
             refreshCanvas();
           };
+          window.onresize = function() {
+            scope.camera.updateViewport();
+            refreshCanvas();
+          };
 
           scope.addSpots = function() {
             logicHandler.addingSpots = true;
