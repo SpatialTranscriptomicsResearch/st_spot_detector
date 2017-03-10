@@ -101,18 +101,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
 For any queries or concerns, feel free to contact the authors at the addresses given below.
 
 ### Client interface
-1. Select the desired Cy3 fluorescent image to undergo spot detection and click "Upload Image" (takes a minute or two). An HE image may also be uploaded if desired; it is necessary that the two images have been previously aligned in Photoshop or similar. The images may be cropped, as long as the outer frame is totally intact, but they may not be scaled down.
-2. Drag the lines to onto the outer "frame" of the spots, making sure that the lines intersect through approximately the middle of the spots.
-  1. It is possible to navigate around the image with right-click and scroll-wheel to zoom.
-3. Click "Detect Spots" (will take another minute or two)
-4. Spot adjustment:
-  1. Navigate around the image with right-click and scroll-wheel to zoom.
-  2. Select spots with left-click (or Ctrl+click) and move selected spots with right click, or delete them using the "Delete selected spots" button.
-  3. Add to the selection by pressing in shift and selecting additional spots.
-  4. If the HE image has been uploaded, then spots within the tissue boundaries may automatically be selected by clicking on the "Select spots within tissue" button.
-  4. Add additional spots by clicking the "Add Spots" button and then left-clicking where they should be placed (right-click and scroll-wheel navigates around the image).
-  5. Return to the selection mode by clicking on the "Finish adding spots" button.
-5. Export the spot values by clicking the "Export Spot Data" button. Either all the spots, or the current selection can be exported, in either adjusted array or pixel coordinates.
+For a guide on using the ST spot detection tool, please refer to [this guide.](https://github.com/SpatialTranscriptomicsResearch/st_aligner/wiki/ST-Spot-Detector-Usage-Guide)
 
 ## License
 MIT (see LICENSE).
