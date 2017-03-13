@@ -173,9 +173,9 @@ class ImageProcessor:
         else:
             new_height = 20000
             new_width = int(float(new_height) * aspect_ratio)
-        scaled_image = image.resize((new_width, new_height), Image.ANTIALIAS)
+        image = image.resize((new_width, new_height), Image.ANTIALIAS)
 
         # rotate image
-        transformed_image = scaled_image.rotate(180)
+        image = image.rotate(180)
 
-        return transformed_image
+        return image
