@@ -140,30 +140,6 @@ def select_spots_inside():
 
     return {'spots': spots, 'spacer': data.get('spacer')}
 
-@app.get('/thumbnail')
-def process_thumbnail():
-    brightness = float(request.query['brightness'])
-    contrast = float(request.query['contrast'])
-    threshold = float(request.query['threshold'])
-    session_id = request.query['session_id']
-
-    session_cache = session_cacher.get_session_cache(session_id)
-    if(session_cache is not None):
-        print(session_id[:20] + ": Creating thumbnail.")
-        thumbnail = image_processor.process_thumbnail(session_cache.thumbnail,
-                                                      brightness, contrast,
-                                                      threshold)
-        thumbnail = image_processor.Image_to_jpeg_URI(thumbnail)
-        thumbnail_dictionary = {
-            'thumbnail': thumbnail,
-        }
-    else:
-        response.status = 400
-        error_message = 'Session ID expired. Please try again.'
-        print(session_id[:20] + ": Error. " + error_message)
-        return error_message
-    return thumbnail_dictionary
-
 @app.post('/tiles')
 def get_tiles():
     data = ast.literal_eval(request.body.read())
@@ -180,6 +156,7 @@ def get_tiles():
         # https://zubu.re/bottle-security-checklist.html and
         # https://github.com/ahupp/python-magic
         if(valid['cy3']):
+            # dict holding Tilemap(s) of Cy3 and HE tiles
             tiles = {}
             for key, image in image_string.items():
                 if not valid[key]:
@@ -187,6 +164,7 @@ def get_tiles():
 
                 print(session_id[:20] + ": Transforming " + key + " image.")
                 image = image_processor.jpeg_URI_to_Image(image)
+                # rotated and scaled down to 20k x 20k
                 image = image_processor.transform_original_image(image)
 
                 print(session_id[:20] + ": Tiling " + key + " images.")
@@ -226,4 +204,4 @@ def error404(error):
     return "404 Not Found"
 
 if(__name__ == "__main__"): # if this file is run from the terminal
-    app.run(host='0.0.0.0', port=8080, debug=True, reloader=True)
+    app.run(host='0.0.0.0', port=1337, debug=True, reloader=True)
