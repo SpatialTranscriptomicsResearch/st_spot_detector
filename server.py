@@ -52,12 +52,15 @@ def get_spots():
 
         # converts the image into a BW thresholded image for easier
         # keypoint detection
-        session_cache.image['cy3'] = image_processor.apply_BCT(
-            session_cache.image['cy3'], brightness, contrast, threshold, True
+
+        BCT_image = image_processor.apply_BCT(
+            session_cache.spot_image, brightness, contrast, threshold
         )
-        keypoints = image_processor.detect_keypoints(session_cache.image['cy3'])
-        spots = Spots(TL_coords, BR_coords, array_size)
-        spots.create_spots_from_keypoints(keypoints, session_cache.image['cy3'])
+        keypoints = image_processor.detect_keypoints(BCT_image)
+        spots = Spots(TL_coords, BR_coords, array_size,
+            session_cache.spot_scaling_factor)
+        spots.create_spots_from_keypoints(keypoints, BCT_image,
+            session_cache.spot_scaling_factor)
 
         print(session_id[:20] + ": Spot detection finished.")
         return spots.wrap_spots()
@@ -142,6 +145,13 @@ def select_spots_inside():
 
 @app.post('/tiles')
 def get_tiles():
+    """Here we receive the Cy3 image (and optionally HE image) from the client,
+    then firstly scale it to approximately 20k x 20k then rotate it 180°.
+    The scaling factor for this is saved and sent to the client.
+    The images are tiled and the tilemaps are saved and sent to the client.
+    A Cy3 image of approximately 3k x 3k is saved on the server for further
+    spot detection later on.
+    """
     data = ast.literal_eval(request.body.read())
     image_string = {'cy3': data['cy3_image'], 'he': data['he_image']}
     session_id = data['session_id']
@@ -165,22 +175,38 @@ def get_tiles():
                 print(session_id[:20] + ": Transforming " + key + " image.")
                 image = image_processor.jpeg_URI_to_Image(image)
                 # rotated and scaled down to 20k x 20k
-                image = image_processor.transform_original_image(image)
+                image, scaling_factor = image_processor.transform_original_image(image)
 
                 print(session_id[:20] + ": Tiling " + key + " images.")
                 tiles_ = Tilemap()
                 for x in tiles_.tilemapLevels:
-                    tiles_.put_tiles_at(
-                        x, image_processor.tile_image(image, x))
+                    tiles_.put_tiles_at(x,
+                        image_processor.tile_image(image, x))
 
-                session_cache.image[key] = image
+                #TODO: convert this to saving the tiles rather than just the thumbnail
                 largest_tile = tiles_.tilemapLevels[-1]
                 thumbnail = tiles_.tilemaps[largest_tile][0][0]
                 thumbnail = image_processor.jpeg_URI_to_Image(thumbnail)
                 session_cache.thumbnail[key] = thumbnail
 
+                if(key == 'cy3'):
+                    # we want to send back the scaling factor of the image to
+                    # the client, so it can convert its spot data back to the
+                    # original image size.
+                    tiles.update({'scaling_factor': scaling_factor})
+                    
+                    # we also want to save a scaled down version of the image
+                    # for spot detection later :)
+                    # if the image is scaled down to 4k the scaling factor
+                    # will for example be 20k / 4k, i.e. 5
+                    spot_img, spot_sf = image_processor.resize_image(image,
+                        [4000, 4000])
+                    session_cache.spot_image = spot_img
+                    session_cache.spot_scaling_factor = spot_sf
+
                 tiles.update({key: tiles_})
                 print(session_id[:20] + ": Image tiling complete.")
+            #TODO: make sure the large images get cleared out of the memory
         else:
             response.status = 400
             error_message = 'Invalid Cy3 image. Please upload a jpeg image.'

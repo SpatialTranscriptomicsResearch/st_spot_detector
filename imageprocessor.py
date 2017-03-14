@@ -142,18 +142,21 @@ class ImageProcessor:
         values from -100 to 100).
         It then uses OpenCV to do threshold the image and do some simple,
         automatic blob detection and returns the keypoints generated.
+        The parameters for min and max area are roughly based on an image
+        of size 4k x 4k.
         """
         # convert the image to an OpenCV image for blob detection
         cv2_image = self.PIL_to_CV2_image(image)
 
+        width, height = image.size
+
         params = cv2.SimpleBlobDetector_Params()
-        # these values seem good "for now"
         params.thresholdStep = 5.0
         params.minThreshold = 170.0
         params.maxThreshold = params.minThreshold + 50.0;
         params.filterByArea = True
-        params.minArea = 20000
-        params.maxArea = 70000
+        params.minArea = 800
+        params.maxArea = 5000
 
         detector = cv2.SimpleBlobDetector_create(params)
         keypoints = detector.detect(cv2_image)
@@ -162,20 +165,30 @@ class ImageProcessor:
 
     def transform_original_image(self, image):
         """Here we take an original fluorescently stained image (~30k x 30k),
-        rotate it 180° and scale it down to ~20k x 20k and return it.
+        rotate it 180° and scale it down to maximum 20k x 20k.
         """
         # resize image
-        width, height = image.size
-        aspect_ratio = float(width) / float(height)
-        if(aspect_ratio >= 1.0):
-            new_width = 20000
-            new_height = int(float(new_width) / aspect_ratio)
-        else:
-            new_height = 20000
-            new_width = int(float(new_height) * aspect_ratio)
-        image = image.resize((new_width, new_height), Image.ANTIALIAS)
+        image, scaling_factor = self.resize_image(image, [20000, 20000])
 
         # rotate image
         image = image.rotate(180)
 
-        return image
+        return image, scaling_factor
+    
+    def resize_image(self, image, max_size):
+        """Resize and return an image and the scaling factor, defined as the
+        original image size / resultant image size.
+        The aspect ratio is preserved.
+        """
+        width, height = image.size
+        aspect_ratio = float(width) / float(height)
+        if(aspect_ratio >= 1.0):
+            new_width = max_size[0]
+            new_height = int(float(new_width) / aspect_ratio)
+        else:
+            new_height = max_size[1]
+            new_width = int(float(new_height) * aspect_ratio)
+
+        scaling_factor = float(width) / float(new_width)
+
+        return image.resize((new_width, new_height), Image.ANTIALIAS), scaling_factor

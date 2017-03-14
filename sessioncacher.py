@@ -7,7 +7,12 @@ class SessionCache:
     def __init__(self, session_id):
         self.session_id = session_id
         self.creation_time  = time.time()
-        self.image = {'cy3': None, 'he': None}
+        # cy3 image saved for spot detection
+        self.spot_image = None
+        # how much the spot_image is scaled down, to calculate the spot
+        # coordinates properly
+        self.spot_scaling_factor = None
+        self.tiles = None
         self.thumbnail = {'cy3': None, 'he': None}
 
 class SessionCacher:

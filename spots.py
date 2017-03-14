@@ -12,13 +12,24 @@ def distance_between(a, b):
 class Spots:
     """Holds the spot data"""
 
-    def __init__(self, TL, BR, array_size):
+    def __init__(self, TL, BR, array_size, scaling_factor):
         self.spots = []
         self.array_size = array_size
+
+        # we recieve the TL and BR coordinates in the size of the client
+        # image which is ~20k x 20k, so we scale it down to the size of
+        # the stored Cy3 image.
+
         # the expected position of the centre of the top left spot
-        self.TL_coords = TL
+        self.TL_coords = {
+            'x': TL['x'] / scaling_factor,
+            'y': TL['y'] / scaling_factor
+        }
         # the expected position of the centre of bottom right left spot
-        self.BR_coords = BR
+        self.BR_coords = {
+            'x': BR['x'] / scaling_factor,
+            'y': BR['y'] / scaling_factor
+        }
         # the average expected space between each spot
         self.spacer = {
             'x': ((self.BR_coords['x'] - self.TL_coords['x'])
@@ -34,7 +45,7 @@ class Spots:
         }
         return spot_dictionary
         
-    def create_spots_from_keypoints(self, keypoints, thresholded_image):
+    def create_spots_from_keypoints(self, keypoints, thresholded_image, scaling_factor):
         """Takes keypoints generated from opencv spot detection and
         tries to match them to their correct array positions.
         It also tries to fill in "missing spots" by finding which array
@@ -44,7 +55,7 @@ class Spots:
         """
 
         missing_spots = []
-        threshold_distance = 180 # this can be adjusted for stringency
+        threshold_distance = self.spacer['x'] / 2 # this can be adjusted for stringency
 
         # these arrays are used to calculate the average position at which
         # each spot column and row are at within the spot array
@@ -60,8 +71,8 @@ class Spots:
             # will return out-of-bound pixels, may need to fix this if
             # spots are close to the image edge
             pixels = []
-            for y in range(position['y'] - radius, position['y'] + radius):
-                for x in range(position['x'] - radius, position['x'] + radius):
+            for y in range(int(position['y'] - radius), int(position['y'] + radius)):
+                for x in range(int(position['x'] - radius), int(position['x'] + radius)):
                     pixel = {
                         'x': x,
                         'y': y
@@ -155,9 +166,8 @@ class Spots:
                                             / float(col_position_count[col]))
 
         # Open up processed (brightness, contrast, threshold) image for
-        # reading of pixel values. This is very RAM heavy. Alternatively,
-        # one may crop out each surrounding pixel area, and analyse the
-        # whiteness of these
+        # reading of pixel values. This is very RAM-intensive for large
+        # images.
         image_pixels = thresholded_image.load()
         filled_in_spots = []
         for spot in missing_spots:
@@ -191,7 +201,7 @@ class Spots:
             whiteness = 0
             whiteness_threshold = 200.0
 
-            pixels = get_surrounding_pixels(pixel_position, 50)
+            pixels = get_surrounding_pixels(pixel_position, self.spacer['x'] / 5)
             for pixel in pixels:
                 # calculating the "whiteness" of area at that position
                 # these should all be 255 if white, 0 if black
@@ -205,7 +215,10 @@ class Spots:
                 filled_in_spots.append({
                     'arrayPosition': array_position,
                     'newArrayPosition': new_array_position,
-                    'renderPosition': pixel_position,
+                    'renderPosition': {
+                        'x': pixel_position['x'],
+                        'y': pixel_position['y']
+                    },
                     'diameter': avg_diam,
                     'selected': False
                 })
@@ -230,3 +243,17 @@ class Spots:
                         break
 
         # Spot detection complete
+
+        # spots scaled up to client-side image size
+        self.scale_up_spots(scaling_factor)
+
+    def scale_up_spots(self, scaling_factor):
+        """Spot detection is run on a scaled down image; this function
+        scales up the spot pixel coordinates to a non-scaled version, 
+        rending for sending back to the client.
+        """
+        for spot in self.spots:
+            spot['renderPosition'] = {
+                'x': float(spot['renderPosition']['x']) * scaling_factor,
+                'y': float(spot['renderPosition']['y']) * scaling_factor,
+            }
