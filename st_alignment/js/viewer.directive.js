@@ -52,6 +52,10 @@ angular.module('stSpots')
                         return spots.getSpots();
                     };
 
+                    scope.updateScalingFactor = function(scalingFactor) {
+                        return spots.updateScalingFactor(scalingFactor);
+                    };
+
                     scope.getCalibrationData = function() {
                         return {
                             TL:         calibrator.calibrationData.TL,

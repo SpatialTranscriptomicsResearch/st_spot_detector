@@ -219,7 +219,8 @@ def get_tiles():
         return error_message
 
     return {'cy3_tiles': tiles['cy3'].wrapped_tiles(),
-            'he_tiles': tiles['he'].wrapped_tiles() if valid['he'] else None}
+            'he_tiles': tiles['he'].wrapped_tiles() if valid['he'] else None,
+            'scaling_factor': scaling_factor}
 
 @app.route('/<filepath:path>')
 def serve_site(filepath):

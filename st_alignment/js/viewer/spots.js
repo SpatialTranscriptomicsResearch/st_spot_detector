@@ -5,12 +5,18 @@
         self = this;
         self.spots = [];
         self.spacer = {};
+        self.scalingFactor;
         self.spotToAdd = {
             renderPosition: Vec2.Vec2(0, 0)
         };
     };
 
     SpotManager.prototype = {
+        updateScalingFactor: function(scalingFactor) {
+            // the uploaded image is scaled down to approximately 20k x 20k;
+            // this scaling factor is necessary to scale the pixel spot coordinates up again
+            self.scalingFactor = scalingFactor;
+        },
         loadSpots: function(spotData) {
             self.spots = spotData.spots;
             self.spacer = spotData.spacer;
@@ -33,7 +39,11 @@
                     dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y; 
                 }
                 else if(type == "pixel") {
-                    dataString += spot.renderPosition.x + "\t" + spot.renderPosition.y;
+                    var position = {
+                        'x': Math.round(spot.renderPosition.x * self.scalingFactor),
+                        'y': Math.round(spot.renderPosition.y * self.scalingFactor)
+                    }
+                    dataString += position.x + "\t" + position.y;
                 }
                 if(i != self.spots.length - 1) {
                     dataString += "\n"

@@ -361,6 +361,7 @@ angular.module('stSpots')
 
                             $scope.data.cy3Tiles = response.data.cy3_tiles;
                             $scope.data.heTiles = response.data.he_tiles;
+                            $scope.updateScalingFactor(response.data.scaling_factor);
 
                             $scope.receiveTilemap($scope.data.cy3Tiles); // defined in the viewer directive
                             $scope.data.cy3Active = true;
