@@ -48,6 +48,11 @@ angular.module('stSpots')
                         refreshCanvas();
                     };
 
+                    scope.selectInsideTissue = function() {
+                        spots.selectTissueSpots();
+                        refreshCanvas();
+                    };
+
                     scope.getSpots = function() {
                         return spots.getSpots();
                     };

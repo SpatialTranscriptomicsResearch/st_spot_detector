@@ -4,6 +4,8 @@
     var SpotManager = function(camera) {
         self = this;
         self.spots = [];
+        // the spots located under the tissue (relevant only if an HE image has been uploaded)
+        self.tissueSpots = [];
         self.spacer = {};
         self.scalingFactor;
         self.spotToAdd = {
@@ -20,9 +22,29 @@
         loadSpots: function(spotData) {
             self.spots = spotData.spots;
             self.spacer = spotData.spacer;
+            self.tissueSpots = spotData.tissue_spots;
         },
         getSpots: function() {
             return {spots: self.spots, spacer: self.spacer};
+        },
+        selectTissueSpots: function() {
+            // relevant only if an HE image has been uploaded
+            // adds to current selection
+            for(var i = 0; i < self.tissueSpots.length; ++i) { // for every spot in the tissue spots, go through them all 
+                var tissueSpot = self.tissueSpots[i]; // this is the one, yes
+                for(var j = 0; j < self.spots.length; ++j) { // okay, now, for every "normal" spot, check it out, compare it to it!
+                    var spot = self.spots[j]; // this is the one, look at it
+                    if(spot.selected) { // oh, it's already selected?
+                        // ignore if already selected
+                        continue;
+                    }
+                    if(tissueSpot.arrayPosition.x == spot.arrayPosition.x &&
+                       tissueSpot.arrayPosition.y == spot.arrayPosition.y) {
+                        self.spots[j].selected = true;
+                        break;
+                    }
+                }
+            }
         },
         exportSpots: function(type, selection) {
             var dataString = "";

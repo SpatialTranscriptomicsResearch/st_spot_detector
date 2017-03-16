@@ -22,7 +22,6 @@ angular.module('stSpots')
                                      "Click 'Add spots' to change to spot addition mode, then right click or Ctrl+click to add spots.\n" +
                                      "(HE only) Click 'Select spots within tissue' to automatically select spots within the tissue.\n" +
                                      "Click 'Finish Adding Spots' to return to selection mode.\n",
-                state_autoselection: "",
                 state_error:         "An error occured. Please try again."
             };
 
@@ -32,8 +31,6 @@ angular.module('stSpots')
                 state_upload:        "Processing image. This may take a few minutes.",
                 state_predetection:  "",
                 state_detection:     "Detecting spots. This may take a few minutes.",
-                state_autoselection: "Running tissue recognition. This may take" +
-                                     " a few minutes.",
                 state_adjustment:     "",
                 state_error:         ""
             };
@@ -166,9 +163,8 @@ angular.module('stSpots')
                         "Click DETECT SPOTS to begin automatic spot detection."
                     );
                 }
-                else if($scope.data.state === 'state_detection'
-                    || $scope.data.state == 'state_autoselection') {
-                        toastr.clear();
+                else if($scope.data.state === 'state_detection') {
+                    toastr.clear();
                 }
                 else if($scope.data.state === 'state_adjustment') {
                     toastr.options.timeOut = "10000";
@@ -207,14 +203,13 @@ angular.module('stSpots')
 
                     openPanel('button_detector');
                 }
-                else if($scope.data.state === 'state_detection'
-                    || $scope.data.state == 'state_autoselection') {
-                        $scope.visible.menuBar = false;
-                        $scope.visible.zoomBar = false;
-                        $scope.visible.spinner = true;
-                        $scope.visible.canvas = false;
-                        $scope.visible.errorText = false;
-                    }
+                else if($scope.data.state === 'state_detection') {
+                    $scope.visible.menuBar = false;
+                    $scope.visible.zoomBar = false;
+                    $scope.visible.spinner = true;
+                    $scope.visible.canvas = false;
+                    $scope.visible.errorText = false;
+                }
                 else if($scope.data.state === 'state_adjustment') {
                     $scope.visible.menuBar = true;
                     $scope.visible.zoomBar = true;
@@ -304,27 +299,6 @@ angular.module('stSpots')
                         .then(successCallback, errorCallback);
                 };
                 getSpotData();
-            };
-
-            $scope.selectInsideTissue = function() {
-                $scope.updateState('state_autoselection');
-
-                var successCallback = function(response) {
-                    $scope.updateState('state_adjustment', false);
-                    $scope.loadSpots(response.data)
-                };
-                var errorCallback = function(response) {
-                    $scope.data.errorText = response.data;
-                    console.error(response.data.spots);
-                    $scope.updateState('state_error');
-                };
-
-                var data = $scope.getSpots();
-                $http.post('../select_spots_inside', {
-                    spots: data.spots,
-                    spacer: data.spacer,
-                    session_id: $scope.data.sessionId
-                }).then(successCallback, errorCallback);
             };
 
             $scope.getPanelTitle = function(button) {
