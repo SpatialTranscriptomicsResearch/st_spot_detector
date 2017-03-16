@@ -14,6 +14,7 @@ class Spots:
 
     def __init__(self, TL, BR, array_size, scaling_factor):
         self.spots = []
+        self.tissue_spots = []
         self.array_size = array_size
 
         # we recieve the TL and BR coordinates in the size of the client
@@ -41,6 +42,7 @@ class Spots:
     def wrap_spots(self):
         spot_dictionary = {
             'spots': self.spots,
+            'tissue_spots': self.tissue_spots,
             'spacer': self.spacer,
         }
         return spot_dictionary
@@ -245,9 +247,9 @@ class Spots:
         # Spot detection complete
 
         # spots scaled up to client-side image size
-        self.scale_up_spots(scaling_factor)
+        self.scale_spots(scaling_factor)
 
-    def scale_up_spots(self, scaling_factor):
+    def scale_spots(self, scaling_factor):
         """Spot detection is run on a scaled down image; this function
         scales up the spot pixel coordinates to a non-scaled version, 
         rending for sending back to the client.
@@ -257,3 +259,5 @@ class Spots:
                 'x': float(spot['renderPosition']['x']) * scaling_factor,
                 'y': float(spot['renderPosition']['y']) * scaling_factor,
             }
+            spot['diameter'] = spot['diameter'] * scaling_factor
+
