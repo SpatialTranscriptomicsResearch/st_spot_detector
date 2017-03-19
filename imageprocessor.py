@@ -109,7 +109,6 @@ class ImageProcessor:
                     cropped_image = blank_tile
 
                 else:
-                    print("normal")
                     cropped_image = scaled_image.crop(
                         tuple(crop_start + crop_stop))
                         
