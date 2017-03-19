@@ -2,7 +2,7 @@
 
 import base64
 import io
-import cv2
+#import cv2
 import numpy
 
 from PIL import Image, ImageOps, ImageEnhance
@@ -47,7 +47,6 @@ class ImageProcessor:
         jpeg_string = unicode(jpeg_string, 'utf-8')
         return jpeg_string
 
-
     def tile_image(self, image, tilemap_level):
         """Takes a jpeg image, scales its size down and splits it up 
         into tiles, the amount depends on the "level" of tile splitting.
@@ -56,35 +55,65 @@ class ImageProcessor:
         """
         tiles = []
 
-        photoWidth = image.size[0]
-        photoHeight = image.size[1]
-        tileWidth = 1024;
-        tileHeight = 1024;
+        tile_size = [1024, 1024]
+        # width and height of the tilemap (ints)
+        tilemap_size = [
+            (image.size[0] / tilemap_level) / tile_size[0] + 1,
+            (image.size[1] / tilemap_level) / tile_size[1] + 1
+        ]
 
-        tilemapWidth = int((photoWidth / tilemap_level) / tileWidth) + 1
-        tilemapHeight = int((photoHeight / tilemap_level) / tileHeight) + 1
+        # the size of the scaled down photo
+        new_image_size = [
+            image.size[0] / tilemap_level,
+            image.size[1] / tilemap_level
+        ]
 
-        if(tilemap_level != 1):
-            newPhotoWidth = int(photoWidth / tilemap_level)
-            newPhotoHeight = int(photoHeight / tilemap_level)
-            scaled_image = image.resize((newPhotoWidth, newPhotoHeight))
+        if(tilemap_level != 1): 
+            scaled_image = image.resize(tuple(new_image_size))
         else:
             scaled_image = image
 
-        for x in range(0, tilemapHeight):
+        for x in range(0, tilemap_size[0]):
             new_row = []
-            for y in range(0, tilemapWidth):
-                widthOffset = tileWidth * x
-                heightOffset = tileHeight * y
+            for y in range(0, tilemap_size[1]):
+                crop_start = [
+                    tile_size[0] * x,
+                    tile_size[1] * y
+                ]
+                crop_stop = [
+                    crop_start[0] + tile_size[0],
+                    crop_start[1] + tile_size[1]
+                ]
 
-                image_tile = scaled_image.crop((
-                    widthOffset, 
-                    heightOffset, 
-                    widthOffset + tileWidth, 
-                    heightOffset + tileHeight
-                ))
+                exceeds_x = crop_stop[0] > new_image_size[0]
+                exceeds_y = crop_stop[1] > new_image_size[1]
 
-                new_row.append(self.Image_to_jpeg_URI(image_tile))
+                # If the cropping exceeds the image boundaries, then we
+                # need to crop the image to size, then create a new, blank
+                # white image to paste onto.
+                # This is necessary for the HE image to allow tissue
+                # detection to work properly
+                if(exceeds_x or exceeds_y):
+                    blank_tile = Image.new(mode='RGBA',
+                        size=tuple(tile_size), color=(255,255,255,0))
+
+                    if(exceeds_x):
+                        crop_stop[0] = new_image_size[0]
+
+                    if(exceeds_y):
+                        crop_stop[1] = new_image_size[1]
+
+                    cropped_image = scaled_image.crop(
+                        tuple(crop_start + crop_stop))
+                    blank_tile.paste(cropped_image)
+                    cropped_image = blank_tile
+
+                else:
+                    print("normal")
+                    cropped_image = scaled_image.crop(
+                        tuple(crop_start + crop_stop))
+                        
+                new_row.append(self.Image_to_jpeg_URI(cropped_image))
             tiles.append(new_row)
 
         return tiles
