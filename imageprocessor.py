@@ -47,7 +47,7 @@ class ImageProcessor:
         jpeg_string = unicode(jpeg_string, 'utf-8')
         return jpeg_string
 
-    def tile_image(self, image, tilemap_level):
+    def tile_image(self, image, tilemap_level, HE_image):
         """Takes a jpeg image, scales its size down and splits it up 
         into tiles, the amount depends on the "level" of tile splitting.
 
@@ -85,32 +85,8 @@ class ImageProcessor:
                     crop_start[1] + tile_size[1]
                 ]
 
-                exceeds_x = crop_stop[0] > new_image_size[0]
-                exceeds_y = crop_stop[1] > new_image_size[1]
-
-                # If the cropping exceeds the image boundaries, then we
-                # need to crop the image to size, then create a new, blank
-                # white image to paste onto.
-                # This is necessary for the HE image to allow tissue
-                # detection to work properly
-                if(exceeds_x or exceeds_y):
-                    blank_tile = Image.new(mode='RGBA',
-                        size=tuple(tile_size), color=(255,255,255,0))
-
-                    if(exceeds_x):
-                        crop_stop[0] = new_image_size[0]
-
-                    if(exceeds_y):
-                        crop_stop[1] = new_image_size[1]
-
-                    cropped_image = scaled_image.crop(
-                        tuple(crop_start + crop_stop))
-                    blank_tile.paste(cropped_image)
-                    cropped_image = blank_tile
-
-                else:
-                    cropped_image = scaled_image.crop(
-                        tuple(crop_start + crop_stop))
+                cropped_image = scaled_image.crop(
+                    tuple(crop_start + crop_stop))
                         
                 new_row.append(self.Image_to_jpeg_URI(cropped_image))
             tiles.append(new_row)

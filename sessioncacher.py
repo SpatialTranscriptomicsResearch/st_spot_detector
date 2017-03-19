@@ -9,6 +9,7 @@ class SessionCache:
         self.creation_time  = time.time()
         # cy3 image saved for spot detection
         self.spot_image = None
+        self.tissue_image = None
         # how much the spot_image is scaled down, to calculate the spot
         # coordinates properly
         self.spot_scaling_factor = None

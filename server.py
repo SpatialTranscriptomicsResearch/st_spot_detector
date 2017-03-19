@@ -64,7 +64,7 @@ def get_spots():
 
         print(session_id[:20] + ": Spot detection finished.")
 
-        HE_image = session_cache.thumbnail['he']
+        HE_image = session_cache.tissue_image
         if HE_image is not None:
             print(session_id[:20] + ": Running tissue recognition.")
             spots = select_tissue_spots(spots, HE_image)
@@ -84,8 +84,7 @@ def select_tissue_spots(spots, image):
     ratio = min(min(max_size / image.size), 1)
     new_size = [ratio * s for s in image.size]
 
-    # hack for now whilst spots come from a 4k x 4k image
-    # and the downsampled image is actually 1024 x 1024
+    # hack for now whilst spots are based on 20k x 20k image
     ratio = float(500) / float(20000)
 
     image = image.copy()
@@ -191,6 +190,12 @@ def get_tiles():
                         [4000, 4000])
                     session_cache.spot_image = spot_img
                     session_cache.spot_scaling_factor = spot_sf
+
+                if(key == 'he'):
+                    # also save a scaled down version of the tissue image
+                    tissue_img = image_processor.resize_image(image,
+                        [500, 500])
+                    session_cache.tissue_image = tissue_img
 
                 tiles.update({key: tiles_})
                 print(session_id[:20] + ": Image tiling complete.")
