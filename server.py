@@ -170,11 +170,7 @@ def get_tiles():
                     tiles_.put_tiles_at(x,
                         image_processor.tile_image(image, x))
 
-                #TODO: convert this to saving the tiles rather than just the thumbnail
-                largest_tile = tiles_.tilemapLevels[-1]
-                thumbnail = tiles_.tilemaps[largest_tile][0][0]
-                thumbnail = image_processor.jpeg_URI_to_Image(thumbnail)
-                session_cache.thumbnail[key] = thumbnail
+                session_cache.tiles[key] = tiles_
 
                 if(key == 'cy3'):
                     # we want to send back the scaling factor of the image to

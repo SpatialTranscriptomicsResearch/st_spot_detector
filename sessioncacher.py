@@ -14,14 +14,13 @@ class SessionCache:
         # coordinates properly
         self.spot_scaling_factor = None
         self.tiles = {'cy3': None, 'he': None}
-        self.thumbnail = {'cy3': None, 'he': None}
 
 class SessionCacher:
     """A class for maintaining and caching the sessions on the server.
-    A session cache is created every time a client uploads an image and
-    the image and thumbnail are cached in the session_caches list. A session
-    ID is given to the client, which is used for identifying the correct
-    image and thumbnail for use in further image processing requests.
+    A session cache is created every time a client uploads an image.
+    Various data associated with the image are cached in the session_caches
+    list. A session ID is given to the client, which is used for identifying
+    the correct data for use in further image processing requests.
     """
     def __init__(self):
         self.session_caches = []
