@@ -2,7 +2,7 @@
 
 import base64
 import io
-#import cv2
+import cv2
 import numpy
 
 from PIL import Image, ImageOps, ImageEnhance
@@ -47,7 +47,7 @@ class ImageProcessor:
         jpeg_string = unicode(jpeg_string, 'utf-8')
         return jpeg_string
 
-    def tile_image(self, image, tilemap_level, HE_image):
+    def tile_image(self, image, tilemap_level):
         """Takes a jpeg image, scales its size down and splits it up 
         into tiles, the amount depends on the "level" of tile splitting.
 

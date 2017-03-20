@@ -194,7 +194,7 @@ def get_tiles():
                 if(key == 'he'):
                     # also save a scaled down version of the tissue image
                     tissue_img = image_processor.resize_image(image,
-                        [500, 500])
+                        [500, 500])[0]
                     session_cache.tissue_image = tissue_img
 
                 tiles.update({key: tiles_})
