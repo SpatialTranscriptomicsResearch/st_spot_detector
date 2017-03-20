@@ -1,8 +1,11 @@
 # ST Aligner
 
-A web tool for automatic spot detection and positional adjustments for ST Datasets. 
+A web tool for automatic spot detection and positional adjustments for ST datasets. 
 
-The arrays used to generate ST Datasets may contain positional variations due to printing artifacts. This web tool aims to detect correct spot positions using the Cy3 using the Cy3 fluorescence image, and then generate a file that can be used to adjust the coordinates of ST data.
+The arrays used to generate ST Datasets may contain positional variations due to printing artifacts. This web tool aims to detect correct spot positions using the images generated from the ST protocol.
+In order to obtain relevant experimental data, it is also possible to automatically select the spots which are located under the tissue, using a corresponding HE image.
+The spot positions and selections are further adjustable to one's own needs.
+A file is generated which contains the corrected spot coordinates of the ST data.
 
 NOTE: this software is currently not yet fully functional and is in a testing stage of development. 
 
