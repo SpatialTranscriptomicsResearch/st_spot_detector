@@ -48,7 +48,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
     pip install -r requirements.txt
     ```
 
-4. Install the tissue recognition library (still within the Python virtual environment). Follow the instructions [here.](https://github.com/ludvb/tissue_recognition)
+4. Install the tissue recognition library (still within the Python virtual environment). Follow the instructions [here.](https://github.com/SpatialTranscriptomicsResearch/tissue_recognition)
 
 5. Set up uWSGI
     a uWSGI daemon can be installed, e.g. on Ubuntu/Debian
