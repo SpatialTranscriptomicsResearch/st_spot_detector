@@ -30,7 +30,7 @@ angular.module('stSpots')
                 state_start:         "",
                 state_upload:        "Processing image. This may take a few minutes.",
                 state_predetection:  "",
-                state_detection:     "Detecting spots. This may take a few minutes.",
+                state_detection:     "Detecting spots.",
                 state_adjustment:     "",
                 state_error:         ""
             };

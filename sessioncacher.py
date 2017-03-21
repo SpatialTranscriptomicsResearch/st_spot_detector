@@ -13,7 +13,7 @@ class SessionCache:
         # how much the spot_image is scaled down, to calculate the spot
         # coordinates properly
         self.spot_scaling_factor = None
-        self.tiles = None
+        self.tiles = {'cy3': None, 'he': None}
         self.thumbnail = {'cy3': None, 'he': None}
 
 class SessionCacher:
