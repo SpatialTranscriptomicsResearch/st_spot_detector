@@ -167,7 +167,7 @@ class ImageProcessor:
 
         return keypoints
 
-    def transform_original_image(self, image):
+    def transform_original_image(self, image, rotate):
         """Here we take an original fluorescently stained image (~30k x 30k),
         rotate it 180° and scale it down to maximum 20k x 20k.
         """
@@ -175,7 +175,8 @@ class ImageProcessor:
         image, scaling_factor = self.resize_image(image, [20000, 20000])
 
         # rotate image
-        image = image.rotate(180)
+        if(rotate):
+            image = image.rotate(180)
 
         return image, scaling_factor
     

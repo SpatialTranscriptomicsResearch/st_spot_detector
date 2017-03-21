@@ -141,6 +141,7 @@ def get_tiles():
     """
     data = ast.literal_eval(request.body.read())
     image_string = {'cy3': data['cy3_image'], 'he': data['he_image']}
+    rotate = True if data['rotate'] == 'true' else False
     session_id = data['session_id']
     session_cache = session_cacher.get_session_cache(session_id)
     if(session_cache is not None):
@@ -162,7 +163,7 @@ def get_tiles():
                 print(session_id[:20] + ": Transforming " + key + " image.")
                 image = image_processor.jpeg_URI_to_Image(image)
                 # rotated and scaled down to 20k x 20k
-                image, scaling_factor = image_processor.transform_original_image(image)
+                image, scaling_factor = image_processor.transform_original_image(image, rotate)
 
                 print(session_id[:20] + ": Tiling " + key + " images.")
                 tiles_ = Tilemap()

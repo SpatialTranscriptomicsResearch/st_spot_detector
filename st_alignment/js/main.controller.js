@@ -57,6 +57,7 @@ angular.module('stSpots')
                 heTiles: null,
                 cy3Active: null,
                 errorText: '',
+                rotate: false,
                 imageToggleImage: {
                     Cy3: 'images/imageToggleCy3.png',
                     HE: 'images/imageToggleHE.png'
@@ -351,7 +352,8 @@ angular.module('stSpots')
                         $http.post('../tiles', {
                             cy3_image: $scope.data.cy3Image,
                             he_image: $scope.data.heImage,
-                            session_id: $scope.data.sessionId
+                            session_id: $scope.data.sessionId,
+                            rotate: $scope.data.rotate.toString()
                         }).then(tileSuccessCallback, tileErrorCallback);
                     };
 
