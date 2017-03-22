@@ -58,16 +58,16 @@ class SessionCacher:
         for session_cache in self.session_caches:
             if(session_cache.session_id == session_id):
                 self.session_caches.remove(session_cache)
-                print(session_id[:20] + ": Removing session cache.")
-                print("Remianing session caches: ")
-                print(self.session_caches)
+                log_file.write(session_id[:20] + ": Removing session cache.\n")
+                log_file.write("Remianing session caches: \n")
+                log_file.write(self.session_caches)
                 break
     
     def clear_old_sessions(self):
         for session_cache in self.session_caches:
             lifetime = time.time() - session_cache.creation_time
             if(lifetime > self.max_session_lifetime):
-                print((session_cache.session_id[:20] + ": Session timed out ("
-                   + lifetime + " seconds)."))
+                log_file.write((session_cache.session_id[:20] + ": Session timed out ("
+                   + lifetime + " seconds).\n"))
                 self.session_caches.remove(session_cache)
                 break

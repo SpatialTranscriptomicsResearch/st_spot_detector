@@ -27,13 +27,15 @@ image_processor = ImageProcessor()
 
 app = application = bottle.Bottle()
 
+log_file = open("server_log_file.txt", "a")
+
 @app.get('/session_id')
 def create_session_cache():
     session_cacher.clear_old_sessions() # can be here for now
     new_session_id = session_cacher.create_session_cache()
-    print(new_session_id[:20] + ": New session created.")
-    print("Current session caches: ")
-    print(session_cacher.session_caches)
+    log_file.write(new_session_id[:20] + ": New session created.\n")
+    log_file.write("Current session caches: \n")
+    log_file.write(session_cacher.session_caches)
     return new_session_id
 
 @app.get('/detect_spots')
@@ -41,7 +43,7 @@ def get_spots():
     session_id = request.query['session_id']
     session_cache = session_cacher.get_session_cache(session_id)
     if(session_cache is not None):
-        print(session_id[:20] + ": Detecting spots.")
+        log_file.write(session_id[:20] + ": Detecting spots.\n")
         # ast converts the query strings into python dictionaries
         TL_coords = ast.literal_eval(request.query['TL'])
         BR_coords = ast.literal_eval(request.query['BR'])
@@ -62,11 +64,11 @@ def get_spots():
         spots.create_spots_from_keypoints(keypoints, BCT_image,
             session_cache.spot_scaling_factor)
 
-        print(session_id[:20] + ": Spot detection finished.")
+        log_file.write(session_id[:20] + ": Spot detection finished.\n")
 
         HE_image = session_cache.tissue_image
         if HE_image is not None:
-            print(session_id[:20] + ": Running tissue recognition.")
+            log_file.write(session_id[:20] + ": Running tissue recognition.\n")
             spots = select_tissue_spots(spots, HE_image)
 
         session_cacher.remove_session_cache(session_id)
@@ -75,7 +77,7 @@ def get_spots():
     else:
         response.status = 400
         error_message = 'Session ID expired. Please try again.'
-        print(session_id[:20] + ": Error. " + error_message)
+        log_file.write(session_id[:20] + ": Error. " + error_message + "\n")
         return error_message
 
 def select_tissue_spots(spots, image):
@@ -160,12 +162,12 @@ def get_tiles():
                 if not valid[key]:
                     continue
 
-                print(session_id[:20] + ": Transforming " + key + " image.")
+                log_file.write(session_id[:20] + ": Transforming " + key + " image.\n")
                 image = image_processor.jpeg_URI_to_Image(image)
                 # rotated and scaled down to 20k x 20k
                 image, scaling_factor = image_processor.transform_original_image(image, rotate)
 
-                print(session_id[:20] + ": Tiling " + key + " images.")
+                log_file.write(session_id[:20] + ": Tiling " + key + " images.\n")
                 tiles_ = Tilemap()
                 for x in tiles_.tilemapLevels:
                     tiles_.put_tiles_at(x,
@@ -195,17 +197,17 @@ def get_tiles():
                     session_cache.tissue_image = tissue_img
 
                 tiles.update({key: tiles_})
-                print(session_id[:20] + ": Image tiling complete.")
+                log_file.write(session_id[:20] + ": Image tiling complete.\n")
             #TODO: make sure the large images get cleared out of the memory
         else:
             response.status = 400
             error_message = 'Invalid Cy3 image. Please upload a jpeg image.'
-            print(session_id[:20] + ": Error. " + error_message)
+            log_file.write(session_id[:20] + ": Error. " + error_message + "\n")
             return error_message
     else:
         response.status = 400
         error_message = 'Session ID expired. Please try again.'
-        print(session_id[:20] + ": Error. " + error_message)
+        log_file.write(session_id[:20] + ": Error. " + error_message + "\n")
         return error_message
 
     return {'cy3_tiles': tiles['cy3'].wrapped_tiles(),

@@ -361,6 +361,7 @@ angular.module('stSpots')
                     var getSessionId = function() {
                         var sessionSuccessCallback = function(response) {
                             $scope.data.sessionId = response.data;
+			    console.log("the ssion id is " + $scope.data.sessionId);
                             getTileData();
                         };
                         var sessionErrorCallback = function(response) {
