@@ -143,7 +143,8 @@ angular.module('stSpots')
                         var spotDataString = spots.exportSpots(type, selection);
 
                         var blob = new Blob([spotDataString]);
-                        var filename = "spot_data-" + scope.data.cy3Filename.slice(0, -3) + "tsv";
+                        var filetype = type.slice(0, 3) + "_" + selection.slice(0, 3) + "-";
+                        var filename = "spot_data-" + filetype + scope.data.cy3Filename.slice(0, -3) + "tsv";
 
                         // the next 11 lines are adapted from https://github.com/mholt/PapaParse/issues/175
                         if(window.navigator.msSaveOrOpenBlob) { // IE hack; see http://msdn.microsoft.com/en-us/library/ie/hh779016.aspx
