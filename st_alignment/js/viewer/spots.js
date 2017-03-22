@@ -67,8 +67,10 @@
                     }
                     dataString += position.x + "\t" + position.y;
                 }
-                // we add a bool 0 or 1, depending on whether the spot is selected or not
-                var selected = spot.selected ? "1\t" : "0\t";
+                if(selection == 'all') {
+                    // we add a bool 0 or 1, depending on whether the spot is selected or not
+                    var selected = spot.selected ? "\t1" : "\t0";
+                }
                 dataString += selected;
                 if(i != self.spots.length - 1) {
                     dataString += "\n"
