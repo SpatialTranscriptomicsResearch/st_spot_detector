@@ -56,6 +56,7 @@ angular.module('stSpots')
                 cy3Tiles: null,
                 heTiles: null,
                 cy3Active: null,
+                cy3Filename: '',
                 errorText: '',
                 rotate: false,
                 imageToggleImage: {

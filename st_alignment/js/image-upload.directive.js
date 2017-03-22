@@ -19,6 +19,7 @@ angular.module('stSpots')
                     // checks that it hasn't gone from file to empty
                     if(event.target.files.length != 0) {
                         var filename = event.target.files[0].name;
+                        scope.data.cy3Filename = filename;
                         filename = shortenFilename(filename, 20);
                         cy3File.text(filename);
                         var img = event.target.files[0];
