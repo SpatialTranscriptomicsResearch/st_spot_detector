@@ -146,6 +146,10 @@
                         cursor = 'grabbable';
                     }
                 }
+                else if(mouseEvent == self.mouseEvent.move) {
+                    self.spotAdjuster.updateSpotToAdd(eventData.position);
+                    cursor = 'crosshair';
+                }
                 // left click adds or selects spots
                 else if(eventData.button == self.mouseButton.left &&
                         eventData.ctrl == false) {
@@ -167,10 +171,6 @@
                             self.spotSelector.updateSelection(eventData.position);
                         }
                     }
-                }
-                else if(mouseEvent == self.mouseEvent.move) {
-                    self.spotAdjuster.updateSpotToAdd(eventData.position);
-                    cursor = 'crosshair';
                 }
                 else if(mouseEvent == self.mouseEvent.wheel) {
                     // scrolling
