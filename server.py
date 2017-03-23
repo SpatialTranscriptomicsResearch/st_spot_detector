@@ -43,7 +43,7 @@ def create_session_cache():
 @app.get('/detect_spots')
 def get_spots():
     session_id = request.query['session_id']
-    session_cache = session_cacher.get_session_cache(session_id)
+    session_cache = session_cacher.get_session_cache(session_id, logger)
     if(session_cache is not None):
         logger.log(session_id[:20] + ": Detecting spots.")
         # ast converts the query strings into python dictionaries
@@ -147,7 +147,7 @@ def get_tiles():
     image_string = {'cy3': data['cy3_image'], 'he': data['he_image']}
     rotate = True if data['rotate'] == 'true' else False
     session_id = data['session_id']
-    session_cache = session_cacher.get_session_cache(session_id)
+    session_cache = session_cacher.get_session_cache(session_id, logger)
     if(session_cache is not None):
         valid = {}
         for key, image in image_string.items():
@@ -225,4 +225,4 @@ def error404(error):
     return "404 Not Found"
 
 if(__name__ == "__main__"): # if this file is run from the terminal
-    app.run(host='0.0.0.0', port=1337, debug=True, reloader=True)
+    app.run(host='0.0.0.0', port1337, debug=True, reloader=True)
