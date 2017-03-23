@@ -28,7 +28,7 @@ image_processor = ImageProcessor()
 
 app = application = bottle.Bottle()
 
-logger = Logger("st_aligner.log")
+logger = Logger("st_aligner.log", toFile=False)
 
 @app.get('/session_id')
 def create_session_cache():
@@ -225,4 +225,4 @@ def error404(error):
     return "404 Not Found"
 
 if(__name__ == "__main__"): # if this file is run from the terminal
-    app.run(host='0.0.0.0', port1337, debug=True, reloader=True)
+    app.run(host='0.0.0.0', port=1337, debug=True, reloader=True)
