@@ -49,7 +49,6 @@ class SessionCacher:
 
     def get_session_cache(self, session_id, logger):
         logger.log(session_id[:20] + ": Retrieving session cache.")
-        session_cache = session_cacher.get_session_cache(session_id, logger)
         my_session_cache = None
         for session_cache in SessionCacher.session_caches:
             if(session_cache.session_id == session_id):
