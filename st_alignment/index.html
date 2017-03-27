@@ -179,6 +179,10 @@
                     <!-- Help Panel -->
                     <div ng-show='visible.panel.button_help'>
                         {{ getHelpTexts(data.state) }}
+
+                        For more in-depth help, refer to the <a href='https://github.com/SpatialTranscriptomicsResearch/st_aligner/wiki/ST-Spot-Detector-Usage-Guide'>usage guide</a>.
+
+                        <button class='btn btn-primary btn-sm submit-button' ng-click='reshowToasts()'>Show help boxes again.</button>
                     </div>
                     <!-- Info Panel -->
                     <div ng-show='visible.panel.button_info'>

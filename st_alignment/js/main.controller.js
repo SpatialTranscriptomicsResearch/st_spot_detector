@@ -303,12 +303,16 @@ angular.module('stSpots')
                 getSpotData();
             };
 
+            $scope.reshowToasts = function(state) {
+                console.log("Implement me!");
+            };
+
             $scope.getPanelTitle = function(button) {
                 return panelTitles[button];
             };
 
             $scope.getHelpTexts = function(state) {
-                return helpTexts[state];
+                return helpTexts[state] + genericHelpText;
             };
 
             $scope.getSpinnerText = function(state) {
