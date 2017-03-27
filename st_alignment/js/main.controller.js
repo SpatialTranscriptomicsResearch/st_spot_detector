@@ -49,6 +49,7 @@ angular.module('stSpots')
             // other controllers/directives
             $scope.data = {
                 state: 'state_start',
+                logicHandler: null,
                 button: 'button_uploader',
                 sessionId: '',
                 cy3Image: '',
@@ -203,6 +204,8 @@ angular.module('stSpots')
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
 
+                    $scope.data.logicHandler = $scope.predetectionLH;
+
                     openPanel('button_detector');
                 }
                 else if($scope.data.state === 'state_detection') {
@@ -218,6 +221,8 @@ angular.module('stSpots')
                     $scope.visible.spinner = false;
                     $scope.visible.canvas = true;
                     $scope.visible.errorText = false;
+
+                    $scope.data.logicHandler = $scope.adjustmentLH;
 
                     openPanel('button_exporter');
                     openPanel('button_adjuster');
