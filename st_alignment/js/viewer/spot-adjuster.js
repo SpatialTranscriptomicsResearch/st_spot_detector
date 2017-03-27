@@ -32,16 +32,16 @@
         },
         adjustSpots: function(direction) {
             var movement = Vec2.Vec2(0, 0);
-            if(direction === keyevents.left) {
+            if(direction === codes.keyEvent.left) {
                 movement.x -= this.adjustFactor;
             }
-            else if(direction === keyevents.up) {
+            else if(direction === codes.keyEvent.up) {
                 movement.y -= this.adjustFactor;
             }
-            else if(direction === keyevents.right) {
+            else if(direction === codes.keyEvent.right) {
                 movement.x += this.adjustFactor;
             }
-            else if(direction === keyevents.down) {
+            else if(direction === codes.keyEvent.down) {
                 movement.y += this.adjustFactor;
             }
             for(var i = 0; i < self.spots.spots.length; ++i) {

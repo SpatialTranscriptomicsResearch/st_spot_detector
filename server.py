@@ -28,7 +28,7 @@ image_processor = ImageProcessor()
 
 app = application = bottle.Bottle()
 
-logger = Logger("st_aligner.log")
+logger = Logger("st_aligner.log", toFile=False)
 
 @app.get('/session_id')
 def create_session_cache():
@@ -43,7 +43,7 @@ def create_session_cache():
 @app.get('/detect_spots')
 def get_spots():
     session_id = request.query['session_id']
-    session_cache = session_cacher.get_session_cache(session_id)
+    session_cache = session_cacher.get_session_cache(session_id, logger)
     if(session_cache is not None):
         logger.log(session_id[:20] + ": Detecting spots.")
         # ast converts the query strings into python dictionaries
@@ -74,6 +74,8 @@ def get_spots():
             spots = select_tissue_spots(spots, HE_image)
 
         session_cacher.remove_session_cache(session_id, logger)
+
+        spots.calculate_matrix_from_spots()
 
         return spots.wrap_spots()
     else:
@@ -147,7 +149,7 @@ def get_tiles():
     image_string = {'cy3': data['cy3_image'], 'he': data['he_image']}
     rotate = True if data['rotate'] == 'true' else False
     session_id = data['session_id']
-    session_cache = session_cacher.get_session_cache(session_id)
+    session_cache = session_cacher.get_session_cache(session_id, logger)
     if(session_cache is not None):
         valid = {}
         for key, image in image_string.items():

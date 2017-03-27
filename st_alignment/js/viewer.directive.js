@@ -35,8 +35,13 @@ angular.module('stSpots')
                     var spots = new SpotManager();
                     var spotSelector = new SpotSelector(camera, spots);
                     var spotAdjuster = new SpotAdjuster(camera, spots, calibrator.calibrationData);
-                    var logicHandler = new LogicHandler(canvas, camera, spotSelector, spotAdjuster, calibrator, refreshCanvas, scope.setCanvasCursor);
-                    var eventHandler = new EventHandler(scope.data, canvas, camera, logicHandler);
+
+                    scope.eventHandler = new EventHandler(scope.data, canvas, camera);
+
+                    scope.predetectionLH = new PredetectionLH(
+                      camera, calibrator, scope.setCanvasCursor, refreshCanvas);
+                    scope.adjustmentLH = new AdjustmentLH(
+                      camera, spotAdjuster, spotSelector, scope.setCanvasCursor, refreshCanvas);
 
                     var images = {
                         images: '',
@@ -92,14 +97,14 @@ angular.module('stSpots')
                         else if(scope.data.state == 'state_adjustment') {
                             renderer.renderSpots(spots.spots)
                             renderer.renderSpotSelection(spotSelector.renderingRect)
-                            if(logicHandler.addingSpots) {
+                            if(scope.adjustmentLH.addingSpots) {
                                 renderer.renderSpotToAdd(spots.spotToAdd);
                             }
                         }
                     }
 
                     scope.addSpots = function() {
-                        logicHandler.addingSpots = true;
+                        scope.adjustmentLH.addingSpots = true;
                         scope.visible.spotAdjuster.button_addSpots       = false;
                         scope.visible.spotAdjuster.button_finishAddSpots = true;
                         scope.visible.spotAdjuster.button_deleteSpots    = false;
@@ -108,7 +113,7 @@ angular.module('stSpots')
                     };
 
                     scope.finishAddSpots = function() {
-                        logicHandler.addingSpots = false;
+                        scope.adjustmentLH.addingSpots = false;
                         scope.visible.spotAdjuster.button_addSpots       = true;
                         scope.visible.spotAdjuster.button_finishAddSpots = false;
                         scope.visible.spotAdjuster.button_deleteSpots    = true;
@@ -135,7 +140,7 @@ angular.module('stSpots')
                     };
 
                     scope.zoom = function(direction) {
-                        camera.navigate(keyevents[direction]);
+                        camera.navigate(codes.keyEvent[direction]);
                         refreshCanvas();
                     };
 

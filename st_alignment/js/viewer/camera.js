@@ -67,22 +67,22 @@
             movement = Vec2.scale(movement, 1 - self.scaleFactor); // scaling it down for slight movement
 
             var scaleFactor = 1.0;
-            if(dir === keyevents.left) {
+            if(dir === codes.keyEvent.left) {
                 movement.x -= self.navFactor;
             }
-            else if(dir === keyevents.up) {
+            else if(dir === codes.keyEvent.up) {
                 movement.y -= self.navFactor;
             }
-            else if(dir === keyevents.right) {
+            else if(dir === codes.keyEvent.right) {
                 movement.x += self.navFactor;
             }
-            else if(dir === keyevents.down) {
+            else if(dir === codes.keyEvent.down) {
                 movement.y += self.navFactor;
             }
-            else if(dir === keyevents.zin) {
+            else if(dir === codes.keyEvent.zin) {
                 scaleFactor = 1 / self.scaleFactor; // 1.05
             }
-            else if(dir === keyevents.zout) {
+            else if(dir === codes.keyEvent.zout) {
                 scaleFactor = self.scaleFactor; // 0.95
             }
 
