@@ -8,6 +8,7 @@
         self.tissueSpots = [];
         self.spacer = {};
         self.scalingFactor;
+        self.transformMatrix;
         self.spotToAdd = {
             renderPosition: Vec2.Vec2(0, 0)
         };
@@ -23,6 +24,9 @@
             self.spots = spotData.spots;
             self.spacer = spotData.spacer;
             self.tissueSpots = spotData.tissue_spots;
+            // the 3x3 affine transformation matrix between the adjusted array and pixel coordinates
+            // represented as a string in the format a11 a12 a13 a21 a22 a23 a31 a32 a33
+            self.transformMatrix = spotData.transform_matrix;
         },
         getSpots: function() {
             return {spots: self.spots, spacer: self.spacer};

@@ -75,6 +75,8 @@ def get_spots():
 
         session_cacher.remove_session_cache(session_id, logger)
 
+        spots.calculate_matrix_from_spots()
+
         return spots.wrap_spots()
     else:
         response.status = 400
