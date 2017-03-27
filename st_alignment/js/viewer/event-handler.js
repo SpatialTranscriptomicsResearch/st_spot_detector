@@ -2,11 +2,10 @@
 
 (function() {
     var self;
-    var EventHandler = function(scopeData, canvas, camera, logicHandler) {
+    var EventHandler = function(scopeData, canvas, camera) {
         self = this;
         self.canvas = canvas;
         self.camera = camera;
-        self.logicHandler = logicHandler;
         self.scopeData = scopeData;
 
         self.mousePos = {};
@@ -19,17 +18,18 @@
   
     EventHandler.prototype = {
         passEventToLogicHandler: function(evt) {
-            if(self.scopeData.state == 'state_predetection' || self.scopeData.state == 'state_adjustment') {
-                if(evt.type == 'mouse') {
-                    self.logicHandler.processMouseEvent(self.scopeData.state, evt.eventType, evt.data);
+            var logicHandler = self.scopeData.logicHandler;
+            if(logicHandler === null)
+                return;
+            if(evt.type == 'mouse') {
+                logicHandler.processMouseEvent(evt.eventType, evt.data);
+            }
+            else if(evt.type == 'key') {
+                if(evt.keyDirection == 'down') {
+                    logicHandler.processKeydownEvent(evt.keyEvent);
                 }
-                else if(evt.type == 'key') {
-                    if(evt.keyDirection == 'down') {
-                        self.logicHandler.processKeydownEvent(self.scopeData.state, evt.keyEvent);
-                    }
-                    else if(evt.keyDirection == 'up') {
-                        self.logicHandler.processKeyupEvent(self.scopeData.state, evt.keyEvent);
-                    }
+                else if(evt.keyDirection == 'up') {
+                    logicHandler.processKeyupEvent(evt.keyEvent);
                 }
             }
         },
@@ -40,7 +40,7 @@
                 self.mouseButtonDown = e.button;
                 var mouseEvent = {
                     type: 'mouse',
-                    eventType: self.logicHandler.mouseEvent.down,
+                    eventType: codes.mouseEvent.down,
                     data: {
                         position: self.mousePos,
                         button: e.button,
@@ -55,7 +55,7 @@
                 self.mouseDown = false;
                 var mouseEvent = {
                     type: 'mouse',
-                    eventType: self.logicHandler.mouseEvent.up,
+                    eventType: codes.mouseEvent.up,
                     data: {
                         position: self.mousePos,
                         button: e.button,
@@ -73,10 +73,10 @@
                 var thisEventType;
                 if(self.mouseDown) {
                     mouseButton = self.mouseButtonDown; // required for Firefox, otherwise it attributes all movement to the left button
-                    thisEventType = self.logicHandler.mouseEvent.drag;
+                    thisEventType = codes.mouseEvent.drag;
                 }
                 else {
-                    thisEventType = self.logicHandler.mouseEvent.move;
+                    thisEventType = codes.mouseEvent.move;
                 }
                 var mouseEvent = {
                     type: 'mouse',
@@ -95,14 +95,14 @@
                 self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 var direction;
                 if(e.deltaY < 0 || e.detail < 0) {
-                    direction = keyevents.zin;
+                    direction = codes.keyEvent.zin;
                 }
                 else if(e.deltaY > 0 || e.detail > 0) {
-                    direction = keyevents.zout;
+                    direction = codes.keyEvent.zout;
                 }
                 var mouseEvent = {
                     type: 'mouse',
-                    eventType: self.logicHandler.mouseEvent.wheel,
+                    eventType: codes.mouseEvent.wheel,
                     data: {
                         position: self.mousePos,
                         direction: direction
@@ -118,9 +118,9 @@
             document.onkeydown = function(event) {
                 event = event || window.event;
                 var keyName;
-                for(var key in keycodes) { // iterating through the possible keycodes
-                    if(keycodes.hasOwnProperty(key)) { // only counts as a key if it's in a direct property
-                        if(keycodes[key].includes(event.which)) { // is the event one of the keys?
+                for(var key in codes.keys) { // iterating through the possible keycodes
+                    if(codes.keys.hasOwnProperty(key)) { // only counts as a key if it's in a direct property
+                        if(codes.keys[key].includes(event.which)) { // is the event one of the keys?
                             // then that's the key we want!
                             keyName = key;
                         }
@@ -131,7 +131,7 @@
                     var keyEvent = {
                         type: 'key',
                         keyDirection: 'down',
-                        keyEvent: keyevents[keyName]
+                        keyEvent: codes.keyEvent[keyName]
                     };
                     self.passEventToLogicHandler(keyEvent);
                 }
@@ -139,9 +139,9 @@
             document.onkeyup = function(event) {
                 event = event || window.event;
                 var keyName;
-                for(var key in keycodes) { // iterating through the possible keycodes
-                    if(keycodes.hasOwnProperty(key)) { // only counts as a key if it's in a direct property
-                        if(keycodes[key].includes(event.which)) { // is the event one of the keys?
+                for(var key in codes.keys) { // iterating through the possible keycodes
+                    if(codes.keys.hasOwnProperty(key)) { // only counts as a key if it's in a direct property
+                        if(codes.keys[key].includes(event.which)) { // is the event one of the keys?
                             // then that's the key we want!
                             keyName = key;
                         }
@@ -152,7 +152,7 @@
                     var keyEvent = {
                         type: 'key',
                         keyDirection: 'up',
-                        keyEvent: keyevents[keyName]
+                        keyEvent: codes.keyEvent[keyName]
                     };
                     self.passEventToLogicHandler(keyEvent);
                 }
