@@ -151,20 +151,27 @@ angular.module('stSpots')
                         var filetype = type.slice(0, 3) + "_" + selection.slice(0, 3) + "-";
                         var filename = "spot_data-" + filetype + scope.data.cy3Filename.slice(0, -3) + "tsv";
 
-                        // the next 11 lines are adapted from https://github.com/mholt/PapaParse/issues/175
+                        exportFile(blob, filename, "text/tsv");
+                    };
+
+                    scope.getSpotMatrix = function() {
+                        return spots.transformMatrix;
+                    };
+
+                    var exportFile = function(fileblob, filename, filetype) {
+                        // this function is adapted from https://github.com/mholt/PapaParse/issues/175
                         if(window.navigator.msSaveOrOpenBlob) { // IE hack; see http://msdn.microsoft.com/en-us/library/ie/hh779016.aspx
-                            window.navigator.msSaveBlob(blob, filename);
+                            window.navigator.msSaveBlob(fileblob, filename);
                         }
                         else {
                             var a = window.document.createElement("a");
-                            a.href = window.URL.createObjectURL(blob, {type: 'text/tsv'});
+                            a.href = window.URL.createObjectURL(fileblob, {type: filetype});
                             a.download = filename;
                             document.body.appendChild(a);
                             a.click();  // IE: "Access is denied"; see: https://connect.microsoft.com/IE/feedback/details/797361/ie-10-treats-blob-url-as-cross-origin-and-denies-access
                             document.body.removeChild(a);
                         }
                     };
-                    
                 }
             };
         });

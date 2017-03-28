@@ -186,6 +186,11 @@ hr {
     margin: 0px;
 }
 
+.clear {
+    height: 20px;
+    margin-bottom: 10px;
+}
+
 .spot-color-selector {
 }
 

@@ -63,7 +63,8 @@ angular.module('stSpots')
                 imageToggleImage: {
                     Cy3: 'images/imageToggleCy3.png',
                     HE: 'images/imageToggleHE.png'
-                }
+                },
+                spotTransformMatrx: null,
             };
 
             $scope.classes = {
@@ -285,6 +286,7 @@ angular.module('stSpots')
                     var successCallback = function(response) {
                         $scope.updateState('state_adjustment');
                         $scope.loadSpots(response.data); // defined in the viewer directive
+                        $scope.data.spotTransformMatrx = response.data.transform_matrix;
                     };
                     var errorCallback = function(response) {
                         $scope.data.errorText = response.data;
