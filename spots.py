@@ -3,6 +3,7 @@
 from PIL import Image
 import math
 import numpy as np
+import random
 
 def distance_between(a, b):
     w = a['x'] - b['x']
@@ -264,20 +265,21 @@ class Spots:
             }
             spot['diameter'] = spot['diameter'] * scaling_factor
 
-    def calculate_matrix_from_spots(self):
+    def calculate_matrix_from_spots(self, num_spots=20):
         """Calculates a 3x3 affine transformation matrix which transforms
         the adjusted array coordinates into the adjusted pixel coordinates.
         The matrix is saved as a string in the form
         a11 a12 a13 a21 a22 a23 a31 a32 a33
         to be later sent to the client side to download.
+	:param num_spots: The number of spots to used in the computation.
 	"""
-
-        # Choosing just the first 4 pair or coordinates (could be better to use more coordinates and randomly chosen)
 
         adjusted_array = []
         pixel_array = []
-
-        for spot in self.spots:
+	# Not including all the spots for computational reasons
+	# (NOTE: spots are chosen from a random distribution)
+        for spot in random.sample(self.spots, num_spots) \
+	if len(self.spots) > num_spots else self.spots:
             array_coord = [
                 spot['newArrayPosition']['x'],
                 spot['newArrayPosition']['y']
@@ -291,27 +293,20 @@ class Spots:
 
         # Primary corresponds to adjusted array coordinates
         # Secondary corresponds to the respective adjusted pixel coordinates
-
         primary = np.array(adjusted_array)
         secondary = np.array(pixel_array)
 
         # Pad the data with ones, so that our transformation can do translations too
         pad = lambda x: np.hstack([x, np.ones((x.shape[0], 1))])
-        unpad = lambda x: x[:,:-1]
         X = pad(primary)
         Y = pad(secondary)
 
         # Solve the least squares problem X * A = Y to find our transformation matrix A
         A, res, rank, s = np.linalg.lstsq(X, Y)
-        # This is a function that uses the transformation matrix A 
-        transform = lambda x: unpad(np.dot(pad(x), A))
 
         # the matrix is serialized to a string for sending over network as JSON
         matrix = ""
-
         for row in A:
-            print(row)
             for entry in row:
-                matrix += '%f ' % round(entry, 6)
-
+                matrix += '%f ' % round(entry, 4)
         self.transform_matrix = matrix
