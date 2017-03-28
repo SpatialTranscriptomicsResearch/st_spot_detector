@@ -1,11 +1,11 @@
-# ST Aligner
+# ST Spots Detector
 
-A web tool for automatic spot detection and positional adjustments for ST datasets. 
+A web tool for automatic spots detection and positional adjustments for ST datasets. 
 
-The arrays used to generate ST Datasets may contain positional variations due to printing artifacts. This web tool aims to detect correct spot positions using the images generated from the ST protocol.
+The arrays used to generate ST Datasets may contain positional variations due to printing artifacts. This web tool aims to detect correct spots positions using the images generated from the ST protocol.
 In order to obtain relevant experimental data, it is also possible to automatically select the spots which are located under the tissue, using a corresponding HE image.
-The spot positions and selections are further adjustable to one's own needs.
-A file is generated which contains the corrected spot coordinates of the ST data.
+The spots positions and selections are further adjustable to one's own needs.
+A file is generated which contains the corrected spot coordinates of the ST data in the format of choice (array coordinates or pixel coordinates) as well as file containing a 3x3 affine matrix to transform array coordinates to pixel coordinates which can be useful for downstream analysis.
 
 NOTE: this software is currently not yet fully functional and is in a testing stage of development. 
 
@@ -104,7 +104,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
 For any queries or concerns, feel free to contact the authors at the addresses given below.
 
 ### Client interface
-For a guide on using the ST spot detection tool, please refer to [this guide.](https://github.com/SpatialTranscriptomicsResearch/st_aligner/wiki/ST-Spot-Detector-Usage-Guide)
+For a guide on using the ST spots detection tool, please refer to [this guide.](https://github.com/SpatialTranscriptomicsResearch/st_aligner/wiki/ST-Spot-Detector-Usage-Guide)
 
 ## License
 MIT (see LICENSE).
