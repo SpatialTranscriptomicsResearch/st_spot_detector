@@ -1,10 +1,10 @@
-# ST Spots Detector
+# ST Spot Detector
 
-A web tool for automatic spots detection and positional adjustments for ST datasets. 
+A web tool for automatic spot detection and positional adjustments for ST datasets. 
 
-The arrays used to generate ST Datasets may contain positional variations due to printing artifacts. This web tool aims to detect correct spots positions using the images generated from the ST protocol.
+The arrays used to generate ST Datasets may contain positional variations due to printing artifacts. This web tool aims to detect correct spot positions using the images generated from the ST protocol.
 In order to obtain relevant experimental data, it is also possible to automatically select the spots which are located under the tissue, using a corresponding HE image.
-The spots positions and selections are further adjustable to one's own needs.
+The spot positions and selections are further adjustable to one's own needs.
 A file is generated which contains the corrected spot coordinates of the ST data in the format of choice (array coordinates or pixel coordinates) as well as file containing a 3x3 affine matrix to transform array coordinates to pixel coordinates which can be useful for downstream analysis.
 
 NOTE: this software is currently not yet fully functional and is in a testing stage of development. 
@@ -114,4 +114,5 @@ See AUTHORS.
 
 ## Contact
 Kim Wong <kim.wong@scilifelab.se>
+
 Jose Fernandez <jose.fernandez.navarro@scilifelab.se>
