@@ -116,6 +116,13 @@
         },
         setUpKeyEvents: function(canvas, camera) {
             document.onkeydown = function(event) {
+                registerKeyEvent(event, 'down');
+            };
+            document.onkeyup = function(event) {
+                registerKeyEvent(event, 'up');
+            }
+
+            var registerKeyEvent = function(event, keyDirection) {
                 event = event || window.event;
                 var keyName;
                 for(var key in codes.keys) { // iterating through the possible keycodes
@@ -130,33 +137,12 @@
                 if(keyName) {
                     var keyEvent = {
                         type: 'key',
-                        keyDirection: 'down',
+                        keyDirection: keyDirection,
                         keyEvent: codes.keyEvent[keyName]
                     };
                     self.passEventToLogicHandler(keyEvent);
                 }
             };
-            document.onkeyup = function(event) {
-                event = event || window.event;
-                var keyName;
-                for(var key in codes.keys) { // iterating through the possible keycodes
-                    if(codes.keys.hasOwnProperty(key)) { // only counts as a key if it's in a direct property
-                        if(codes.keys[key].includes(event.which)) { // is the event one of the keys?
-                            // then that's the key we want!
-                            keyName = key;
-                        }
-                    }
-                }
-                // send it to the logic handler if not undefined
-                if(keyName) {
-                    var keyEvent = {
-                        type: 'key',
-                        keyDirection: 'up',
-                        keyEvent: codes.keyEvent[keyName]
-                    };
-                    self.passEventToLogicHandler(keyEvent);
-                }
-            }
         }
     };
   

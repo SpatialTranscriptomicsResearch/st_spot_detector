@@ -107,28 +107,37 @@ def select_tissue_spots(spots, image):
     def inner_bounds(center, radius):
         return [int(k * np.floor(radius + k * center)) for k in (-1, 1)]
 
-    def set_selection(spot, tissue_spots):
-        #coords = [ratio * c for c in spot.get('renderPosition').values()]
-        #radius = (ratio * spot.get('diameter')) / 2
-        coords, diam = [[ratio*c for c in coords] for coords in (
-            spot.get('renderPosition').values(), [spot.get('diameter')])]
-        radius = diam[0] / 2
+    def set_selection(spot, tissue_spots, threshold):
+        """Given a particular spot, the spot is set to selected or not
+        depending on whether it is located on the tissue or not.
+        The threshold parameter determines the percentage of how many pixels
+        in the tissue it needs to overlap in order to be classified as being
+        under the tissue.
+        """
+        coords = [ratio * c for c in spot.get('renderPosition').values()]
+        radius = (ratio * spot.get('diameter')) / 2
 
-        # Select spot if any pixel within its inner bounds is in the tissue
-        # mask
+        hit_count = 0 # the number of times the spot hits a pixel
+        total_count = 0 # the number of checks
         r_min, r_max = inner_bounds(coords[0], radius)
         for r in range(r_min, r_max + 1):
             c_min, c_max = inner_bounds(
                 coords[1], np.sqrt(radius ** 2 - (r - coords[0]) ** 2))
             for c in range(c_min, c_max + 1):
+                total_count += 1
                 if mask[r, c]:
-                    tissue_spot = {'arrayPosition': spot['arrayPosition']}
-                    tissue_spots.append(tissue_spot)
-                    spot['selected'] = True
-                    return
+                    # if the pixel is in the tissue mask
+                    hit_count += 1
+
+        if(float(hit_count) / float(total_count) >= threshold):
+            # if over the threshold, then append to tissue_spot array
+            # and set the spot to selected
+            tissue_spot = {'arrayPosition': spot['arrayPosition']}
+            tissue_spots.append(tissue_spot)
+            spot['selected'] = True
 
     for spot in spots.spots:
-        set_selection(spot, tissue_spots)
+        set_selection(spot, tissue_spots, 0.5)
 
     spots.tissue_spots = tissue_spots
 
