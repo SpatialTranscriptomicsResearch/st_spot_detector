@@ -1,5 +1,12 @@
 'use strict';
 
+import angular from 'angular';
+import toastr from 'toastr';
+
+import './app.module';
+import './image-upload.directive';
+import './viewer.directive';
+
 angular.module('stSpots')
     .controller('MainController', [
         '$scope',

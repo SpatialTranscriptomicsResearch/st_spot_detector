@@ -1,5 +1,5 @@
 // Some basic functions for x y objects
-var Vec2 = (function() {
+const Vec2 = (function() {
     return {
         Vec2: function(x, y) {
             if(x == undefined) {x = 0};
@@ -73,3 +73,5 @@ var Vec2 = (function() {
         },
     }
 })();
+
+export default Vec2;

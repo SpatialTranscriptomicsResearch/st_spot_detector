@@ -1,6 +1,6 @@
 'use strict';
 
-(function() {
+const ScaleManager = (function() {
     var ScaleManager = function() {
     };
   
@@ -55,6 +55,8 @@
         },
     };
 
-    this.ScaleManager = ScaleManager;
+    return ScaleManager;
   
-}).call(this);
+}());
+
+export default ScaleManager;

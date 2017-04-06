@@ -1,6 +1,8 @@
 'use strict';
 
-(function() {
+import Vec2 from './vec2';
+
+const Tilemap = (function() {
     var self;
     var Tilemap = function() {
         self = this;
@@ -106,6 +108,8 @@
         }
     };
 
-    this.Tilemap = Tilemap;
+    return Tilemap;
   
-}).call(this);
+}());
+
+export default Tilemap;

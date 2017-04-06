@@ -3,6 +3,22 @@
 // this directive controls the rendering and input of the canvas element
 // used for viewing the image and spots.
 
+import angular from 'angular';
+
+import './main.controller';
+
+import AdjustmentLH from './viewer/logic-handler.adjustment';
+import Calibrator from './viewer/calibrator';
+import Camera from './viewer/camera';
+import EventHandler from './viewer/event-handler';
+import PredetectionLH from './viewer/logic-handler.predetection';
+import Renderer from './viewer/renderer';
+import ScaleManager from './viewer/scale-manager';
+import SpotAdjuster from './viewer/spot-adjuster';
+import SpotManager from './viewer/spots';
+import SpotSelector from './viewer/spot-selector';
+import Tilemap from './viewer/tilemap';
+
 angular.module('stSpots')
     .directive('viewer',
         function() {

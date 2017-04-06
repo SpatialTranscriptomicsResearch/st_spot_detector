@@ -1,0 +1,4 @@
+.tern-project
+devel/*
+dist/*
+node_modules/
