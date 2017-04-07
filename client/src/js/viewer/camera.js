@@ -1,6 +1,9 @@
 /* modified version of  https://github.com/robashton/camera */
 
-(function() {
+import Codes from './keycodes';
+import Vec2 from './vec2';
+
+const Camera = (function() {
   
     var self;
     var Camera = function(ctx, initialPosition, initialScale) {
@@ -67,22 +70,22 @@
             movement = Vec2.scale(movement, 1 - self.scaleFactor); // scaling it down for slight movement
 
             var scaleFactor = 1.0;
-            if(dir === codes.keyEvent.left) {
+            if(dir === Codes.keyEvent.left) {
                 movement.x -= self.navFactor;
             }
-            else if(dir === codes.keyEvent.up) {
+            else if(dir === Codes.keyEvent.up) {
                 movement.y -= self.navFactor;
             }
-            else if(dir === codes.keyEvent.right) {
+            else if(dir === Codes.keyEvent.right) {
                 movement.x += self.navFactor;
             }
-            else if(dir === codes.keyEvent.down) {
+            else if(dir === Codes.keyEvent.down) {
                 movement.y += self.navFactor;
             }
-            else if(dir === codes.keyEvent.zin) {
+            else if(dir === Codes.keyEvent.zin) {
                 scaleFactor = 1 / self.scaleFactor; // 1.05
             }
-            else if(dir === codes.keyEvent.zout) {
+            else if(dir === Codes.keyEvent.zout) {
                 scaleFactor = self.scaleFactor; // 0.95
             }
 
@@ -129,6 +132,8 @@
         }
     };
   
-    this.Camera = Camera;
+    return Camera;
     
-}).call(self);
+}());
+
+export default Camera;

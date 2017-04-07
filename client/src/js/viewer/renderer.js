@@ -1,6 +1,8 @@
 'use strict';
 
-(function() {
+import Tilemap from './tilemap';
+
+const Renderer = (function() {
   
     var self;
     var Renderer = function(context, camera) {
@@ -97,6 +99,8 @@
         }
   };
 
-  this.Renderer = Renderer;
+  return Renderer;
   
-}).call(this);
+}());
+
+export default Renderer;

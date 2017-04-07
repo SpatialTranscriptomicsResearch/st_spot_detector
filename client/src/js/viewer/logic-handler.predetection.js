@@ -1,3 +1,6 @@
+import Codes from './keycodes';
+import LogicHandler from '../logic-handler';
+
 class PredetectionLH extends LogicHandler {
     constructor(camera, calibrator, setCanvasCursor, refreshCanvas) {
         super();
@@ -14,33 +17,33 @@ class PredetectionLH extends LogicHandler {
         var cursor;
         // if at least one line has been selected
         if(this.calibrator.selected.length != 0) {
-            if(mouseEvent == codes.mouseEvent.drag) {
+            if(mouseEvent == Codes.mouseEvent.drag) {
                 this.calibrator.moveLine(eventData.position);
                 cursor = this.checkCalibrationCursor(this.calibrator.selected);
             }
         }
         else {
             // moving the canvas normally
-            if(mouseEvent == codes.mouseEvent.drag) {
+            if(mouseEvent == Codes.mouseEvent.drag) {
                 // maybe this should take the position rather than the difference
                 this.camera.pan(eventData.difference);
                 cursor = 'grabbed';
             }
         }
-        if(mouseEvent == codes.mouseEvent.move) {
+        if(mouseEvent == Codes.mouseEvent.move) {
             this.calibrator.detectHighlight(eventData.position);
             cursor = this.checkCalibrationCursor(this.calibrator.calibrationData.highlighted);
         }
-        else if(mouseEvent == codes.mouseEvent.down) {
+        else if(mouseEvent == Codes.mouseEvent.down) {
             this.calibrator.detectSelection(eventData.position);
             cursor = this.checkCalibrationCursor(this.calibrator.selected);
         }
-        else if(mouseEvent == codes.mouseEvent.up) {
+        else if(mouseEvent == Codes.mouseEvent.up) {
             this.calibrator.endSelection();
             this.calibrator.detectHighlight(eventData.position);
             cursor = this.checkCalibrationCursor(this.calibrator.calibrationData.highlighted);
         }
-        else if(mouseEvent == codes.mouseEvent.wheel) {
+        else if(mouseEvent == Codes.mouseEvent.wheel) {
             this.camera.navigate(eventData.direction, eventData.position);
             this.calibrator.detectHighlight(eventData.position);
             cursor = this.checkCalibrationCursor(this.calibrator.calibrationData.highlighted);
@@ -75,3 +78,5 @@ class PredetectionLH extends LogicHandler {
         return cursor;
     }
 }
+
+export default PredetectionLH;

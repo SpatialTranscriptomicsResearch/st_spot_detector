@@ -1,7 +1,7 @@
-(function() {
+const Codes = (function() {
     'use strict';
 
-    this.codes = Object.freeze({
+    return Object.freeze({
         /* https://css-tricks.com/snippets/javascript/javascript-keycodes/#article-header-id-1 */
         keys: Object.freeze({
             left:  [ 37, 65], // left,  a
@@ -43,4 +43,6 @@
         })
     });
 
-}).call(this);
+}());
+
+export default Codes;

@@ -2,7 +2,10 @@
    should perhaps be a separate container for the selected spots, to
    not need to loop through all of them when adjusting or deleting */
 
-(function() {
+import Codes from './keycodes';
+import Vec2 from './vec2';
+
+const SpotAdjuster = (function() {
     var self;
     var SpotAdjuster = function(camera, spots, calibrationData) {
         self = this;
@@ -111,6 +114,8 @@
         }
     };
 
-    this.SpotAdjuster = SpotAdjuster;
+    return SpotAdjuster;
 
-}).call(self);
+}());
+
+export default SpotAdjuster;

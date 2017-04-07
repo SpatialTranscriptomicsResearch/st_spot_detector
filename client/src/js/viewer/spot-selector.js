@@ -1,6 +1,8 @@
 'use strict';
 
-(function() {
+import Vec2 from './vec2';
+
+const SpotSelector = (function() {
     var self;
   
     var SpotSelector = function(camera, spotManager) {
@@ -100,6 +102,8 @@
         }
   };
 
-  this.SpotSelector = SpotSelector;
+  return SpotSelector;
   
-}).call(this);
+}());
+
+export default SpotSelector;

@@ -229,7 +229,7 @@ def get_tiles():
 
 @app.route('/<filepath:path>')
 def serve_site(filepath):
-    return static_file(filepath, root='./st_alignment')
+    return static_file(filepath, root='../client/devel')
 
 @app.error(404)
 def error404(error):

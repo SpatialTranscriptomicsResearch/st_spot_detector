@@ -1,6 +1,8 @@
 'use strict';
 
-(function() {
+import Vec2 from './vec2';
+
+const Calibrator = (function() {
     var self;
     var Calibrator = function(camera) {
         self = this;
@@ -71,6 +73,8 @@
         }
     };
   
-    this.Calibrator = Calibrator;
+    return Calibrator;
     
-}).call(self);
+}());
+
+export default Calibrator;

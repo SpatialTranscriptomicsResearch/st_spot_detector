@@ -1,3 +1,6 @@
+import Codes from './keycodes';
+import LogicHandler from '../logic-handler';
+
 class AdjustmentLH extends LogicHandler {
     constructor(camera, spotAdjuster, spotSelector, setCanvasCursor, refreshCanvas) {
         super();
@@ -12,7 +15,7 @@ class AdjustmentLH extends LogicHandler {
 
     processKeydownEvent(keyEvent) {
         if(this.addingSpots == false) {
-            if(keyEvent == codes.keyEvent.shift) {
+            if(keyEvent == Codes.keyEvent.shift) {
                 this.spotSelector.toggleShift(true);
             }
             else {
@@ -25,7 +28,7 @@ class AdjustmentLH extends LogicHandler {
             }
         }
         // check for ctrl key down to change cursor
-        if(keyEvent == codes.keyEvent.ctrl) {
+        if(keyEvent == Codes.keyEvent.ctrl) {
             this.setCanvasCursor('grabbable');
         }
         this.refreshCanvas();
@@ -36,12 +39,12 @@ class AdjustmentLH extends LogicHandler {
             this.spotAdjuster.finishAddSpots(false);
         }
         else {
-            if(keyEvent == codes.keyEvent.shift) {
+            if(keyEvent == Codes.keyEvent.shift) {
                 this.spotSelector.toggleShift(false);
             }
         }
 
-        if(keyEvent == codes.keyEvent.ctrl) {
+        if(keyEvent == Codes.keyEvent.ctrl) {
             this.setCanvasCursor('crosshair');
         }
         this.refreshCanvas();
@@ -51,16 +54,16 @@ class AdjustmentLH extends LogicHandler {
         var cursor;
         cursor = 'crosshair';
         // right click moves canvas or spots
-        if(eventData.button == codes.mouseButton.right ||
+        if(eventData.button == Codes.mouseButton.right ||
             eventData.ctrl == true) {
-            if(mouseEvent == codes.mouseEvent.down) {
+            if(mouseEvent == Codes.mouseEvent.down) {
                 this.spotAdjuster.moving = this.spotAdjuster.atSelectedSpots(eventData.position);
                 cursor = 'grabbed';
             }
-            else if(mouseEvent == codes.mouseEvent.up) {
+            else if(mouseEvent == Codes.mouseEvent.up) {
                 this.spotAdjuster.moving = false;
             }
-            else if(mouseEvent == codes.mouseEvent.drag) {
+            else if(mouseEvent == Codes.mouseEvent.drag) {
                 if(this.spotAdjuster.moving) {
                     this.spotAdjuster.dragSpots(eventData.difference);
                 }
@@ -69,37 +72,37 @@ class AdjustmentLH extends LogicHandler {
                 }
                 cursor = 'grabbed';
             }
-            else if(mouseEvent == codes.mouseEvent.move) {
+            else if(mouseEvent == Codes.mouseEvent.move) {
                 cursor = 'grabbable';
             }
         }
-        else if(mouseEvent == codes.mouseEvent.move) {
+        else if(mouseEvent == Codes.mouseEvent.move) {
             this.spotAdjuster.updateSpotToAdd(eventData.position);
             cursor = 'crosshair';
         }
         // left click adds or selects spots
-        else if(eventData.button == codes.mouseButton.left &&
+        else if(eventData.button == Codes.mouseButton.left &&
             eventData.ctrl == false) {
             // in adding state, left click serves to add a new spot
             if(this.addingSpots) {
-                if(mouseEvent == codes.mouseEvent.up) {
+                if(mouseEvent == Codes.mouseEvent.up) {
                     this.spotAdjuster.addSpot(eventData.position);
                 }
             }
             // but in selection state, left click to make a selection
             else {
-                if(mouseEvent == codes.mouseEvent.down) {
+                if(mouseEvent == Codes.mouseEvent.down) {
                     this.spotSelector.beginSelection(eventData.position);
                 }
-                else if(mouseEvent == codes.mouseEvent.up) {
+                else if(mouseEvent == Codes.mouseEvent.up) {
                     this.spotSelector.endSelection();
                 }
-                else if(mouseEvent == codes.mouseEvent.drag) {
+                else if(mouseEvent == Codes.mouseEvent.drag) {
                     this.spotSelector.updateSelection(eventData.position);
                 }
             }
         }
-        else if(mouseEvent == codes.mouseEvent.wheel) {
+        else if(mouseEvent == Codes.mouseEvent.wheel) {
             // scrolling
             this.camera.navigate(eventData.direction, eventData.position);
         }
@@ -107,3 +110,5 @@ class AdjustmentLH extends LogicHandler {
         this.refreshCanvas();
     }
 }
+
+export default AdjustmentLH;

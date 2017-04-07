@@ -1,9 +1,10 @@
 /**
  * logic-handler.js
  * ----------------
- *  Provides: LogicHandler
- *  Requires: keycodes.js
  */
+
+import Codes from './viewer/keycodes';
+import Vec2 from './viewer/vec2';
 
 /**
  * Abstract class that defines a unified interface for the event handler across
@@ -11,10 +12,17 @@
  */
 class LogicHandler {
     constructor() {
-        if (new.target === LogicHandler)
-            throw new TypeError(
-                "Call of new on abstract class LogicHandler not allowed."
-            );
+        /**
+         * FIXME: Have to disable the below for the time being, since new.target
+         *        is not supported in uglify-js yet, see
+         *        https://github.com/mishoo/UglifyJS2/issues/938 for the bug
+         *        tracker issue.
+         */
+
+        // if (new.target === LogicHandler)
+        //     throw new TypeError(
+        //         "Call of new on abstract class LogicHandler not allowed."
+        //     );
     }
 
     /**
@@ -77,9 +85,9 @@ class LogicHandler {
     _recordKeyStates() {
         var keys = {};
         var codeToKey = {};
-        for (let key in codes.keys) {
+        for (let key in Codes.keys) {
             keys[key] = false;
-            codeToKey[codes.keyEvent[key]] = key;
+            codeToKey[Codes.keyEvent[key]] = key;
         }
         keys.mouseLeft = false;
         keys.mouseRight = false;
@@ -105,21 +113,21 @@ class LogicHandler {
 
         var oldM = this.processMouseEvent;
         this.processMouseEvent = function(e, data) {
-            if (e == codes.mouseEvent.down) {
+            if (e == Codes.mouseEvent.down) {
                 switch (data.button) {
-                    case codes.mouseButton.left:
+                    case Codes.mouseButton.left:
                         keys.mouseLeft = true;
                         break;
-                    case codes.mouseButton.right:
+                    case Codes.mouseButton.right:
                         keys.mouseRight = true;
                         break;
                 }
-            } else if (e == codes.mouseEvent.up) {
+            } else if (e == Codes.mouseEvent.up) {
                 switch (data.button) {
-                    case codes.mouseButton.left:
+                    case Codes.mouseButton.left:
                         keys.mouseLeft = false;
                         break;
-                    case codes.mouseButton.right:
+                    case Codes.mouseButton.right:
                         keys.mouseRight = false;
                         break;
                 }
@@ -128,3 +136,5 @@ class LogicHandler {
         };
     }
 }
+
+export default LogicHandler;

@@ -3,6 +3,10 @@
 // this directive is bound to the input button on the menu bar and is used
 // to detect an image file being selected and converts the image to a string
 
+import angular from 'angular';
+
+import './main.controller';
+
 angular.module('stSpots')
     .directive('imageUpload', [
         function() {

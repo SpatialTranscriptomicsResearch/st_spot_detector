@@ -1,4 +1,6 @@
-(function() {
+import Vec2 from './vec2';
+
+const SpotManager = (function() {
 
     var self;
     var SpotManager = function(camera) {
@@ -84,6 +86,8 @@
         }
     };
 
-    this.SpotManager = SpotManager;
+    return SpotManager;
 
-}).call(this);
+}());
+
+export default SpotManager;

@@ -1,6 +1,9 @@
 'use strict';
 
-(function() {
+import Codes from './keycodes';
+import Vec2 from './vec2';
+
+const EventHandler = (function() {
     var self;
     var EventHandler = function(scopeData, canvas, camera) {
         self = this;
@@ -40,7 +43,7 @@
                 self.mouseButtonDown = e.button;
                 var mouseEvent = {
                     type: 'mouse',
-                    eventType: codes.mouseEvent.down,
+                    eventType: Codes.mouseEvent.down,
                     data: {
                         position: self.mousePos,
                         button: e.button,
@@ -55,7 +58,7 @@
                 self.mouseDown = false;
                 var mouseEvent = {
                     type: 'mouse',
-                    eventType: codes.mouseEvent.up,
+                    eventType: Codes.mouseEvent.up,
                     data: {
                         position: self.mousePos,
                         button: e.button,
@@ -73,10 +76,10 @@
                 var thisEventType;
                 if(self.mouseDown) {
                     mouseButton = self.mouseButtonDown; // required for Firefox, otherwise it attributes all movement to the left button
-                    thisEventType = codes.mouseEvent.drag;
+                    thisEventType = Codes.mouseEvent.drag;
                 }
                 else {
-                    thisEventType = codes.mouseEvent.move;
+                    thisEventType = Codes.mouseEvent.move;
                 }
                 var mouseEvent = {
                     type: 'mouse',
@@ -95,14 +98,14 @@
                 self.mousePos = Vec2.Vec2(e.layerX, e.layerY);
                 var direction;
                 if(e.deltaY < 0 || e.detail < 0) {
-                    direction = codes.keyEvent.zin;
+                    direction = Codes.keyEvent.zin;
                 }
                 else if(e.deltaY > 0 || e.detail > 0) {
-                    direction = codes.keyEvent.zout;
+                    direction = Codes.keyEvent.zout;
                 }
                 var mouseEvent = {
                     type: 'mouse',
-                    eventType: codes.mouseEvent.wheel,
+                    eventType: Codes.mouseEvent.wheel,
                     data: {
                         position: self.mousePos,
                         direction: direction
@@ -125,9 +128,9 @@
             var registerKeyEvent = function(event, keyDirection) {
                 event = event || window.event;
                 var keyName;
-                for(var key in codes.keys) { // iterating through the possible keycodes
-                    if(codes.keys.hasOwnProperty(key)) { // only counts as a key if it's in a direct property
-                        if(codes.keys[key].includes(event.which)) { // is the event one of the keys?
+                for(var key in Codes.keys) { // iterating through the possible keycodes
+                    if(Codes.keys.hasOwnProperty(key)) { // only counts as a key if it's in a direct property
+                        if(Codes.keys[key].includes(event.which)) { // is the event one of the keys?
                             // then that's the key we want!
                             keyName = key;
                         }
@@ -138,7 +141,7 @@
                     var keyEvent = {
                         type: 'key',
                         keyDirection: keyDirection,
-                        keyEvent: codes.keyEvent[keyName]
+                        keyEvent: Codes.keyEvent[keyName]
                     };
                     self.passEventToLogicHandler(keyEvent);
                 }
@@ -146,6 +149,8 @@
         }
     };
   
-    this.EventHandler = EventHandler;
+    return EventHandler;
     
-}).call(self);
+}());
+
+export default EventHandler;
