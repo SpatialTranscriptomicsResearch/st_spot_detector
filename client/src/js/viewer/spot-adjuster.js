@@ -35,16 +35,16 @@ const SpotAdjuster = (function() {
         },
         adjustSpots: function(direction) {
             var movement = Vec2.Vec2(0, 0);
-            if(direction === codes.keyEvent.left) {
+            if(direction === Codes.keyEvent.left) {
                 movement.x -= this.adjustFactor;
             }
-            else if(direction === codes.keyEvent.up) {
+            else if(direction === Codes.keyEvent.up) {
                 movement.y -= this.adjustFactor;
             }
-            else if(direction === codes.keyEvent.right) {
+            else if(direction === Codes.keyEvent.right) {
                 movement.x += this.adjustFactor;
             }
-            else if(direction === codes.keyEvent.down) {
+            else if(direction === Codes.keyEvent.down) {
                 movement.y += this.adjustFactor;
             }
             for(var i = 0; i < self.spots.spots.length; ++i) {
