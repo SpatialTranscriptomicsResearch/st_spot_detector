@@ -2,6 +2,7 @@ SRC_DIR = src
 DEVEL_DIR = devel
 DISTR_DIR = dist
 NODE_DIR = ./node_modules/.bin
+DOC_DIR = ./doc
 
 DEVEL ?= 0
 ifeq ($(DEVEL), 1)
@@ -16,10 +17,15 @@ all: \
 	$(shell find $(SRC_DIR) -type f | grep -e \.html$ | sed -r 's/^$(SRC_DIR)/$(BIN_DIR)/') \
 	$(shell find $(SRC_DIR) -type f | grep -e \.png$ | sed -r 's/^$(SRC_DIR)/$(BIN_DIR)/') \
 	$(BIN_DIR)/stylesheet.css \
-	$(BIN_DIR)/main.bundle.js
+	$(BIN_DIR)/main.bundle.js \
+	$(DOC_DIR)/index.html
 
 clean:
 	rm -fr $(BIN_DIR)/*
+	rm -fr $(DOC_DIR)
+
+$(DOC_DIR)/index.html: $(shell find $(SRC_DIR) -type f | grep -e \.js$ )
+	$(NODE_DIR)/jsdoc $(SRC_DIR) -r -d $(DOC_DIR) -c ./jsdoc.conf.json
 
 $(DISTR_DIR)/%.html: $(SRC_DIR)/%.html
 	mkdir -p `dirname $@`

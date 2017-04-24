@@ -13,6 +13,7 @@
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
     "html-minifier": "^3.4.2",
+    "jsdoc": "^3.4.3",
     "uglify-js": "^2.8.21",
     "webpack": "^2.3.3"
   },
