@@ -3,8 +3,8 @@
 class Tilemap:
     """Holds the tile data"""
     tilemapLevels = [1, 2, 3, 5, 10, 20]
-    tileWidth = 1024
-    tileHeight = 1024
+    tileWidth = 256
+    tileHeight = 256
 
     def __init__(self):
         self.tilemaps = {}
