@@ -3,7 +3,7 @@ const path = require('path');
 const distribute = {
     context: __dirname,
     entry: {
-        main: ['babel-polyfill', './src/js/main.controller.js'],
+        main: ['babel-polyfill', './src/js/app.module.js'],
     },
     output: {
         path: path.join(__dirname, 'dist/'),
