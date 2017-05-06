@@ -40,7 +40,7 @@ function viewer() {
             var scaleManager = new ScaleManager();
 
             let tileDim;
-            var tilemapLevel = 20;
+            var tilemapLevel = 16;
             var tilePosition;
             var camera = new Camera(fgCtx);
             var renderer = new Renderer(fgCtx, camera);
