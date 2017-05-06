@@ -73,3 +73,16 @@ export function combinations(arr1, arr2) {
         [],
     );
 }
+
+/**
+ * Splits an array a into subarrays, each of length n. If the length of a isn't divisible by n, the
+ * last subarray will have length n % a.length.
+ */
+export function chunksOf(n, a) {
+    if (a.length <= n) {
+        return [a];
+    }
+    const ret = [_.take(a, n)];
+    ret.push(...chunksOf(n, _.drop(a, n)));
+    return ret;
+}

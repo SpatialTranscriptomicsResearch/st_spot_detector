@@ -3,7 +3,7 @@ import math from 'mathjs';
 
 import Vec2 from './vec2';
 
-import { combinations, intBounds, mulVec2 } from '../utils';
+import { chunksOf, combinations, intBounds, mulVec2 } from '../utils';
 
 const SpotManager = (function() {
 
@@ -41,7 +41,12 @@ const SpotManager = (function() {
             );
             // the 3x3 affine transformation matrix between the adjusted array and pixel coordinates
             // represented as a string in the format a11 a12 a13 a21 a22 a23 a31 a32 a33
-            self.transformMatrix = data.spots.transform_matrix;
+            self.transformMatrix = math.matrix(
+                chunksOf(3, _.map(
+                    data.spots.transform_matrix.trim().split(' '),
+                    x => parseFloat(x, 10),
+                )),
+            );
         },
         loadMask: function(mask) {
             self.mask = _.reduce(

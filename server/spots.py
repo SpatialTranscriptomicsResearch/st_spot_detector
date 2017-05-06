@@ -303,6 +303,9 @@ class Spots:
         # Solve the least squares problem X * A = Y to find our transformation matrix A
         A, res, rank, s = np.linalg.lstsq(X, Y)
 
+        # Transpose A to the usual form (right-multiplicative by column vector)
+        A = np.transpose(A)
+
         # the matrix is serialized to a string for sending over network as JSON
         matrix = ""
         for row in A:

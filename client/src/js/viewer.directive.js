@@ -70,6 +70,28 @@ function viewer() {
                 spots.loadSpots(spotData);
             };
 
+            scope.getTransformationMatrix = function() {
+                if (spots.transformMatrix === undefined) {
+                    return 'N/A';
+                }
+                const ls = layerManager.getLayers();
+                // if HE image was uploaded, transform coordinates to HE space
+                const tmat = 'he' in ls ?
+                    math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat) :
+                    math.eye(3);
+                return _.compose(
+                    _.partial(
+                        math.multiply,
+                        math.matrix([
+                            [spots.scalingFactor, 0, 0],
+                            [0, spots.scalingFactor, 0],
+                            [0, 0, 1],
+                        ]),
+                    ),
+                    _.partial(math.multiply, tmat),
+                )(spots.transformMatrix).toString();
+            };
+
             scope.selectInsideTissue = function() {
                 spots.selectTissueSpots(
                     math.multiply(

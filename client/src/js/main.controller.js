@@ -62,7 +62,6 @@ const main = [
                 Cy3: 'images/imageToggleCy3.png',
                 HE: 'images/imageToggleHE.png'
             },
-            spotTransformMatrx: null,
         };
 
         $scope.classes = {
