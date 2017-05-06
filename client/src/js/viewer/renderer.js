@@ -1,7 +1,5 @@
 'use strict';
 
-import Tilemap from './tilemap';
-
 const Renderer = (function() {
 
     var self;
@@ -30,7 +28,10 @@ const Renderer = (function() {
             }
         },
         clearCanvas: function(context = self.ctx) {
+            context.save();
+            context.resetTransform();
             context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+            context.restore();
         },
         renderImages: function(canvas, images) {
             const ctx = canvas.getContext('2d');

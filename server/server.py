@@ -189,15 +189,8 @@ def get_tiles():
                 session_cache.tiles[key] = tiles_
 
                 if(key == 'cy3'):
-                    # we want to send back the scaling factor of the image to
-                    # the client, so it can convert its spot data back to the
-                    # original image size.
-                    tiles.update({'scaling_factor': scaling_factor})
-                    
-                    # we also want to save a scaled down version of the image
+                    # we want to save a scaled down version of the image
                     # for spot detection later :)
-                    # if the image is scaled down to 4k the scaling factor
-                    # will for example be 20k / 4k, i.e. 5
                     spot_img, spot_sf = image_processor.resize_image(image,
                         [4000, 4000])
                     session_cache.spot_image = spot_img
@@ -209,7 +202,18 @@ def get_tiles():
                         [500, 500])[0]
                     session_cache.tissue_image = tissue_img
 
-                tiles.update({key: tiles_})
+                tiles.update({
+                    key: {
+                        'histogram': image.histogram(),
+                        # we want to send back the scaling factor of the image to
+                        # the client, so it can convert its spot data back to the
+                        # original image size.
+                        # if the image is scaled down to 4k the scaling factor
+                        # will for example be 20k / 4k, i.e. 5
+                        'scaling_factor': scaling_factor,
+                        'tiles': tiles_.tilemaps,
+                    },
+                })
                 logger.log(session_id[:20] + ": Image tiling complete.")
             #TODO: make sure the large images get cleared out of the memory
         else:
@@ -223,9 +227,12 @@ def get_tiles():
         logger.log(session_id[:20] + ": Error. " + error_message)
         return error_message
 
-    return {'cy3_tiles': tiles['cy3'].wrapped_tiles(),
-            'he_tiles': tiles['he'].wrapped_tiles() if valid['he'] else None,
-            'scaling_factor': scaling_factor}
+    ret = {
+        'tiles': tiles,
+        'levels': Tilemap.tilemapLevels,
+        'dim': [Tilemap.tileWidth, Tilemap.tileHeight],
+    }
+    return ret
 
 @app.route('/<filepath:path>')
 def serve_site(filepath):

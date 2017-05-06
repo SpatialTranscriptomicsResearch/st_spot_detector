@@ -2,26 +2,12 @@
 
 class Tilemap:
     """Holds the tile data"""
+    tilemapLevels = [1, 2, 3, 5, 10, 20]
+    tileWidth = 1024
+    tileHeight = 1024
 
     def __init__(self):
-        # everything is wrapped in a dict to make it easier
-        # to return from a GET request in a JSON data format
-        self.tilemapLevels = [1, 2, 3, 5, 10, 20]
-        # do not change these two tileWidth and tileHeight values:
-        # can lead to offset point rendering and bad quality images etc.
-        # a fix would be nice!
-        self.tileWidth = 1024
-        self.tileHeight = 1024
         self.tilemaps = {}
-
-    def wrapped_tiles(self):
-        dict_wrapper = {
-            'tilemapLevels': self.tilemapLevels,
-            'tileWidth': self.tileWidth,
-            'tileHeight': self.tileHeight,
-            'tilemaps': self.tilemaps
-        }
-        return dict_wrapper
 
     def put_tiles_at(self, tilemap_level, tiles):
         """This takes a 2D array of tiles and inserts it into

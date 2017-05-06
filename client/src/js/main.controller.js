@@ -348,11 +348,7 @@ const main = [
 
                         $scope.updateScalingFactor(response.data.scaling_factor);
 
-                        const tiles = { cy3: response.data.cy3_tiles };
-                        if (response.data.he_tiles !== null) {
-                            tiles.he = response.data.he_tiles;
-                        }
-                        $scope.receiveTilemap(tiles); // defined in the viewer directive
+                        $scope.receiveTilemap(response.data); // defined in the viewer directive
 
                         $scope.data.cy3Active = true;
                         updateVisibility();

@@ -1,7 +1,11 @@
 // this directive controls the rendering and input of the canvas element
 // used for viewing the image and spots.
 
+import 'ctx-polyfill';  // provides polyfill for ctx.currentTransform
+
 import $ from 'jquery';
+import _ from 'underscore';
+import math from 'mathjs';
 
 import AdjustmentLH from './viewer/logic-handler.adjustment';
 import Calibrator from './viewer/calibrator';
@@ -10,11 +14,14 @@ import EventHandler from './viewer/event-handler';
 import LayerManager from './viewer/layer-manager';
 import PredetectionLH from './viewer/logic-handler.predetection';
 import Renderer from './viewer/renderer';
+import RenderingClient, { ReturnCodes } from './viewer/rendering-client';
 import ScaleManager from './viewer/scale-manager';
 import SpotAdjuster from './viewer/spot-adjuster';
 import SpotManager from './viewer/spots';
 import SpotSelector from './viewer/spot-selector';
-import Tilemap from './viewer/tilemap';
+import Vec2 from './viewer/vec2';
+
+import { mathjsToTransform, transformToMathjs } from './utils';
 
 function viewer() {
     return {
@@ -31,6 +38,7 @@ function viewer() {
 
             var scaleManager = new ScaleManager();
 
+            let tileDim;
             var tilemapLevel = 20;
             var tilePosition;
             var camera = new Camera(fgCtx);
@@ -97,16 +105,62 @@ function viewer() {
                     (layer) => {
                         const canvas = layer.canvas;
                         const context = canvas.getContext('2d');
-                        renderer.clearCanvas(context);
 
                         if (layer.get('visible') === false) {
+                            renderer.clearCanvas(context);
                             return;
                         }
 
-                        const tilemap = layer.get('tilemap');
-                        const pos = tilemap.getTilePosition(camera.position, tilemapLevel);
-                        const images = tilemap.getRenderableImages(pos, tilemapLevel);
-                        renderer.renderImages(canvas, images);
+                        const tmat = math.multiply(camera.getTransform(), layer.tmat);
+
+                        // Compute difference to previous transformation matrix, set the
+                        // transformation matrix to the difference, and redraw the canvas at (0, 0),
+                        // thus transforming the canvas according to the difference (this serves as
+                        // a 'quick refresh' before the requests to the renderingClient complete).
+                        const tmatOld = transformToMathjs(context.currentTransform);
+                        const tmatDiff = math.multiply(tmat, math.inv(tmatOld));
+
+                        context.setTransform(...mathjsToTransform(tmatDiff));
+                        context.drawImage(canvas, 0, 0);
+                        context.setTransform(...mathjsToTransform(tmat));
+
+                        // compute the bounding box of the current view in tile space
+                        const range = _.map(
+                            [
+                                [0, 0, 1],
+                                [canvas.width, 0, 1],
+                                [0, canvas.height, 1],
+                                [canvas.width, canvas.height, 1],
+                            ],
+                            _.compose(
+                                /* eslint-disable no-underscore-dangle */
+                                v => v._data,
+                                v => math.floor(v),
+                                v => math.dotDivide(v, tilemapLevel),
+                                v => math.dotDivide(v, tileDim),
+                                v => math.subset(v, math.index([0, 1])),
+                                v => math.multiply(math.inv(tmat), v),
+                                v => math.matrix(v),
+                            ),
+                        );
+
+                        // request all tiles in the bounding box and clear out-of-bounds tiles
+                        const it = layer.get('renderingClient').requestAll(
+                            ...math.min(range, 0),
+                            ...math.max(range, 0),
+                            tilemapLevel,
+                        );
+                        const tsz = _.map(tileDim, x => x * tilemapLevel);
+                        Array.from(it).forEach(
+                            ([x, y, /* z */, retCode]) => {
+                                if (retCode === ReturnCodes.OOB) {
+                                    context.clearRect(
+                                        ..._.map(_.zip([x, y], tsz), ([a, b]) => a * b),
+                                        ...tsz,
+                                    );
+                                }
+                            },
+                        );
                     });
 
                 renderer.clearCanvas();
@@ -122,7 +176,8 @@ function viewer() {
                 }
             }
             scope.layerManager = new LayerManager(layers, refreshCanvas)
-                .addModifier('tilemap', null);
+                .addModifier('tilemap', null)
+                .addModifier('renderingClient', null);
 
             scope.addSpots = function() {
                 scope.adjustmentLH.addingSpots = true;
@@ -146,40 +201,52 @@ function viewer() {
                 refreshCanvas();
             };
 
-            scope.receiveTilemap = function(tilemaps, resetCamera = true) {
-                // TODO: This is not the right way to do it but all
-                // tilemaps should always have the same tilemap levels.
-                // May be a good idea to reconsider how this data is
-                // returned from the server.
-                scaleManager.setTilemapLevels(
-                    Object.values(tilemaps)[0].tilemapLevels, tilemapLevel);
-                if (resetCamera) {
-                    // centers the camera to the middle of the image
-                    camera.position = {
-                        x: (1024 / 2) * tilemapLevel,
-                        y: (1024 / 2) * tilemapLevel,
-                    };
-                    camera.scale = 1 / tilemapLevel;
-                    camera.updateViewport();
+            function constructTileCallback(layer, tdim) {
+                const context = layer.canvas.getContext('2d');
+                function callback(tile, x, y, z) {
+                    window.requestAnimationFrame(() => {
+                        // exit if layer isn't visible
+                        if (layer.get('visible') !== true) {
+                            return;
+                        }
+                        // exit if the z-coordinate doesn't match the current tilemap level
+                        if (parseInt(z, 10) !== tilemapLevel) {
+                            return;
+                        }
+                        context.drawImage(
+                            tile,
+                            0, 0,
+                            ...tdim,
+                            z * x * tdim[0],
+                            z * y * tdim[1],
+                            z * tdim[0],
+                            z * tdim[1],
+                        );
+                    });
                 }
+                return callback;
+            }
 
+            scope.receiveTilemap = function(data) {
+                tileDim = data.dim;
+                scaleManager.setTilemapLevels(data.levels, tilemapLevel);
+
+                // centers the camera to the middle of the first layer
+                const fst = Object.values(data.tiles)[0].tiles[1];
+                const dim = [
+                    tileDim[0] * fst.length,
+                    tileDim[1] * fst[0].length,
+                ];
+                camera.position = Vec2.Vec2(...dim.map(x => x / 2));
+                camera.scale = 1 / tilemapLevel;
+                camera.updateViewport();
+
+                // delete all current layers and add the ones in data.tiles
                 Object.keys(scope.layerManager.getLayers()).forEach(
                     layer => scope.layerManager.deleteLayer(layer));
 
-                function delayCallback() {
-                    let times = Object.keys(tilemaps).length;
-                    function ret() {
-                        times -= 1;
-                        if (times <= 0) {
-                            refreshCanvas();
-                        }
-                    }
-                    return ret;
-                }
-                const delayedCallback = delayCallback();
-
-                Object.keys(tilemaps).forEach(
-                    (layerName) => {
+                Object.entries(data.tiles).forEach(
+                    ([layerName, tiles]) => {
                         const layer = scope.layerManager.addLayer(layerName);
 
                         const canvas = layer.canvas;
@@ -187,10 +254,13 @@ function viewer() {
                         canvas.height = fg.height;
                         $(canvas).addClass('fullscreen');
 
-                        const tilemap = new Tilemap();
-                        tilemap.loadTilemap(tilemaps[layerName], delayedCallback);
-                        layer.set('tilemap', tilemap);
+                        layer.set('renderingClient', new RenderingClient(
+                            tiles,
+                            constructTileCallback(layer, tileDim),
+                        ));
                     });
+
+                refreshCanvas();
             };
 
             scope.zoom = function(direction) {
