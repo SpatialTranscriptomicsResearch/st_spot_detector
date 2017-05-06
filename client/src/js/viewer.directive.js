@@ -1,10 +1,13 @@
 // this directive controls the rendering and input of the canvas element
 // used for viewing the image and spots.
 
+import $ from 'jquery';
+
 import AdjustmentLH from './viewer/logic-handler.adjustment';
 import Calibrator from './viewer/calibrator';
 import Camera from './viewer/camera';
 import EventHandler from './viewer/event-handler';
+import LayerManager from './viewer/layer-manager';
 import PredetectionLH from './viewer/logic-handler.predetection';
 import Renderer from './viewer/renderer';
 import ScaleManager from './viewer/scale-manager';
@@ -18,19 +21,20 @@ function viewer() {
         restrict: 'A',
         scope: false,
         link: function(scope, element) {
-            var canvas = element[0];
-            var ctx = canvas.getContext('2d');
+            const fg = element[0].querySelector('#fg');
+            const fgCtx = fg.getContext('2d');
+
+            const layers = element[0].querySelector('#layers');
 
             // prevents the context menu from appearing on right click
-            canvas.oncontextmenu = function(e) { e.preventDefault(); } 
+            fg.oncontextmenu = function(e) { e.preventDefault(); }
 
-            var tilemap = new Tilemap();
             var scaleManager = new ScaleManager();
 
             var tilemapLevel = 20;
             var tilePosition;
-            var camera = new Camera(ctx);
-            var renderer = new Renderer(ctx, camera);
+            var camera = new Camera(fgCtx);
+            var renderer = new Renderer(fgCtx, camera);
 
             var calibrator = new Calibrator(camera);
 
@@ -44,17 +48,12 @@ function viewer() {
             var spotSelector = new SpotSelector(camera, spots);
             var spotAdjuster = new SpotAdjuster(camera, spots, calibrator.calibrationData);
 
-            scope.eventHandler = new EventHandler(scope.data, canvas, camera);
+            scope.eventHandler = new EventHandler(scope.data, fg, camera);
 
             scope.predetectionLH = new PredetectionLH(
                 camera, calibrator, scope.setCanvasCursor, refreshCanvas);
             scope.adjustmentLH = new AdjustmentLH(
                 camera, spotAdjuster, spotSelector, scope.setCanvasCursor, refreshCanvas);
-
-            var images = {
-                images: '',
-                thumbnail: new Image()
-            };
 
             scope.loadSpots = function(spotData) {
                 spots.loadSpots(spotData);
@@ -91,14 +90,26 @@ function viewer() {
             };
 
             function refreshCanvas() {
-                renderer.clearCanvas();
-
                 scaleManager.updateScaleLevel(camera.scale);
                 tilemapLevel = 1 / scaleManager.currentScaleLevel;
-                tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel); 
-                images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel);
-                renderer.renderImages(images.images); 
 
+                Object.values(scope.layerManager.getLayers()).forEach(
+                    (layer) => {
+                        const canvas = layer.canvas;
+                        const context = canvas.getContext('2d');
+                        renderer.clearCanvas(context);
+
+                        if (layer.get('visible') === false) {
+                            return;
+                        }
+
+                        const tilemap = layer.get('tilemap');
+                        const pos = tilemap.getTilePosition(camera.position, tilemapLevel);
+                        const images = tilemap.getRenderableImages(pos, tilemapLevel);
+                        renderer.renderImages(canvas, images);
+                    });
+
+                renderer.clearCanvas();
                 if(scope.data.state == 'state_predetection') {
                     renderer.renderCalibrationPoints(calibrator.calibrationData);
                 }
@@ -110,6 +121,8 @@ function viewer() {
                     }
                 }
             }
+            scope.layerManager = new LayerManager(layers, refreshCanvas)
+                .addModifier('tilemap', null);
 
             scope.addSpots = function() {
                 scope.adjustmentLH.addingSpots = true;
@@ -133,18 +146,51 @@ function viewer() {
                 refreshCanvas();
             };
 
-            scope.receiveTilemap = function(tilemapData, resetCamera = true) {
-                tilemap.loadTilemap(tilemapData, refreshCanvas);
-                scaleManager.setTilemapLevels(tilemap.tilemapLevels, tilemapLevel);
-                tilePosition = tilemap.getTilePosition(camera.position, tilemapLevel);
-                images.images = tilemap.getRenderableImages(tilePosition, tilemapLevel); 
-                if(resetCamera) {
-                    camera.position = {x: (1024 / 2) * tilemapLevel, // centers the camera to the middle of the image
-                        y: (1024 / 2) * tilemapLevel};
+            scope.receiveTilemap = function(tilemaps, resetCamera = true) {
+                // TODO: This is not the right way to do it but all
+                // tilemaps should always have the same tilemap levels.
+                // May be a good idea to reconsider how this data is
+                // returned from the server.
+                scaleManager.setTilemapLevels(
+                    Object.values(tilemaps)[0].tilemapLevels, tilemapLevel);
+                if (resetCamera) {
+                    // centers the camera to the middle of the image
+                    camera.position = {
+                        x: (1024 / 2) * tilemapLevel,
+                        y: (1024 / 2) * tilemapLevel,
+                    };
                     camera.scale = 1 / tilemapLevel;
                     camera.updateViewport();
                 }
-                refreshCanvas();
+
+                Object.keys(scope.layerManager.getLayers()).forEach(
+                    layer => scope.layerManager.deleteLayer(layer));
+
+                function delayCallback() {
+                    let times = Object.keys(tilemaps).length;
+                    function ret() {
+                        times -= 1;
+                        if (times <= 0) {
+                            refreshCanvas();
+                        }
+                    }
+                    return ret;
+                }
+                const delayedCallback = delayCallback();
+
+                Object.keys(tilemaps).forEach(
+                    (layerName) => {
+                        const layer = scope.layerManager.addLayer(layerName);
+
+                        const canvas = layer.canvas;
+                        canvas.width = fg.width;
+                        canvas.height = fg.height;
+                        $(canvas).addClass('fullscreen');
+
+                        const tilemap = new Tilemap();
+                        tilemap.loadTilemap(tilemaps[layerName], delayedCallback);
+                        layer.set('tilemap', tilemap);
+                    });
             };
 
             scope.zoom = function(direction) {

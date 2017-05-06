@@ -53,8 +53,6 @@ const main = [
             sessionId: '',
             cy3Image: '',
             heImage: '',
-            cy3Tiles: null,
-            heTiles: null,
             cy3Active: null,
             cy3Filename: '',
             errorText: '',
@@ -234,7 +232,7 @@ const main = [
                 $scope.visible.canvas = false;
                 $scope.visible.errorText = true;
             }
-            if($scope.data.heTiles != null)
+            if('he' in $scope.layerManager.getLayers())
                 // toggle bar should have the same visibility as the zoom bar if HE tiles uploaded
                 $scope.visible.imageToggleBar = $scope.visible.zoomBar;
             else
@@ -255,13 +253,16 @@ const main = [
             $scope.zoom(direction); // defined in the viewer directive
         };
 
-        $scope.imageToggleButtonClick = function() {
-            if($scope.data.cy3Active)
-                $scope.receiveTilemap($scope.data.heTiles, false);
-            else
-                $scope.receiveTilemap($scope.data.cy3Tiles, false);
+        function updateVisibility() {
+            $scope.layerManager.getLayer('cy3').set('visible', $scope.data.cy3Active);
+            if ('he' in $scope.layerManager.getLayers()) {
+                $scope.layerManager.getLayer('he').set('visible', !$scope.data.cy3Active);
+            }
+        }
 
+        $scope.imageToggleButtonClick = function() {
             $scope.data.cy3Active = !$scope.data.cy3Active;
+            updateVisibility();
         };
 
         $scope.menuButtonClick = function(button) {
@@ -345,13 +346,16 @@ const main = [
                         $scope.visible.spotAdjuster.div_insideTissue
                             = response.data.he_tiles != null;
 
-                        $scope.data.cy3Tiles = response.data.cy3_tiles;
-                        $scope.data.heTiles = response.data.he_tiles;
                         $scope.updateScalingFactor(response.data.scaling_factor);
 
-                        $scope.receiveTilemap($scope.data.cy3Tiles); // defined in the viewer directive
-                        $scope.data.cy3Active = true;
+                        const tiles = { cy3: response.data.cy3_tiles };
+                        if (response.data.he_tiles !== null) {
+                            tiles.he = response.data.he_tiles;
+                        }
+                        $scope.receiveTilemap(tiles); // defined in the viewer directive
 
+                        $scope.data.cy3Active = true;
+                        updateVisibility();
                         $scope.updateState('state_predetection');
                     };
                     var tileErrorCallback = function(response) {

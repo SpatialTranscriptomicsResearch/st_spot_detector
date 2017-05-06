@@ -28,21 +28,13 @@ const Camera = (function() {
     };
 
     Camera.prototype = {
-        begin: function() {
-            self.context.save();
-            self.applyScale();
-            self.applyTranslation();
+        begin: function(context = self.context) {
+            context.save();
+            context.scale(self.viewport.scale.x, self.viewport.scale.y);
+            context.translate(-self.viewport.l + self.positionOffset.x, -self.viewport.t + self.positionOffset.y);
         },
-        end: function() {
-            self.context.restore();
-        },
-        applyScale: function() {
-            self.context.scale(self.viewport.scale.x, self.viewport.scale.y);
-        },
-        applyTranslation: function() {
-            // move offset code to updateViewport() function
-            self.context.translate(-self.viewport.l + self.positionOffset.x, -self.viewport.t + self.positionOffset.y);
-            //self.context.translate(-self.viewport.l, -self.viewport.t);
+        end: function(context = self.context) {
+            context.restore();
         },
         updateViewport: function() {
             self.clampValues();

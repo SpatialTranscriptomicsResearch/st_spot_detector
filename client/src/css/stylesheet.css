@@ -15,12 +15,17 @@ body {
     text-align: center;
 }
 
-canvas {
+#viewer {
     background-color: black;
-    display: block;
 }
 
 canvas:active {
+}
+
+.fullscreen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
 }
 
 .crosshair {
