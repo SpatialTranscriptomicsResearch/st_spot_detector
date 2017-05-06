@@ -44,8 +44,7 @@ class Spots:
 
     def wrap_spots(self):
         spot_dictionary = {
-            'spots': self.spots,
-            'tissue_spots': self.tissue_spots,
+            'positions': self.spots,
             'spacer': self.spacer,
             'transform_matrix': self.transform_matrix
         }

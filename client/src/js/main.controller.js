@@ -376,7 +376,7 @@ const main = [
                 $scope.updateState('state_upload');
                 var getTileData = function() {
                     var tileSuccessCallback = function(response) {
-                        $scope.updateScalingFactor(response.data.scaling_factor);
+                        $scope.updateScalingFactor(response.data.tiles.cy3.scaling_factor);
 
                         $scope.receiveTilemap(response.data); // defined in the viewer directive
 

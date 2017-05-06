@@ -62,6 +62,16 @@ const Vec2 = (function() {
             // multiples every element in a with a scalar
             return this.Vec2(a.x * scalar, a.y * scalar);
         },
+        data: function(v) {
+            return [v.x, v.y];
+        },
+        map: function(v, f) {
+            // apply given function to each coordinate
+            const ret = this.Vec2();
+            ret.x = f(v.x);
+            ret.y = f(v.y);
+            return ret;
+        },
         toString: function(a) {
             return "x: " + a.x + ", y: " + a.y;
         },

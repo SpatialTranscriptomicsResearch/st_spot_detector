@@ -68,11 +68,16 @@ function viewer() {
 
             scope.loadSpots = function(spotData) {
                 spots.loadSpots(spotData);
-                refreshCanvas();
             };
 
             scope.selectInsideTissue = function() {
-                spots.selectTissueSpots();
+                spots.selectTissueSpots(
+                    math.multiply(
+                        math.inv(layerManager.getLayer('he').tmat),
+                        layerManager.getLayer('cy3').tmat,
+                    ),
+                    0.5,
+                );
                 refreshCanvas();
             };
 

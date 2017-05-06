@@ -1,4 +1,7 @@
+import _ from 'underscore';
 import math from 'mathjs';
+
+import Vec2 from './viewer/vec2';
 
 /**
  * Transforms a mathjs matrix to an array that can be used with the
@@ -51,4 +54,22 @@ export function toLayerCoordinates(layer, vector) {
  */
 export function fromLayerCoordinates(layer, vector) {
     return mulVec2(layer.tmat, vector);
+}
+
+/**
+ * Computes the ''inner integer bounding box'' of a hypercube, given its center and side length.
+ */
+export function intBounds(center, length) {
+    return _.map(center, c => _.map([-1, 1], k => k * Math.floor(length + (k * c))));
+}
+
+/**
+ * Computes all possible combinations between the elements in two arrays.
+ */
+export function combinations(arr1, arr2) {
+    return _.reduce(
+        _.map(arr1, a1 => _.map(arr2, a2 => [a1, a2])),
+        (a, x) => a.concat(x),
+        [],
+    );
 }
