@@ -9,6 +9,7 @@ const SpotManager = (function() {
         // the spots located under the tissue (relevant only if an HE image has been uploaded)
         self.tissueSpots = [];
         self.spacer = {};
+        self.average = {};
         self.scalingFactor;
         self.transformMatrix;
         self.spotToAdd = {
@@ -26,10 +27,15 @@ const SpotManager = (function() {
             self.spots = spotData.spots;
             self.spacer = spotData.spacer;
             self.tissueSpots = spotData.tissue_spots;
+            self.average.diameter = (([n, s]) => s / n)(
+                _.reduce(
+                    _.map(self.spots, x => x.diameter),
+                    ([n, s], x) => [n + 1, s + x], [0, 0],
+                ),
+            );
             // the 3x3 affine transformation matrix between the adjusted array and pixel coordinates
             // represented as a string in the format a11 a12 a13 a21 a22 a23 a31 a32 a33
             self.transformMatrix = spotData.transform_matrix;
-        },
         getSpots: function() {
             return {spots: self.spots, spacer: self.spacer};
         },
@@ -52,7 +58,7 @@ const SpotManager = (function() {
                 }
             }
         },
-        exportSpots: function(type, selection) {
+        exportSpots: function(type, selection, transformation) {
             var dataString = "";
 
             for(var i = 0; i < self.spots.length; ++i) {
@@ -67,10 +73,12 @@ const SpotManager = (function() {
                     dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y; 
                 }
                 else if(type == "pixel") {
-                    var position = {
-                        'x': Math.round(spot.renderPosition.x * self.scalingFactor),
-                        'y': Math.round(spot.renderPosition.y * self.scalingFactor)
+                    let position = spot.renderPosition;
+                    if (transformation !== undefined) {
+                        position = mulVec2(transformation, position);
                     }
+                    position = Vec2.scale(position, self.scalingFactor);
+                    position = Vec2.map(position, Math.round);
                     dataString += position.x + "\t" + position.y;
                 }
                 if(selection == 'all') {

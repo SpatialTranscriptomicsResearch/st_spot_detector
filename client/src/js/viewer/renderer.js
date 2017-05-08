@@ -42,7 +42,6 @@ const Renderer = (function() {
             self.camera.end(ctx);
         },
         renderSpots: function(spots) {
-            self.camera.begin();
                 for(var i = 0; i < spots.length; ++i) {
                     var spot = spots[i];
 
@@ -58,7 +57,6 @@ const Renderer = (function() {
                     self.ctx.closePath();
                     self.ctx.fill();
                 }
-            self.camera.end();
         },
         renderSpotToAdd: function(spot) {
             self.camera.begin();

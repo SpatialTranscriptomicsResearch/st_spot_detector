@@ -5,12 +5,15 @@ import math from 'mathjs';
 import Codes from './keycodes';
 import Vec2 from './vec2';
 
+import { mulVec2 } from '../utils';
+
 const Camera = (function() {
 
     var self;
-    var Camera = function(ctx, initialPosition, initialScale) {
+    var Camera = function(ctx, layerManager, initialPosition, initialScale) {
         self = this;
         self.context = ctx;
+        self.layerManager = layerManager;
         self.position = initialPosition || Vec2.Vec2(0, 0);
         self.scale = initialScale || 0.05;
         self.positionOffset = self.calculateOffset();
@@ -129,15 +132,31 @@ const Camera = (function() {
             self.scale = Math.max(self.scale, self.minScale);
             self.scale = Math.min(self.scale, self.maxScale);
         },
-        mouseToCameraPosition: function(position) {
-            var cam = Vec2.subtract(self.position, self.positionOffset);
-            var mouse = self.mouseToCameraScale(position, 1 / self.scale);
-            return Vec2.add(cam, mouse);
+        mouseToCameraPosition: function(position, layerName) {
+            const cam = Vec2.subtract(self.position, self.positionOffset);
+            const mouse = self.mouseToCameraScale(position, 1 / self.scale);
+            const canvasPosition = Vec2.add(cam, mouse);
+            try {
+                return mulVec2(
+                    math.inv(self.layerManager.getLayer(layerName).tmat),
+                    canvasPosition,
+                );
+            } catch (e) {
+                return canvasPosition;
+            }
         },
-        mouseToCameraScale: function(vector) {
+        mouseToCameraScale: function(vector, layerName) {
             // this does not take the camera position into account, so it is ideal
             // for use with values such as difference/movement values
-            return Vec2.scale(vector, 1 / self.scale);
+            const canvasScale = Vec2.scale(vector, 1 / self.scale);
+            try {
+                const tmat = math.inv(self.layerManager.getLayer(layerName).tmat);
+                // remove translational offsets
+                tmat.subset(math.index([0, 1], 2), [0, 0]);
+                return mulVec2(tmat, canvasScale);
+            } catch (e) {
+                return canvasScale;
+            }
         }
     };
 

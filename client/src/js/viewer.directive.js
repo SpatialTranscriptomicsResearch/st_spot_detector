@@ -22,7 +22,7 @@ import SpotSelector from './viewer/spot-selector';
 import Vec2 from './viewer/vec2';
 
 import { MAX_THREADS } from './config';
-import { mathjsToTransform, transformToMathjs } from './utils';
+import { mathjsToTransform, toLayerCoordinates, transformToMathjs } from './utils';
 
 function viewer() {
     return {
@@ -39,10 +39,12 @@ function viewer() {
 
             var scaleManager = new ScaleManager();
 
+            const layerManager = new LayerManager(layers);
+
             let tileDim;
             var tilemapLevel = 16;
             var tilePosition;
-            var camera = new Camera(fgCtx);
+            var camera = new Camera(fgCtx, layerManager);
             var renderer = new Renderer(fgCtx, camera);
 
             var calibrator = new Calibrator(camera);
@@ -54,7 +56,7 @@ function viewer() {
             };
 
             var spots = new SpotManager();
-            var spotSelector = new SpotSelector(camera, spots);
+            var spotSelector = new SpotSelector(camera, layerManager, spots);
             var spotAdjuster = new SpotAdjuster(camera, spots, calibrator.calibrationData);
 
             scope.eventHandler = new EventHandler(scope.data, fg, camera);
@@ -84,13 +86,19 @@ function viewer() {
 
             scope.getCalibrationData = function() {
                 return {
-                    TL:         calibrator.calibrationData.TL,
-                    BR:         calibrator.calibrationData.BR,
+                    TL: toLayerCoordinates(
+                        layerManager.getLayer('cy3'),
+                        calibrator.calibrationData.TL,
+                    ),
+                    BR: toLayerCoordinates(
+                        layerManager.getLayer('cy3'),
+                        calibrator.calibrationData.BR,
+                    ),
                     array_size: calibrator.calibrationData.arraySize,
                     brightness: calibrator.calibrationData.brightness,
-                    contrast:   calibrator.calibrationData.contrast,
-                    threshold:  calibrator.calibrationData.threshold,
-                }
+                    contrast: calibrator.calibrationData.contrast,
+                    threshold: calibrator.calibrationData.threshold,
+                };
             };
 
             scope.clickSpotColor = function(color, type) {
@@ -102,7 +110,7 @@ function viewer() {
                 scaleManager.updateScaleLevel(camera.scale);
                 tilemapLevel = 1 / scaleManager.currentScaleLevel;
 
-                Object.values(scope.layerManager.getLayers()).forEach(
+                Object.values(layerManager.getLayers()).forEach(
                     (layer) => {
                         const canvas = layer.canvas;
                         const context = canvas.getContext('2d');
@@ -178,14 +186,22 @@ function viewer() {
                     scope.aligner.renderFG(fgCtx);
                     scope.camera.end();
                 } else if(scope.data.state == 'state_adjustment') {
+                    fgCtx.save();
+                    fgCtx.setTransform(...mathjsToTransform(
+                        math.multiply(
+                            camera.getTransform(),
+                            layerManager.getLayer('cy3').tmat,
+                        ),
+                    ));
                     renderer.renderSpots(spots.spots)
+                    fgCtx.restore();
+
                     renderer.renderSpotSelection(spotSelector.renderingRect)
                     if(scope.adjustmentLH.addingSpots) {
                         renderer.renderSpotToAdd(spots.spotToAdd);
                     }
                 }
             }
-            scope.layerManager = new LayerManager(layers, refreshCanvas);
 
             scope.addSpots = function() {
                 scope.adjustmentLH.addingSpots = true;
@@ -250,12 +266,12 @@ function viewer() {
                 camera.updateViewport();
 
                 // delete all current layers and add the ones in data.tiles
-                Object.keys(scope.layerManager.getLayers()).forEach(
-                    layer => scope.layerManager.deleteLayer(layer));
+                Object.keys(layerManager.getLayers()).forEach(
+                    layer => layerManager.deleteLayer(layer));
 
                 Object.entries(data.tiles).forEach(
                     ([layerName, tiles]) => {
-                        const layer = scope.layerManager.addLayer(layerName);
+                        const layer = layerManager.addLayer(layerName);
 
                         const canvas = layer.canvas;
                         canvas.width = fg.width;
@@ -282,7 +298,16 @@ function viewer() {
             };
 
             scope.exportSpots = function(type, selection) {
-                var spotDataString = spots.exportSpots(type, selection);
+                // spots are given in Cy3 image coordinates. however, if the user has uploaded an HE
+                // image, export them in HE coordinate space instead.
+                const ls = layerManager.getLayers();
+                let spotDataString;
+                if ('he' in ls) {
+                    const tmat = math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat);
+                    spotDataString = spots.exportSpots(type, selection, tmat);
+                } else {
+                    spotDataString = spots.exportSpots(type, selection);
+                }
 
                 var blob = new Blob([spotDataString]);
                 var filetype = type.slice(0, 3) + "_" + selection.slice(0, 3) + "-";
@@ -310,7 +335,10 @@ function viewer() {
                 }
             };
 
+            layerManager.callback = refreshCanvas;
+
             scope.camera = camera;
+            scope.layerManager = layerManager;
         }
     };
 }
