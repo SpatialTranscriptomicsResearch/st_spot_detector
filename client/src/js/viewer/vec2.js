@@ -65,6 +65,31 @@ const Vec2 = (function() {
         toString: function(a) {
             return "x: " + a.x + ", y: " + a.y;
         },
+        length: function(v) {
+            return Math.sqrt((v.x * v.x) + (v.y * v.y));
+        },
+        angleBetween: function(a, b) {
+            // returns angle from vector a to vector b
+
+            // Check if there exists constant c so that a = cb.
+            // If we skip this step, we may run into numerical issues, getting
+            // dotprod / lenprod > 1, thus returning NaN.
+            if (a.x * b.y === a.y * b.x) {
+                return 0;
+            }
+
+            const dotprod = (a.x * b.x) + (a.y * b.y);
+            const lenprod = this.length(a) * this.length(b);
+
+            if (lenprod === 0) {
+                return 0;
+            }
+
+            const angle = Math.acos(dotprod / lenprod);
+            const sign = (a.x * b.y) - (a.y * b.x) > 0 ? 1 : -1;
+
+            return sign * angle;
+        },
         distanceBetween: function(a, b) {
             // returns distance between two vectors
             var w = a.x - b.x;

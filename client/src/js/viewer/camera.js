@@ -1,5 +1,7 @@
 /* modified version of  https://github.com/robashton/camera */
 
+import math from 'mathjs';
+
 import Codes from './keycodes';
 import Vec2 from './vec2';
 
@@ -35,6 +37,21 @@ const Camera = (function() {
         },
         end: function(context = self.context) {
             context.restore();
+        },
+        getTransform: function() {
+            return math.matrix([
+                [
+                    self.scale,
+                    0,
+                    self.scale * (-self.position.x + self.positionOffset.x),
+                ],
+                [
+                    0,
+                    self.scale,
+                    self.scale * (-self.position.y + self.positionOffset.y),
+                ],
+                [0, 0, 1],
+            ]);
         },
         updateViewport: function() {
             self.clampValues();

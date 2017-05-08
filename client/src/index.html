@@ -40,6 +40,10 @@
                 <button ng-click='menuButtonClick("button_uploader")' type='button' ng-class='{active: data.button=="button_uploader"}' class='btn btn-default' ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
                     <span class='glyphicon glyphicon-picture'></span>
                 </button>
+                <!-- Aligner -->
+                <button ng-click='menuButtonClick("button_aligner", "state_alignment")' type='button' ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}' class='btn btn-default'>
+                    <span class='glyphicon glyphicon-edit'></span>
+                </button>
                 <!-- Detector -->
                 <!--<button export-spots type='button' class='btn btn-default '>-->
                 <button ng-click='menuButtonClick("button_detector")' type='button' ng-class='{disabled: menuButtonDisabled.button_detector, active: data.button=="button_detector"}' class='btn btn-default'>
@@ -91,6 +95,10 @@
                             <br><small>The image(s) must be in .jpg format. They may be cropped, but not scaled or rotated. The HE image must be already aligned against the Cy3 image.</small><br>
                             <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Images</button>
                         </form>
+                    </div>
+                    <!-- Aligner Panel -->
+                    <div ng-show='visible.panel.button_aligner'>
+                        <aligner layerManager="MainController.layerManager" />
                     </div>
                     <!-- Detector Panel -->
                     <div ng-show='visible.panel.button_detector'>

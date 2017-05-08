@@ -66,6 +66,15 @@ class Layer {
     }
 
     /**
+     * Getter for layer modifiers.
+     *
+     * @returns {Object} The modifiers on the layer.
+     */
+    getAll() {
+        return Object.assign({}, this[mod]);
+    }
+
+    /**
      * Setter for layer modifiers.
      *
      * @param {string} name - The name of the modifier.

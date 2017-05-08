@@ -22,6 +22,7 @@
     "ctx-polyfill": "^1.1.3",
     "jquery": "^3.2.1",
     "mathjs": "^3.11.4",
+    "sortablejs": "^1.5.1",
     "toastr": "^2.1.2",
     "underscore": "^1.8.3"
   }

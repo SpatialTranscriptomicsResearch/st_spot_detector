@@ -76,6 +76,12 @@ canvas:active {
     cursor:         pointer;
 }
 
+.move {
+    cursor: -webkit-move;
+    cursor:    -moz-move;
+    cursor:         move;
+}
+
 .menu-wrapper {
     position: fixed;
     top: 20px;
@@ -144,6 +150,16 @@ canvas:active {
 
 .radio-button {
     width: 50%;
+}
+
+.menu-bar-panel h2 {
+    margin: 0.5em 0;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.menu-bar-panel .btn-group {
+    padding: 0.5em 0;
 }
 
 .image-toggle-bar {

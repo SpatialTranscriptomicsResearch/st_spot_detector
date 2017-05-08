@@ -21,6 +21,7 @@ import SpotManager from './viewer/spots';
 import SpotSelector from './viewer/spot-selector';
 import Vec2 from './viewer/vec2';
 
+import { MAX_THREADS } from './config';
 import { mathjsToTransform, transformToMathjs } from './utils';
 
 function viewer() {
@@ -111,6 +112,11 @@ function viewer() {
                             return;
                         }
 
+                        // Would be more consistent to set this attribute in the rendering worker
+                        // (i.e., setting the alpha value on each pixel) but this should be a lot
+                        // faster.
+                        $(layer.canvas).css('opacity', layer.get('alpha'));
+
                         const tmat = math.multiply(camera.getTransform(), layer.tmat);
 
                         // Compute difference to previous transformation matrix, set the
@@ -145,10 +151,11 @@ function viewer() {
                         );
 
                         // request all tiles in the bounding box and clear out-of-bounds tiles
-                        const it = layer.get('renderingClient').requestAll(
+                        const it = layer.renderingClient.requestAll(
                             ...math.min(range, 0),
                             ...math.max(range, 0),
                             tilemapLevel,
+                            layer.getAll(),
                         );
                         const tsz = _.map(tileDim, x => x * tilemapLevel);
                         Array.from(it).forEach(
@@ -166,8 +173,11 @@ function viewer() {
                 renderer.clearCanvas();
                 if(scope.data.state == 'state_predetection') {
                     renderer.renderCalibrationPoints(calibrator.calibrationData);
-                }
-                else if(scope.data.state == 'state_adjustment') {
+                } else if (scope.data.state === 'state_alignment') {
+                    scope.camera.begin();
+                    scope.aligner.renderFG(fgCtx);
+                    scope.camera.end();
+                } else if(scope.data.state == 'state_adjustment') {
                     renderer.renderSpots(spots.spots)
                     renderer.renderSpotSelection(spotSelector.renderingRect)
                     if(scope.adjustmentLH.addingSpots) {
@@ -175,9 +185,7 @@ function viewer() {
                     }
                 }
             }
-            scope.layerManager = new LayerManager(layers, refreshCanvas)
-                .addModifier('tilemap', null)
-                .addModifier('renderingClient', null);
+            scope.layerManager = new LayerManager(layers, refreshCanvas);
 
             scope.addSpots = function() {
                 scope.adjustmentLH.addingSpots = true;
@@ -254,13 +262,18 @@ function viewer() {
                         canvas.height = fg.height;
                         $(canvas).addClass('fullscreen');
 
-                        layer.set('renderingClient', new RenderingClient(
-                            tiles,
+                        const nThreads = Math.floor(
+                            MAX_THREADS / Object.keys(data.tiles).length,
+                        );
+                        layer.renderingClient = new RenderingClient(
+                            Math.max(1, nThreads),
                             constructTileCallback(layer, tileDim),
-                        ));
+                        );
+                        layer.renderingClient.loadTileData(
+                            tiles.tiles,
+                            tiles.histogram,
+                        ).then(refreshCanvas);
                     });
-
-                refreshCanvas();
             };
 
             scope.zoom = function(direction) {
@@ -296,6 +309,8 @@ function viewer() {
                     document.body.removeChild(a);
                 }
             };
+
+            scope.camera = camera;
         }
     };
 }
