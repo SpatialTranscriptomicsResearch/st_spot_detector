@@ -49,21 +49,22 @@ const SpotSelector = (function() {
             }
             // otherwise, we treat the selection as a rectangle
             else {
-                // separate variable to preserve the value of the first point
+                // separate variables to preserve the value of the points
                 var selectionTL = Vec2.Vec2(self.selectionRect.TL.x, self.selectionRect.TL.y);
+                var selectionBR = Vec2.Vec2(self.selectionRect.BR.x, self.selectionRect.BR.y);
                 // account for "backward" selections
                 if(self.selectionRect.BR.x < self.selectionRect.TL.x) {
                     selectionTL.x = self.selectionRect.BR.x;
-                    self.selectionRect.BR.x = self.selectionRect.TL.x
+                    selectionBR.x = self.selectionRect.TL.x;
                 }
                 if(self.selectionRect.BR.y < self.selectionRect.TL.y) {
                     selectionTL.y = self.selectionRect.BR.y;
-                    self.selectionRect.BR.y = self.selectionRect.TL.y;
+                    selectionBR.y = self.selectionRect.TL.y;
                 }
                 for(var i = 0; i < spots.length; ++i) {
                     var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
-                    if(pos.x > selectionTL.x && pos.x < self.selectionRect.BR.x &&
-                       pos.y > selectionTL.y && pos.y < self.selectionRect.BR.y) {
+                    if(pos.x > selectionTL.x && pos.x < selectionBR.x &&
+                       pos.y > selectionTL.y && pos.y < selectionBR.y) {
                         spots[i].selected = true;
                         self.selectedSpotCounter++;
                     }
