@@ -1,6 +1,5 @@
 /**
- * logic-handler.js
- * ----------------
+ * @module logic-handler
  */
 
 import Codes from './viewer/keycodes';
@@ -10,20 +9,22 @@ import Vec2 from './viewer/vec2';
  * Abstract class that defines a unified interface for the event handler across
  * different logic handlers.
  */
+/* eslint-disable no-unused-vars, class-methods-use-this */
+// (makes sense to disable these, since this class is abstract */
 class LogicHandler {
-    constructor() {
-        /**
-         * FIXME: Have to disable the below for the time being, since new.target
-         *        is not supported in uglify-js yet, see
-         *        https://github.com/mishoo/UglifyJS2/issues/938 for the bug
-         *        tracker issue.
-         */
-
-        // if (new.target === LogicHandler)
-        //     throw new TypeError(
-        //         "Call of new on abstract class LogicHandler not allowed."
-        //     );
-    }
+    /**
+     * FIXME: Have to disable the below for the time being, since new.target
+     *        is not supported in uglify-js yet, see
+     *        https://github.com/mishoo/UglifyJS2/issues/938 for the bug
+     *        tracker issue.
+     */
+    // constructor() {
+    //     if (new.target === LogicHandler) {
+    //         throw new TypeError(
+    //             "Call of new on abstract class LogicHandler not allowed."
+    //         );
+    //     }
+    // }
 
     /**
      * Abstract method for handling key down events.
@@ -31,7 +32,7 @@ class LogicHandler {
      * @param {Object} e - The event object
      */
     processKeydownEvent(e) {
-        throw "Abstract method not implemented.";
+        throw new Error('Abstract method not implemented.');
     }
 
     /**
@@ -40,7 +41,7 @@ class LogicHandler {
      * @param {Object} e - The event object
      */
     processKeyupEvent(e) {
-        throw "Abstract method not implemented.";
+        throw new Error('Abstract method not implemented.');
     }
 
     /**
@@ -49,31 +50,30 @@ class LogicHandler {
      * @param {Object} e - The event object
      */
     processMouseEvent(e, data) {
-        throw "Abstract method not implemented.";
+        throw new Error('Abstract method not implemented.');
     }
 
     /**
      * Wraps {@link LogicHandler#processMouseEvent} to record the current mouse
      * position. The mouse position is stored in {@link
-     * LogicHandler#_mousePosition}. This may be useful when the logic handler
+     * LogicHandler#mousePosition}. This may be useful when the logic handler
      * needs to check the mouse position on a key up/down event.
      */
-    _recordMousePosition() {
+    recordMousePosition() {
         /**
          * @type {Vec2}
          */
-        this._mousePosition = Vec2.Vec2(0, 0);
+        this.mousePosition = Vec2.Vec2(0, 0);
 
-        var oldM = this.processMouseEvent;
-        this.processMouseEvent = (function() {
-            return function(e, data) {
-                this._mousePosition = data.position;
-                return oldM.apply(this, [
-                    e,
-                    data
-                ]);
-            };
-        })();
+        const oldME = this.processMouseEvent;
+        function constructNewME() {
+            function ret(e, data) {
+                this.mousePosition = data.position;
+                return oldME.apply(this, [e, data]);
+            }
+            return ret;
+        }
+        this.processMouseEvent = constructNewME();
     }
 
     /**
@@ -82,58 +82,67 @@ class LogicHandler {
      * LogicHandler#processMouseEvent} to record the current key states. The key
      * states are stored in {@link LogicHandler#_keystates}.
      */
-    _recordKeyStates() {
-        var keys = {};
-        var codeToKey = {};
-        for (let key in Codes.keys) {
-            keys[key] = false;
-            codeToKey[Codes.keyEvent[key]] = key;
-        }
+    recordKeyStates() {
+        const keys = {};
+        const codeToKey = {};
+        Object.keys(Codes.keys).forEach((k) => {
+            keys[k] = false;
+            codeToKey[Codes.keyEvent[k]] = k;
+        });
         keys.mouseLeft = false;
         keys.mouseRight = false;
 
         /**
          * @type {Object}
          */
-        this._keystates = Object.seal(keys);
+        this.keystates = Object.seal(keys);
 
-        var oldKD = this.processKeydownEvent;
-        this.processKeydownEvent = function(e) {
-            if (codeToKey[e] in keys)
+        const oldKDE = this.processKeydownEvent;
+        function newKDE(e) {
+            if (codeToKey[e] in keys) {
                 keys[codeToKey[e]] = true;
-            return oldKD.apply(this, [e]);
-        };
+            }
+            return oldKDE.apply(this, [e]);
+        }
+        this.processKeydownEvent = newKDE;
 
-        var oldKU = this.processKeyupEvent;
-        this.processKeyupEvent = function(e) {
-            if (codeToKey[e] in keys)
+        const oldKUE = this.processKeyupEvent;
+        function newKUE(e) {
+            if (codeToKey[e] in keys) {
                 keys[codeToKey[e]] = false;
-            return oldKU.apply(this, [e]);
-        };
+            }
+            return oldKUE.apply(this, [e]);
+        }
+        this.processKeyupEvent = newKUE;
 
-        var oldM = this.processMouseEvent;
-        this.processMouseEvent = function(e, data) {
-            if (e == Codes.mouseEvent.down) {
+        const oldME = this.processMouseEvent;
+        function newME(e, data) {
+            if (e === Codes.mouseEvent.down) {
                 switch (data.button) {
-                    case Codes.mouseButton.left:
-                        keys.mouseLeft = true;
-                        break;
-                    case Codes.mouseButton.right:
-                        keys.mouseRight = true;
-                        break;
+                case Codes.mouseButton.left:
+                    keys.mouseLeft = true;
+                    break;
+                case Codes.mouseButton.right:
+                    keys.mouseRight = true;
+                    break;
+                default:
+                    break;
                 }
-            } else if (e == Codes.mouseEvent.up) {
+            } else if (e === Codes.mouseEvent.up) {
                 switch (data.button) {
-                    case Codes.mouseButton.left:
-                        keys.mouseLeft = false;
-                        break;
-                    case Codes.mouseButton.right:
-                        keys.mouseRight = false;
-                        break;
+                case Codes.mouseButton.left:
+                    keys.mouseLeft = false;
+                    break;
+                case Codes.mouseButton.right:
+                    keys.mouseRight = false;
+                    break;
+                default:
+                    break;
                 }
             }
-            return oldM.apply(this, [e, data]);
-        };
+            return oldME.apply(this, [e, data]);
+        }
+        this.processMouseEvent = newME;
     }
 }
 
