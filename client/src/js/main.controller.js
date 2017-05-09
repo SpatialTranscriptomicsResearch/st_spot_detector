@@ -326,7 +326,7 @@ angular.module('stSpots')
             };
 
             $scope.getHelpTexts = function(state) {
-                return helpTexts[state] + genericHelpText;
+                return helpTexts[state];
             };
 
             $scope.getSpinnerText = function(state) {
