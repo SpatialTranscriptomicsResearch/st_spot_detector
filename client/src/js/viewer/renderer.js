@@ -3,7 +3,7 @@
 import Tilemap from './tilemap';
 
 const Renderer = (function() {
-  
+
     var self;
     var Renderer = function(context, camera) {
         self = this;
@@ -19,7 +19,7 @@ const Renderer = (function() {
         self.calibrationLineWidthHighlighted = 10.0;
         self.spotSize = 110;
     };
-  
+
     Renderer.prototype = {
         changeSpotColor: function(color, type) {
             var currentColor = self.spotColor;
@@ -100,7 +100,7 @@ const Renderer = (function() {
   };
 
   return Renderer;
-  
+
 }());
 
 export default Renderer;

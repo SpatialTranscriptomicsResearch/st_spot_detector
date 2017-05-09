@@ -4,7 +4,7 @@ import Codes from './keycodes';
 import Vec2 from './vec2';
 
 const Camera = (function() {
-  
+
     var self;
     var Camera = function(ctx, initialPosition, initialScale) {
         self = this;
@@ -20,13 +20,13 @@ const Camera = (function() {
             scale: Vec2.Vec2(1, 1)
         };
         self.navFactor = 60;
-        self.scaleFactor = 0.95; 
+        self.scaleFactor = 0.95;
         self.minScale = 0.03;
         self.maxScale = 1.00;
         self.positionBoundaries = {"minX": 0, "maxX": 20480, "minY": 0, "maxY": 20480};
         self.updateViewport();
     };
-  
+
     Camera.prototype = {
         begin: function() {
             self.context.save();
@@ -52,7 +52,7 @@ const Camera = (function() {
             self.viewport.t = self.position.y - (self.viewport.height / 2.0);
             self.viewport.r = self.viewport.l + self.viewport.width;
             self.viewport.b = self.viewport.t + self.viewport.height;
-            self.viewport.scale.x = self.scale; 
+            self.viewport.scale.x = self.scale;
             self.viewport.scale.y = self.scale;
         },
         zoomTo: function(z) {
@@ -131,9 +131,9 @@ const Camera = (function() {
             return Vec2.scale(vector, 1 / self.scale);
         }
     };
-  
+
     return Camera;
-    
+
 }());
 
 export default Camera;
