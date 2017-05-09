@@ -14,4 +14,14 @@ develop.output.devtoolLineToLine = true;
 develop.output.pathinfo = true;
 develop.output.sourceMapFilename = '[name].bundle.js.map';
 
+// fix issue with babel-loader messing up source map
+develop.module.loaders =
+    develop.module.loaders
+    .filter(obj => obj.loader === 'babel-loader')
+    .map((obj) => {
+        const newLoader = Object.assign({}, obj);
+        newLoader.query.retainLines = true;
+        return newLoader;
+    });
+
 module.exports = develop;
