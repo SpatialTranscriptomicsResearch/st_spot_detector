@@ -90,8 +90,8 @@ class Spots:
 
         # now iterating through the "expected" array positions
         avg_diam, n_diam = 0, 0
-        for i in range(0, self.array_size['y']):
-            for j in range(0, self.array_size['x']):
+        for i in range(1, self.array_size['y'] - 1):
+            for j in range(1, self.array_size['x'] - 1):
                 spot_detected = False
                 predicted_position = {
                     'x': self.spacer['x'] * j + self.TL_coords['x'],
@@ -152,8 +152,11 @@ class Spots:
 
                 if(not spot_detected):
                 # if no spot has been detected at this array position,
-                # then there is a spot deemed missing
-                    missing_spots.append({'x': j, 'y': i})
+                # then there is a spot deemed missing, unless it is
+                # actually part of the frame
+                    if(i == 0 or i == self.array_size['y']
+                        or j == 1 or j == self.array_size['x']):
+                        missing_spots.append({'x': j, 'y': i})
 
         # Calculate the average row and column positions. This is to help us
         # determine the most likely positions of the missing spots.
