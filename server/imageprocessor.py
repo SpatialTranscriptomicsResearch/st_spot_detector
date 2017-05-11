@@ -7,6 +7,8 @@ import numpy
 
 from PIL import Image, ImageOps, ImageEnhance
 
+from tilemap import Tilemap
+
 class ImageProcessor:
     """Takes the jpeg image and performs various methods on it."""
     URI_header = b'data:image/jpeg;base64,'
@@ -55,7 +57,7 @@ class ImageProcessor:
         """
         tiles = []
 
-        tile_size = [1024, 1024]
+        tile_size = [Tilemap.tileWidth, Tilemap.tileHeight]
         # width and height of the tilemap (ints)
         tilemap_size = [
             (image.size[0] / tilemap_level) / tile_size[0] + 1,

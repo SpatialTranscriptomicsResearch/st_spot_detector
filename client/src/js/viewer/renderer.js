@@ -1,7 +1,5 @@
 'use strict';
 
-import Tilemap from './tilemap';
-
 const Renderer = (function() {
 
     var self;
@@ -9,7 +7,6 @@ const Renderer = (function() {
         self = this;
         self.ctx = context;
         self.camera = camera;
-        self.bgColor = 'black';
         self.spotColorHSL = "6, 78%, 57%"; // red
         self.spotColorA = "0.60";
         self.selectedSpotColor  = 'hsla(140, 63%, 42%, 0.50)'; // green
@@ -30,19 +27,21 @@ const Renderer = (function() {
                 self.spotColorA = color;
             }
         },
-        clearCanvas: function() {
-            self.ctx.fillStyle = self.bgColor;
-            self.ctx.fillRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
+        clearCanvas: function(context = self.ctx) {
+            context.save();
+            context.resetTransform();
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+            context.restore();
         },
-        renderImages: function(images) {
-            self.camera.begin();
+        renderImages: function(canvas, images) {
+            const ctx = canvas.getContext('2d');
+            self.camera.begin(ctx);
                 for(var i = 0; i < images.length; ++i) {
-                    self.ctx.drawImage(images[i], images[i].renderPosition.x, images[i].renderPosition.y, images[i].scaledSize.x, images[i].scaledSize.y);
+                    ctx.drawImage(images[i], images[i].renderPosition.x, images[i].renderPosition.y, images[i].scaledSize.x, images[i].scaledSize.y);
                 }
-            self.camera.end();
+            self.camera.end(ctx);
         },
         renderSpots: function(spots) {
-            self.camera.begin();
                 for(var i = 0; i < spots.length; ++i) {
                     var spot = spots[i];
 
@@ -58,7 +57,6 @@ const Renderer = (function() {
                     self.ctx.closePath();
                     self.ctx.fill();
                 }
-            self.camera.end();
         },
         renderSpotToAdd: function(spot) {
             self.camera.begin();

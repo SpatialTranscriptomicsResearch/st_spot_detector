@@ -146,4 +146,32 @@ class LogicHandler {
     }
 }
 
+/**
+ * Simple wrapper for the LogicHandler class. Allows changing the logic handler without
+ * reassignment.
+ */
+class LogicHandlerWrapper extends LogicHandler {
+    constructor(logicHandler) {
+        super();
+        this.set(logicHandler);
+    }
+
+    set(logicHandler) {
+        this.logicHandler = logicHandler;
+    }
+
+    processKeydownEvent(e) {
+        this.logicHandler.processKeydownEvent(e);
+    }
+
+    processKeyupEvent(e) {
+        this.logicHandler.processKeyupEvent(e);
+    }
+
+    processMouseEvent(e, data) {
+        this.logicHandler.processMouseEvent(e, data);
+    }
+}
+
 export default LogicHandler;
+export { LogicHandlerWrapper };

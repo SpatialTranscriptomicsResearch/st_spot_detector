@@ -19,6 +19,7 @@
     <script src='https://code.jquery.com/jquery-3.1.0.js'></script>
     <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js'></script>
 
     <!-- project js -->
     <script src='main.bundle.js'></script>
@@ -26,15 +27,22 @@
 
 <body ng-app='stSpots' ng-strict-di='true'>
     <div ng-controller='MainController'>
-        <canvas viewer ng-show='visible.canvas' ng-class='classes.canvas'>
-            If you're seeing this message, then either HTML5 canvasses are not supported in your browser, or you have JavaScript disabled.
-        </canvas>
+        <div viewer id='viewer' class='fullscreen' ng-show='visible.canvas' ng-class='classes.canvas'>
+            <div id='layers' class='fullscreen'></div>
+            <canvas id='fg' class='fullscreen'>
+                If you're seeing this message, then either HTML5 canvasses are not supported in your browser, or you have JavaScript disabled.
+            </canvas>
+        </div>
         <div ng-show='visible.menuBar' class='menu-wrapper'>
             <!-- Menu Bar -->
             <div class='menu-bar btn-group btn-group-vertical' role='group'>
                 <!-- Uploader -->
                 <button ng-click='menuButtonClick("button_uploader")' type='button' ng-class='{active: data.button=="button_uploader"}' class='btn btn-default' ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
                     <span class='glyphicon glyphicon-picture'></span>
+                </button>
+                <!-- Aligner -->
+                <button ng-click='menuButtonClick("button_aligner", "state_alignment")' type='button' ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}' class='btn btn-default'>
+                    <span class='glyphicon glyphicon-edit'></span>
                 </button>
                 <!-- Detector -->
                 <!--<button export-spots type='button' class='btn btn-default '>-->
@@ -87,6 +95,10 @@
                             <br><small>The image(s) must be in .jpg format. They may be cropped, but not scaled or rotated. The HE image must be already aligned against the Cy3 image.</small><br>
                             <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Images</button>
                         </form>
+                    </div>
+                    <!-- Aligner Panel -->
+                    <div ng-show='visible.panel.button_aligner'>
+                        <aligner layerManager="MainController.layerManager" />
                     </div>
                     <!-- Detector Panel -->
                     <div ng-show='visible.panel.button_detector'>
@@ -156,7 +168,7 @@
                         <button class='btn btn-primary btn-sm submit-button' type='submit'>Export Spot Data</button>
                         </form>
                         Spot transformation matrix:
-                        {{ data.spotTransformMatrx }}
+                        {{ getTransformationMatrix() }}
                         <p class='clear'></p>
                     </div>
                     <!-- Help Panel -->
@@ -216,32 +228,20 @@
         </div>
     </div>
 </body>
-    <script>
-		// This script serves to resize the canvas element according to the size of the window
-        // It is derived from http://stackoverflow.com/a/8486324/1748928
-
-		(function() {
-			var canvas = document.getElementsByTagName('canvas')[0];
-			var context = canvas.getContext('2d');
-
-			// resize the canvas to fill browser window dynamically
-			window.addEventListener('resize', resizeCanvas, false);
-
-			function resizeCanvas() {
-					canvas.width = window.innerWidth;
-					canvas.height = window.innerHeight;
-
-					/**
-					 * Your drawings need to be inside this function otherwise they will be reset when 
-					 * you resize the browser window and the canvas goes will be cleared.
-					 */
-					drawStuff(); 
-			}
-			resizeCanvas();
-
-			function drawStuff() {
-					// do your drawing stuff here
-			}
-		})();
-    </script>
+<script>
+// This script serves to resize the canvas element according to the size of the window
+// It is derived from http://stackoverflow.com/a/8486324/1748928
+(function() {
+    function resize() {
+        const canvases = document.getElementsByTagName('canvas');
+        Array.from(canvases).forEach(
+                (canvas) => {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                });
+    }
+    window.addEventListener('resize', resize, false);
+    resize();
+}());
+</script>
 </html>

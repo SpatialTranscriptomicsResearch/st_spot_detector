@@ -22,7 +22,7 @@ const SpotAdjuster = (function() {
             // whether the selection can be dragged around or not
             var atSpots = false;
 
-            position = self.camera.mouseToCameraPosition(position);
+            position = self.camera.mouseToCameraPosition(position, 'cy3');
             for(var i = 0; i < self.spots.spots.length; ++i) {
                 if(self.spots.spots[i].selected) {
                     if(Vec2.distanceBetween(position, self.spots.spots[i].renderPosition) < 100) {
@@ -56,7 +56,7 @@ const SpotAdjuster = (function() {
             }
         },
         dragSpots: function(movement) {
-            movement = self.camera.mouseToCameraScale(movement);
+            movement = self.camera.mouseToCameraScale(movement, 'cy3');
             movement = Vec2.truncate(movement);
             for(var i = 0; i < self.spots.spots.length; ++i) {
                 if(self.spots.spots[i].selected) {
@@ -78,7 +78,7 @@ const SpotAdjuster = (function() {
             self.spots.spotToAdd.renderPosition = renderPosition;
         },
         addSpot: function(position) {
-            var renderPosition = self.camera.mouseToCameraPosition(position);
+            var renderPosition = self.camera.mouseToCameraPosition(position, 'cy3');
             renderPosition = Vec2.truncate(renderPosition);
             var adjustedPosition = Vec2.subtract(renderPosition, self.calibrationData.TL);
             // we don't want negative array coordinates
@@ -89,6 +89,7 @@ const SpotAdjuster = (function() {
                 'arrayPosition': arrayPosition,
                 'newArrayPosition': newArrayPosition,
                 'renderPosition': renderPosition,
+                'diameter': self.spots.average.diameter,
                 'selected': false
             };
             // inserting the spot in order in the array
