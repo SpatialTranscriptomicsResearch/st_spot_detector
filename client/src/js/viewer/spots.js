@@ -32,7 +32,9 @@ const SpotManager = (function() {
         loadSpots: function(data) {
             self.spots = data.spots.positions;
             self.spacer = data.spots.spacer;
-            self.loadMask(data.tissue_mask);
+            if (data.tissue_mask !== null) {
+                self.loadMask(data.tissue_mask);
+            }
             self.average.diameter = (([n, s]) => s / n)(
                 _.reduce(
                     _.map(self.spots, x => x.diameter),

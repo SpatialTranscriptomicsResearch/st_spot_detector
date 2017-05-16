@@ -70,6 +70,8 @@ def get_spots():
         if HE_image is not None:
             logger.log(session_id[:20] + ": Running tissue recognition.")
             mask = get_tissue_mask(HE_image)
+        else:
+            mask = None
 
         session_cacher.remove_session_cache(session_id, logger)
 
