@@ -67,7 +67,6 @@ const Camera = (function() {
             var canvasCenter = Vec2.Vec2(self.context.canvas.width / 2, self.context.canvas.height / 2);
             var center = zoomCenter || canvasCenter; // the position to which the camera will zoom towards
             var movement = Vec2.subtract(center, canvasCenter); // distance between position and canvas center
-            movement = Vec2.scale(movement, 1 - self.scaleFactor); // scaling it down for slight movement
 
             var scaleFactor = 1.0;
             if(dir === Codes.keyEvent.left) {
@@ -88,6 +87,9 @@ const Camera = (function() {
             else if(dir === Codes.keyEvent.zout) {
                 scaleFactor = self.scaleFactor; // 0.95
             }
+
+            // scaling it down for slight movement
+            movement = Vec2.scale(movement, 1 - (1 / scaleFactor));
 
             if((scaleFactor > 1.0 && self.scale == self.maxScale) ||
                (scaleFactor < 1.0 && self.scale == self.minScale)) {
