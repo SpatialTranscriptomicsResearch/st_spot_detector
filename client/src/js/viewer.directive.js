@@ -112,6 +112,10 @@ function viewer() {
                 return spots.updateScalingFactor(scalingFactor);
             };
 
+            scope.updateImageSize = function(imageSize) {
+                return spots.updateImageSize(imageSize);
+            };
+
             scope.getCalibrationData = function() {
                 return {
                     TL: toLayerCoordinates(
@@ -325,16 +329,16 @@ function viewer() {
                 refreshCanvas();
             };
 
-            scope.exportSpots = function(type, selection) {
+            scope.exportSpots = function(type, selection, includeImageSize) {
                 // spots are given in Cy3 image coordinates. however, if the user has uploaded an HE
                 // image, export them in HE coordinate space instead.
                 const ls = layerManager.getLayers();
                 let spotDataString;
                 if ('he' in ls) {
                     const tmat = math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat);
-                    spotDataString = spots.exportSpots(type, selection, tmat);
+                    spotDataString = spots.exportSpots(type, selection, includeImageSize, tmat);
                 } else {
-                    spotDataString = spots.exportSpots(type, selection);
+                    spotDataString = spots.exportSpots(type, selection, includeImageSize);
                 }
 
                 var blob = new Blob([spotDataString]);

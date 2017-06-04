@@ -143,6 +143,7 @@ def get_tiles():
 
                 logger.log(session_id[:20] + ": Transforming " + key + " image.")
                 image = image_processor.jpeg_URI_to_Image(image)
+                image_size = image.size
                 # rotated and scaled down to 20k x 20k
                 image, scaling_factor = image_processor.transform_original_image(image, rotate)
 
@@ -177,6 +178,7 @@ def get_tiles():
                         # if the image is scaled down to 4k the scaling factor
                         # will for example be 20k / 4k, i.e. 5
                         'scaling_factor': scaling_factor,
+                        'image_size': image_size,
                         'tiles': tiles_.tilemaps,
                     },
                 })
