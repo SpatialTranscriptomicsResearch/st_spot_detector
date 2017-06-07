@@ -93,32 +93,27 @@ class ImageProcessor:
 
         return tiles
 
-    def apply_BCT(self, image, brightness, contrast, threshold,
-                  large_image=False):
-        """First inverts, then applies brightness and contrast
-        transforms on a PIL Image, converts it to an OpenCV
-        image for thresholding, then converts it back and
+    def apply_BCT(self, image, large_image=False):
+        """Performs colour invert on a PIL image, then converts it to an
+        OpenCV image and applies automatic brightness and contrast 
+        equalisation (CLAHE) and thresholding, then converts it back and
         returns a processed PIL Image.
         """
         brightness = (brightness / 100.0) + 1.0
         contrast = (contrast / 100.0) + 1.0
 
-        # the image is inverted to color the features darkest
+        # the image is inverted to colour the features darkest
         image = ImageOps.invert(image)
-
-        # the image enhancers take a copy of the image, not a reference,
-        # so they need to be created after each operation as necessary
-        brightnessEnhancer = ImageEnhance.Brightness(image)
-        image = brightnessEnhancer.enhance(brightness)
-
-        contrastEnhancer = ImageEnhance.Contrast(image)
-        image = contrastEnhancer.enhance(contrast)
 
         # convert the image into a grayscale cv2 formatted image
         cv2_image = self.PIL_to_CV2_image(image)
 
-        # may make it possible to choose between normal thresholding and
-        # adaptive thresholding
+        # create a CLAHE object 
+        clahe = cv2.createCLAHE(clipLimit=5.0, tileGridSize=(8,8))
+        
+        # apply CLAHE to image
+        cv2_image = clahe.apply(cv2_image)
+
         #retval, thresholded_image = cv2.threshold(cv2_image, threshold,
         #                                          255, cv2.THRESH_BINARY)
         block_size = 103
