@@ -367,6 +367,12 @@ function viewer() {
 
             scope.camera = camera;
             scope.layerManager = layerManager;
+
+            window.addEventListener(
+                'resize',
+                _.compose(refreshCanvas, camera.updateViewport),
+                false,
+            );
         }
     };
 }

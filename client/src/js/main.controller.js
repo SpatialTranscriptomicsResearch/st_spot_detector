@@ -217,6 +217,7 @@ const main = [
                 $scope.visible.errorText = false;
 
                 $scope.data.logicHandler = $scope.predetectionLH;
+                updateVisibility();
             }
             else if($scope.data.state === 'state_alignment') {
                 $scope.visible.menuBar = true;
@@ -229,6 +230,7 @@ const main = [
                 $scope.aligner.initialize();
 
                 $scope.data.logicHandler = $scope.aligner.logicHandler;
+                updateVisibility();
             }
             else if($scope.data.state === 'state_detection') {
                 $scope.visible.menuBar = false;
@@ -245,6 +247,7 @@ const main = [
                 $scope.visible.errorText = false;
 
                 $scope.data.logicHandler = $scope.adjustmentLH;
+                updateVisibility();
             }
             else if($scope.data.state === 'state_error') {
                 $scope.visible.menuBar = true;
@@ -258,7 +261,6 @@ const main = [
                 // toggle bar should have the same visibility as the zoom bar if HE tiles
                 // uploaded and we're not in the alignment view
                 $scope.visible.imageToggleBar = $scope.visible.zoomBar;
-                updateVisibility();
             } else {
                 $scope.visible.imageToggleBar = false;
             }
@@ -380,7 +382,6 @@ const main = [
                         $scope.receiveTilemap(response.data); // defined in the viewer directive
 
                         $scope.data.cy3Active = true;
-                        updateVisibility();
 
                         if (response.data.tiles.he) {
                             $scope.visible.spotAdjuster.div_insideTissue = true;
