@@ -1,8 +1,6 @@
 // this directive controls the rendering and input of the canvas element
 // used for viewing the image and spots.
 
-import 'ctx-polyfill';  // provides polyfill for ctx.currentTransform
-
 import $ from 'jquery';
 import _ from 'underscore';
 import math from 'mathjs';
@@ -158,7 +156,15 @@ function viewer() {
                         // transformation matrix to the difference, and redraw the canvas at (0, 0),
                         // thus transforming the canvas according to the difference (this serves as
                         // a 'quick refresh' before the requests to the renderingClient complete).
-                        const tmatOld = transformToMathjs(context.currentTransform);
+                        // const tmatOld = transformToMathjs(context.currentTransform);
+                        // TODO: proper polyfill of CanvasRenderingContext2d.currentTransform
+                        let tmatOld;
+                        if (layer.currentTransform !== undefined) {
+                            tmatOld = layer.currentTransform;
+                        } else {
+                            tmatOld = math.eye(3);
+                        }
+                        layer.currentTransform = tmat;
                         const tmatDiff = math.multiply(tmat, math.inv(tmatOld));
 
                         context.setTransform(...mathjsToTransform(tmatDiff));
