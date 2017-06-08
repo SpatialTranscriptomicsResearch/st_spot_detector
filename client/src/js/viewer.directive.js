@@ -10,6 +10,7 @@ import math from 'mathjs';
 import AdjustmentLH from './viewer/logic-handler.adjustment';
 import Calibrator from './viewer/calibrator';
 import Camera from './viewer/camera';
+import Codes from './viewer/keycodes';
 import EventHandler from './viewer/event-handler';
 import LayerManager from './viewer/layer-manager';
 import PredetectionLH from './viewer/logic-handler.predetection';
@@ -320,7 +321,7 @@ function viewer() {
             };
 
             scope.zoom = function(direction) {
-                camera.navigate(codes.keyEvent[direction]);
+                camera.navigate(Codes.keyEvent[direction]);
                 refreshCanvas();
             };
 
