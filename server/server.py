@@ -200,8 +200,9 @@ def get_tiles():
     }
     return ret
 
+@app.route('/')
 @app.route('/<filepath:path>')
-def serve_site(filepath):
+def serve_site(filepath='index.html'):
     return static_file(filepath, root='../client/devel')
 
 @app.error(404)
