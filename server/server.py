@@ -236,4 +236,4 @@ def error404(error):
     return "404 Not Found"
 
 if(__name__ == "__main__"): # if this file is run from the terminal
-    app.run(host='0.0.0.0', port=1337, debug=True, reloader=True)
+    app.run(host='0.0.0.0', port=8080, debug=True, reloader=True)
