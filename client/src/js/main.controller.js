@@ -382,7 +382,7 @@ const main = [
                         $scope.data.cy3Active = true;
                         updateVisibility();
 
-                        if (response.data.tiles.he !== null) {
+                        if (response.data.tiles.he) {
                             $scope.visible.spotAdjuster.div_insideTissue = true;
                             $scope.menuButtonDisabled.button_detector = '';
                             $scope.updateState('state_predetection', false);
