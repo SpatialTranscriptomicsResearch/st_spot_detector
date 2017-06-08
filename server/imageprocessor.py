@@ -95,15 +95,12 @@ class ImageProcessor:
 
         return tiles
 
-    def apply_BCT(self, image, large_image=False):
+    def apply_BCT(self, image, blarp, large_image=False):
         """Performs colour invert on a PIL image, then converts it to an
         OpenCV image and applies automatic brightness and contrast 
         equalisation (CLAHE) and thresholding, then converts it back and
         returns a processed PIL Image.
         """
-        brightness = (brightness / 100.0) + 1.0
-        contrast = (contrast / 100.0) + 1.0
-
         # the image is inverted to colour the features darkest
         image = ImageOps.invert(image)
 
@@ -111,10 +108,11 @@ class ImageProcessor:
         cv2_image = self.PIL_to_CV2_image(image)
 
         # create a CLAHE object 
-        clahe = cv2.createCLAHE(clipLimit=5.0, tileGridSize=(8,8))
+        clahe = cv2.createCLAHE(clipLimit=7.5, tileGridSize=(1,1))
         
         # apply CLAHE to image
-        cv2_image = clahe.apply(cv2_image)
+        if(blarp):
+            cv2_image = clahe.apply(cv2_image)
 
         #retval, thresholded_image = cv2.threshold(cv2_image, threshold,
         #                                          255, cv2.THRESH_BINARY)
@@ -133,15 +131,12 @@ class ImageProcessor:
         image = self.CV2_to_PIL_image(thresholded_image)
         return image
 
-    def process_thumbnail(self, thumbnail, brightness, contrast, threshold):
-        thumbnail = self.apply_BCT(thumbnail, brightness, contrast, threshold)
+    def process_thumbnail(self, thumbnail):
+        thumbnail = self.apply_BCT(thumbnail)
         return thumbnail
 
     def detect_keypoints(self, image):
-        """This function takes an image and first inverts it (to color the
-        features darkest), then applies brightness and contrast (input 
-        values from -100 to 100).
-        It then uses OpenCV to do threshold the image and do some simple,
+        """This function uses OpenCV to threshold an image and do some simple,
         automatic blob detection and returns the keypoints generated.
         The parameters for min and max area are roughly based on an image
         of size 4k x 4k.
