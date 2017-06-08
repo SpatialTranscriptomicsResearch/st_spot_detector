@@ -56,7 +56,7 @@ def get_spots():
         # keypoint detection
 
         BCT_image = image_processor.apply_BCT(
-            session_cache.spot_image, brightness, contrast, threshold
+            session_cache.spot_image
         )
         keypoints = image_processor.detect_keypoints(BCT_image)
         spots = Spots(TL_coords, BR_coords, array_size,

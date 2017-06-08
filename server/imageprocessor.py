@@ -95,7 +95,7 @@ class ImageProcessor:
 
         return tiles
 
-    def apply_BCT(self, image, blarp, large_image=False):
+    def apply_BCT(self, image, large_image=False):
         """Performs colour invert on a PIL image, then converts it to an
         OpenCV image and applies automatic brightness and contrast 
         equalisation (CLAHE) and thresholding, then converts it back and
@@ -111,8 +111,7 @@ class ImageProcessor:
         clahe = cv2.createCLAHE(clipLimit=7.5, tileGridSize=(1,1))
         
         # apply CLAHE to image
-        if(blarp):
-            cv2_image = clahe.apply(cv2_image)
+        cv2_image = clahe.apply(cv2_image)
 
         #retval, thresholded_image = cv2.threshold(cv2_image, threshold,
         #                                          255, cv2.THRESH_BINARY)
@@ -130,10 +129,6 @@ class ImageProcessor:
         # convert the image back into a PIL image
         image = self.CV2_to_PIL_image(thresholded_image)
         return image
-
-    def process_thumbnail(self, thumbnail):
-        thumbnail = self.apply_BCT(thumbnail)
-        return thumbnail
 
     def detect_keypoints(self, image):
         """This function uses OpenCV to threshold an image and do some simple,
