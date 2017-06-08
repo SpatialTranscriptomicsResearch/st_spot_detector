@@ -37,6 +37,7 @@ const main = [
         // texts to display as a title on the menu bar panel
         const panelTitles = {
             button_uploader: 'Uploader',
+            button_aligner: 'Alignment',
             button_detector: 'Detection Parameters',
             button_adjuster: 'Spot adjustment',
             button_exporter: 'Spot export',
@@ -53,8 +54,6 @@ const main = [
             sessionId: '',
             cy3Image: '',
             heImage: '',
-            cy3Tiles: null,
-            heTiles: null,
             cy3Active: null,
             cy3Filename: '',
             errorText: '',
@@ -63,7 +62,6 @@ const main = [
                 Cy3: 'images/imageToggleCy3.png',
                 HE: 'images/imageToggleHE.png'
             },
-            spotTransformMatrx: null,
         };
 
         $scope.classes = {
@@ -86,6 +84,7 @@ const main = [
             error: false,
             panel: {
                 button_uploader: true,
+                button_aligner: false,
                 button_detector: false,
                 button_adjuster: false,
                 button_exporter: false,
@@ -103,6 +102,7 @@ const main = [
         // strings which determine the clickable state of the menu bar buttons 
         $scope.menuButtonDisabled = {
             button_uploader: '',
+            button_aligner: 'false',
             button_detector: 'false',
             button_adjuster: 'false',
             button_exporter: 'false',
@@ -185,8 +185,20 @@ const main = [
             }
         }
 
+        function updateVisibility() {
+            $scope.layerManager.getLayer('cy3')
+                .set('visible', $scope.data.cy3Active)
+                .set('alpha', 1.0);
+            if ('he' in $scope.layerManager.getLayers()) {
+                $scope.layerManager.getLayer('he')
+                    .set('visible', !$scope.data.cy3Active)
+                    .set('alpha', 1.0);
+            }
+        }
+
         $scope.updateState = function(new_state, show_toast = true) {
             $scope.data.state = new_state;
+
             if($scope.data.state === 'state_start') {
                 // reinitialise things
             }
@@ -205,8 +217,18 @@ const main = [
                 $scope.visible.errorText = false;
 
                 $scope.data.logicHandler = $scope.predetectionLH;
+            }
+            else if($scope.data.state === 'state_alignment') {
+                $scope.visible.menuBar = true;
+                $scope.visible.zoomBar = true;
+                $scope.visible.spinner = false;
+                $scope.visible.canvas = true;
+                $scope.visible.errorText = false;
+                $scope.visible.imageToggleBar = false;
 
-                openPanel('button_detector');
+                $scope.aligner.initialize();
+
+                $scope.data.logicHandler = $scope.aligner.logicHandler;
             }
             else if($scope.data.state === 'state_detection') {
                 $scope.visible.menuBar = false;
@@ -223,9 +245,6 @@ const main = [
                 $scope.visible.errorText = false;
 
                 $scope.data.logicHandler = $scope.adjustmentLH;
-
-                openPanel('button_exporter');
-                openPanel('button_adjuster');
             }
             else if($scope.data.state === 'state_error') {
                 $scope.visible.menuBar = true;
@@ -234,21 +253,25 @@ const main = [
                 $scope.visible.canvas = false;
                 $scope.visible.errorText = true;
             }
-            if($scope.data.heTiles != null)
-                // toggle bar should have the same visibility as the zoom bar if HE tiles uploaded
+
+            if ('he' in $scope.layerManager.getLayers() && new_state !== 'state_alignment') {
+                // toggle bar should have the same visibility as the zoom bar if HE tiles
+                // uploaded and we're not in the alignment view
                 $scope.visible.imageToggleBar = $scope.visible.zoomBar;
-            else
+                updateVisibility();
+            } else {
                 $scope.visible.imageToggleBar = false;
+            }
 
             if(show_toast)
                 toast();
         };
 
-        function openPanel(button) {
+        function openPanel(button, ...args) {
             // undisable the button
             $scope.menuButtonDisabled[button] = '';
             // click the button
-            $scope.menuButtonClick(button);
+            $scope.menuButtonClick(button, ...args);
         }
 
         $scope.zoomButtonClick = function(direction) {
@@ -256,15 +279,13 @@ const main = [
         };
 
         $scope.imageToggleButtonClick = function() {
-            if($scope.data.cy3Active)
-                $scope.receiveTilemap($scope.data.heTiles, false);
-            else
-                $scope.receiveTilemap($scope.data.cy3Tiles, false);
-
             $scope.data.cy3Active = !$scope.data.cy3Active;
+            updateVisibility();
         };
 
-        $scope.menuButtonClick = function(button) {
+        let prevState = null;
+
+        $scope.menuButtonClick = function(button, state) {
             // only clickable if not disabled
             //if($scope.menuButtonDisabled[button] != 'false') {
             // switch off all the panel visibilities
@@ -275,6 +296,16 @@ const main = [
             $scope.visible.panel[button] = true;
             toggleMenuBarPanelVisibility($scope.data.button, button);
             $scope.data.button = button;
+
+            if (state !== undefined) {
+                if (state !== $scope.data.state) {
+                    prevState = $scope.data.state;
+                    $scope.updateState(state);
+                }
+            } else if (prevState !== null) {
+                $scope.updateState(prevState);
+                prevState = null;
+            }
             //}
         };
 
@@ -284,6 +315,8 @@ const main = [
             var getSpotData = function() {
                 var successCallback = function(response) {
                     $scope.updateState('state_adjustment');
+                    openPanel('button_exporter');
+                    openPanel('button_adjuster');
                     $scope.loadSpots(response.data); // defined in the viewer directive
                     $scope.data.spotTransformMatrx = response.data.transform_matrix;
                 };
@@ -342,17 +375,23 @@ const main = [
                 $scope.updateState('state_upload');
                 var getTileData = function() {
                     var tileSuccessCallback = function(response) {
-                        $scope.visible.spotAdjuster.div_insideTissue
-                            = response.data.he_tiles != null;
+                        $scope.updateScalingFactor(response.data.tiles.cy3.scaling_factor);
 
-                        $scope.data.cy3Tiles = response.data.cy3_tiles;
-                        $scope.data.heTiles = response.data.he_tiles;
-                        $scope.updateScalingFactor(response.data.scaling_factor);
+                        $scope.receiveTilemap(response.data); // defined in the viewer directive
 
-                        $scope.receiveTilemap($scope.data.cy3Tiles); // defined in the viewer directive
                         $scope.data.cy3Active = true;
+                        updateVisibility();
 
-                        $scope.updateState('state_predetection');
+                        if (response.data.tiles.he) {
+                            $scope.visible.spotAdjuster.div_insideTissue = true;
+                            $scope.menuButtonDisabled.button_detector = '';
+                            $scope.updateState('state_predetection', false);
+                            openPanel('button_aligner', 'state_alignment');
+                        } else {
+                            $scope.visible.spotAdjuster.div_insideTissue = false;
+                            $scope.updateState('state_predetection', true);
+                            openPanel('button_detector');
+                        }
                     };
                     var tileErrorCallback = function(response) {
                         $scope.data.errorText = response.data;

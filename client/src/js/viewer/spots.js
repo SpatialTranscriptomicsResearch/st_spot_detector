@@ -1,4 +1,9 @@
+import _ from 'underscore';
+import math from 'mathjs';
+
 import Vec2 from './vec2';
+
+import { chunksOf, combinations, intBounds, mulVec2 } from '../utils';
 
 const SpotManager = (function() {
 
@@ -6,9 +11,11 @@ const SpotManager = (function() {
     var SpotManager = function(camera) {
         self = this;
         self.spots = [];
-        // the spots located under the tissue (relevant only if an HE image has been uploaded)
-        self.tissueSpots = [];
+        self.mask = [];
+        self.maskScale = 0;
+        self.maskShape = [];
         self.spacer = {};
+        self.average = {};
         self.scalingFactor;
         self.transformMatrix;
         self.spotToAdd = {
@@ -22,37 +29,95 @@ const SpotManager = (function() {
             // this scaling factor is necessary to scale the pixel spot coordinates up again
             self.scalingFactor = scalingFactor;
         },
-        loadSpots: function(spotData) {
-            self.spots = spotData.spots;
-            self.spacer = spotData.spacer;
-            self.tissueSpots = spotData.tissue_spots;
+        loadSpots: function(data) {
+            self.spots = data.spots.positions;
+            self.spacer = data.spots.spacer;
+            if (data.tissue_mask !== null) {
+                self.loadMask(data.tissue_mask);
+            }
+            self.average.diameter = (([n, s]) => s / n)(
+                _.reduce(
+                    _.map(self.spots, x => x.diameter),
+                    ([n, s], x) => [n + 1, s + x], [0, 0],
+                ),
+            );
             // the 3x3 affine transformation matrix between the adjusted array and pixel coordinates
             // represented as a string in the format a11 a12 a13 a21 a22 a23 a31 a32 a33
-            self.transformMatrix = spotData.transform_matrix;
+            self.transformMatrix = math.matrix(
+                chunksOf(3, _.map(
+                    data.spots.transform_matrix.trim().split(' '),
+                    x => parseFloat(x, 10),
+                )),
+            );
+        },
+        loadMask: function(mask) {
+            self.mask = _.reduce(
+                _.map(
+                    mask.data.split(''),
+                    _.compose(
+                        c => _.map(
+                            _.range(6, -1, -1),
+                            /* eslint-disable no-bitwise */
+                            i => (c & (1 << i)) !== 0,
+                        ),
+                        c => c.charCodeAt(0),
+                    ),
+                ),
+                (a, x) => {
+                    a.push(...x);
+                    return a;
+                },
+                [],
+            );
+            self.maskShape = mask.shape;
+            self.maskScale = mask.scale;
         },
         getSpots: function() {
             return {spots: self.spots, spacer: self.spacer};
         },
-        selectTissueSpots: function() {
+        /**
+         * Given a particular spot, the spot is set to selected or not depending on whether it is
+         * located on the tissue or not. The threshold parameter determines the percentage of how
+         * many pixels in the tissue it needs to overlap in order to be classified as being under
+         * the tissue.
+         */
+        selectTissueSpots: function(tmat, threshold) {
             // relevant only if an HE image has been uploaded
             // adds to current selection
-            for(var i = 0; i < self.tissueSpots.length; ++i) { // for every spot in the tissue spots, go through them all 
-                var tissueSpot = self.tissueSpots[i]; // this is the one, yes
-                for(var j = 0; j < self.spots.length; ++j) { // okay, now, for every "normal" spot, check it out, compare it to it!
-                    var spot = self.spots[j]; // this is the one, look at it
-                    if(spot.selected) { // oh, it's already selected?
-                        // ignore if already selected
-                        continue;
-                    }
-                    if(tissueSpot.arrayPosition.x == spot.arrayPosition.x &&
-                       tissueSpot.arrayPosition.y == spot.arrayPosition.y) {
-                        self.spots[j].selected = true;
-                        break;
-                    }
-                }
-            }
+            _.each(
+                // ignore if already selected
+                _.filter(self.spots, s => s.selected === false),
+                (s) => {
+                    // transform coordinates to the basis of the mask
+                    const center = _.map(
+                        Vec2.data(
+                            mulVec2(tmat, s.renderPosition),
+                        ),
+                        x => x * self.maskScale,
+                    );
+                    const radius = (s.diameter * self.maskScale) / 2;
+                    const inside = _.reduce(
+                        _.filter(
+                            // check all (x, y) in the bounding box of the spot
+                            combinations(
+                                ..._.map(center, (c) => {
+                                    const bounds = intBounds([c], radius)[0];
+                                    return _.range(bounds[0], bounds[1] + 1);
+                                }),
+                            ),
+                            // but discard those more than `radius` away
+                            ([x, y]) => Math.sqrt(
+                                ((x - center[0]) ** 2) + ((y - center[1]) ** 2)) < radius,
+                        ),
+                        (a, [x, y]) => [a[0] + 1, a[1] + self.mask[(y * self.maskShape[0]) + x]],
+                        [0, 0],
+                    );
+                    /* eslint-disable no-param-reassign */
+                    s.selected = inside[1] / inside[0] > threshold;
+                },
+            );
         },
-        exportSpots: function(type, selection) {
+        exportSpots: function(type, selection, transformation) {
             var dataString = "";
 
             for(var i = 0; i < self.spots.length; ++i) {
@@ -67,10 +132,12 @@ const SpotManager = (function() {
                     dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y; 
                 }
                 else if(type == "pixel") {
-                    var position = {
-                        'x': Math.round(spot.renderPosition.x * self.scalingFactor),
-                        'y': Math.round(spot.renderPosition.y * self.scalingFactor)
+                    let position = spot.renderPosition;
+                    if (transformation !== undefined) {
+                        position = mulVec2(transformation, position);
                     }
+                    position = Vec2.scale(position, self.scalingFactor);
+                    position = Vec2.map(position, Math.round);
                     dataString += position.x + "\t" + position.y;
                 }
                 if(selection == 'all') {

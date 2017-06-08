@@ -2,12 +2,15 @@
 
 import Vec2 from './vec2';
 
+import { fromLayerCoordinates } from '../utils';
+
 const SpotSelector = (function() {
     var self;
   
-    var SpotSelector = function(camera, spotManager) {
+    var SpotSelector = function(camera, layerManager, spotManager) {
         self = this;
         self.camera = camera;
+        self.layerManager = layerManager;
         self.spotManager = spotManager;
         self.selected = false;
         self.selectedSpotCounter = 0;
@@ -24,12 +27,14 @@ const SpotSelector = (function() {
             var spots = self.spotManager.spots;
             self.selectedSpotCounter = 0;
 
+            const cy3layer = self.layerManager.getLayer('cy3');
+
             // first we need to check if the user is only clicking on a single spot
             if(self.renderingRect.WH.x < 3 && self.renderingRect.WH.x >= 0 &&
                self.renderingRect.WH.y < 3 && self.renderingRect.WH.y >= 0) // arbitrary 3 values here for a "click"
             {
                 for(var i = 0; i < spots.length; ++i) {
-                    var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
+                    const pos = fromLayerCoordinates(cy3layer, spots[i].renderPosition);
                     if(Vec2.distanceBetween(pos, self.selectionRect.TL) < 100) {
                         if(self.shiftPressed && spots[i].selected) {
                             // deselect spots that are already selected
@@ -62,7 +67,7 @@ const SpotSelector = (function() {
                     selectionBR.y = self.selectionRect.TL.y;
                 }
                 for(var i = 0; i < spots.length; ++i) {
-                    var pos = {x: spots[i].renderPosition.x, y: spots[i].renderPosition.y};
+                    const pos = fromLayerCoordinates(cy3layer, spots[i].renderPosition);
                     if(pos.x > selectionTL.x && pos.x < selectionBR.x &&
                        pos.y > selectionTL.y && pos.y < selectionBR.y) {
                         spots[i].selected = true;

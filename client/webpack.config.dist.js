@@ -4,6 +4,7 @@ const distribute = {
     context: __dirname,
     entry: {
         main: ['babel-polyfill', './src/js/app.module.js'],
+        worker: ['babel-polyfill', './src/js/viewer/rendering-worker.js'],
     },
     output: {
         path: path.join(__dirname, 'dist/'),
@@ -13,6 +14,7 @@ const distribute = {
         angular: 'angular',
         jquery: 'jquery',
         toastr: 'toastr',
+        underscore: 'underscore',
     },
     module: {
         loaders: [{

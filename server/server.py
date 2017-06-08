@@ -19,9 +19,7 @@ from PIL import Image
 
 from tissue_recognition import recognize_tissue, get_binary_mask, free
 
-# Increases the request limit to 1 MB.
-# Avoids server throwing 403 error when posting to /select_spots_inside
-BaseRequest.MEMFILE_MAX = 1024 * 1024
+from utils import bits_to_ascii
 
 session_cacher = SessionCacher()
 image_processor = ImageProcessor()
@@ -71,20 +69,22 @@ def get_spots():
         HE_image = session_cache.tissue_image
         if HE_image is not None:
             logger.log(session_id[:20] + ": Running tissue recognition.")
-            spots = select_tissue_spots(spots, HE_image)
+            mask = get_tissue_mask(HE_image)
+        else:
+            mask = None
 
         session_cacher.remove_session_cache(session_id, logger)
 
         spots.calculate_matrix_from_spots()
 
-        return spots.wrap_spots()
+        return {'spots': spots.wrap_spots(), 'tissue_mask': mask}
     else:
         response.status = 400
         error_message = 'Session ID expired. Please try again.'
         logger.log(session_id[:20] + ": Error. " + error_message)
         return error_message
 
-def select_tissue_spots(spots, image):
+def get_tissue_mask(image):
     # Downsample to max 500x500
     max_size = np.array([500] * 2, dtype=float)
     ratio = min(min(max_size / image.size), 1)
@@ -99,51 +99,17 @@ def select_tissue_spots(spots, image):
     # Convert image to numpy matrix and preallocate the mask matrix
     image = np.array(image, dtype=np.uint8)
     mask = np.zeros(image.shape[0:2], dtype=np.uint8)
+
+    # Run tissue recognition
     recognize_tissue(image, mask)
     mask = get_binary_mask(mask)
 
-    tissue_spots = []
-
-    def inner_bounds(center, radius):
-        return [int(k * np.floor(radius + k * center)) for k in (-1, 1)]
-
-    def set_selection(spot, tissue_spots, threshold):
-        """Given a particular spot, the spot is set to selected or not
-        depending on whether it is located on the tissue or not.
-        The threshold parameter determines the percentage of how many pixels
-        in the tissue it needs to overlap in order to be classified as being
-        under the tissue.
-        """
-        coords = [ratio * c for c in spot.get('renderPosition').values()]
-        radius = (ratio * spot.get('diameter')) / 2
-
-        hit_count = 0 # the number of times the spot hits a pixel
-        total_count = 0 # the number of checks
-        r_min, r_max = inner_bounds(coords[0], radius)
-        for r in range(r_min, r_max + 1):
-            c_min, c_max = inner_bounds(
-                coords[1], np.sqrt(radius ** 2 - (r - coords[0]) ** 2))
-            for c in range(c_min, c_max + 1):
-                total_count += 1
-                if mask[r, c]:
-                    # if the pixel is in the tissue mask
-                    hit_count += 1
-
-        if(float(hit_count) / float(total_count) >= threshold):
-            # if over the threshold, then append to tissue_spot array
-            # and set the spot to selected
-            tissue_spot = {'arrayPosition': spot['arrayPosition']}
-            tissue_spots.append(tissue_spot)
-            spot['selected'] = True
-
-    for spot in spots.spots:
-        set_selection(spot, tissue_spots, 0.5)
-
-    spots.tissue_spots = tissue_spots
+    # Encode mask to bit string
+    bit_string = bits_to_ascii((mask == 255).flatten())
 
     free(mask)
 
-    return spots
+    return {'data': bit_string, 'shape': new_size, 'scale': ratio}
 
 @app.post('/tiles')
 def get_tiles():
@@ -189,15 +155,8 @@ def get_tiles():
                 session_cache.tiles[key] = tiles_
 
                 if(key == 'cy3'):
-                    # we want to send back the scaling factor of the image to
-                    # the client, so it can convert its spot data back to the
-                    # original image size.
-                    tiles.update({'scaling_factor': scaling_factor})
-                    
-                    # we also want to save a scaled down version of the image
+                    # we want to save a scaled down version of the image
                     # for spot detection later :)
-                    # if the image is scaled down to 4k the scaling factor
-                    # will for example be 20k / 4k, i.e. 5
                     spot_img, spot_sf = image_processor.resize_image(image,
                         [4000, 4000])
                     session_cache.spot_image = spot_img
@@ -209,7 +168,18 @@ def get_tiles():
                         [500, 500])[0]
                     session_cache.tissue_image = tissue_img
 
-                tiles.update({key: tiles_})
+                tiles.update({
+                    key: {
+                        'histogram': image.histogram(),
+                        # we want to send back the scaling factor of the image to
+                        # the client, so it can convert its spot data back to the
+                        # original image size.
+                        # if the image is scaled down to 4k the scaling factor
+                        # will for example be 20k / 4k, i.e. 5
+                        'scaling_factor': scaling_factor,
+                        'tiles': tiles_.tilemaps,
+                    },
+                })
                 logger.log(session_id[:20] + ": Image tiling complete.")
             #TODO: make sure the large images get cleared out of the memory
         else:
@@ -223,9 +193,12 @@ def get_tiles():
         logger.log(session_id[:20] + ": Error. " + error_message)
         return error_message
 
-    return {'cy3_tiles': tiles['cy3'].wrapped_tiles(),
-            'he_tiles': tiles['he'].wrapped_tiles() if valid['he'] else None,
-            'scaling_factor': scaling_factor}
+    ret = {
+        'tiles': tiles,
+        'levels': Tilemap.tilemapLevels,
+        'dim': [Tilemap.tileWidth, Tilemap.tileHeight],
+    }
+    return ret
 
 @app.route('/<filepath:path>')
 def serve_site(filepath):

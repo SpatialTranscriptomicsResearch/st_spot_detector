@@ -1,14 +1,19 @@
 /* modified version of  https://github.com/robashton/camera */
 
+import math from 'mathjs';
+
 import Codes from './keycodes';
 import Vec2 from './vec2';
+
+import { mulVec2 } from '../utils';
 
 const Camera = (function() {
 
     var self;
-    var Camera = function(ctx, initialPosition, initialScale) {
+    var Camera = function(ctx, layerManager, initialPosition, initialScale) {
         self = this;
         self.context = ctx;
+        self.layerManager = layerManager;
         self.position = initialPosition || Vec2.Vec2(0, 0);
         self.scale = initialScale || 0.05;
         self.positionOffset = self.calculateOffset();
@@ -28,21 +33,28 @@ const Camera = (function() {
     };
 
     Camera.prototype = {
-        begin: function() {
-            self.context.save();
-            self.applyScale();
-            self.applyTranslation();
+        begin: function(context = self.context) {
+            context.save();
+            context.scale(self.viewport.scale.x, self.viewport.scale.y);
+            context.translate(-self.viewport.l + self.positionOffset.x, -self.viewport.t + self.positionOffset.y);
         },
-        end: function() {
-            self.context.restore();
+        end: function(context = self.context) {
+            context.restore();
         },
-        applyScale: function() {
-            self.context.scale(self.viewport.scale.x, self.viewport.scale.y);
-        },
-        applyTranslation: function() {
-            // move offset code to updateViewport() function
-            self.context.translate(-self.viewport.l + self.positionOffset.x, -self.viewport.t + self.positionOffset.y);
-            //self.context.translate(-self.viewport.l, -self.viewport.t);
+        getTransform: function() {
+            return math.matrix([
+                [
+                    self.scale,
+                    0,
+                    self.scale * (-self.position.x + self.positionOffset.x),
+                ],
+                [
+                    0,
+                    self.scale,
+                    self.scale * (-self.position.y + self.positionOffset.y),
+                ],
+                [0, 0, 1],
+            ]);
         },
         updateViewport: function() {
             self.clampValues();
@@ -122,15 +134,31 @@ const Camera = (function() {
             self.scale = Math.max(self.scale, self.minScale);
             self.scale = Math.min(self.scale, self.maxScale);
         },
-        mouseToCameraPosition: function(position) {
-            var cam = Vec2.subtract(self.position, self.positionOffset);
-            var mouse = self.mouseToCameraScale(position, 1 / self.scale);
-            return Vec2.add(cam, mouse);
+        mouseToCameraPosition: function(position, layerName) {
+            const cam = Vec2.subtract(self.position, self.positionOffset);
+            const mouse = self.mouseToCameraScale(position, 1 / self.scale);
+            const canvasPosition = Vec2.add(cam, mouse);
+            try {
+                return mulVec2(
+                    math.inv(self.layerManager.getLayer(layerName).tmat),
+                    canvasPosition,
+                );
+            } catch (e) {
+                return canvasPosition;
+            }
         },
-        mouseToCameraScale: function(vector) {
+        mouseToCameraScale: function(vector, layerName) {
             // this does not take the camera position into account, so it is ideal
             // for use with values such as difference/movement values
-            return Vec2.scale(vector, 1 / self.scale);
+            const canvasScale = Vec2.scale(vector, 1 / self.scale);
+            try {
+                const tmat = math.inv(self.layerManager.getLayer(layerName).tmat);
+                // remove translational offsets
+                tmat.subset(math.index([0, 1], 2), [0, 0]);
+                return mulVec2(tmat, canvasScale);
+            } catch (e) {
+                return canvasScale;
+            }
         }
     };
 
