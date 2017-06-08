@@ -71,6 +71,6 @@ class SessionCacher:
             lifetime = time.time() - session_cache.creation_time
             if(lifetime > self.max_session_lifetime):
                 logger.log((session_cache.session_id[:20] + ": Session timed out ("
-                   + lifetime + " seconds)."))
+                   + str(lifetime) + " seconds)."))
                 SessionCacher.session_caches.remove(session_cache)
                 break
