@@ -17,6 +17,7 @@ const SpotManager = (function() {
         self.spacer = {};
         self.average = {};
         self.scalingFactor;
+        self.imageSize;
         self.transformMatrix;
         self.spotToAdd = {
             renderPosition: Vec2.Vec2(0, 0)
@@ -28,6 +29,10 @@ const SpotManager = (function() {
             // the uploaded image is scaled down to approximately 20k x 20k;
             // this scaling factor is necessary to scale the pixel spot coordinates up again
             self.scalingFactor = scalingFactor;
+        },
+        updateImageSize(imageSize) {
+            // used for normalizing spot coordinates
+            self.imageSize = imageSize;
         },
         loadSpots: function(data) {
             self.spots = data.spots.positions;
@@ -117,9 +122,11 @@ const SpotManager = (function() {
                 },
             );
         },
-        exportSpots: function(type, selection, transformation) {
+        exportSpots: function(type, selection, includeImageSize, transformation) {
             var dataString = "";
-
+            if (includeImageSize === true) {
+                dataString += `0\t0\t${self.imageSize[0]}\t${self.imageSize[1]}\n`;
+            }
             for(var i = 0; i < self.spots.length; ++i) {
                 var spot = self.spots[i];
                 if(selection == 'selection' && spot.selected == false) {
@@ -130,8 +137,7 @@ const SpotManager = (function() {
                 dataString += spot.arrayPosition.x  + "\t" + spot.arrayPosition.y  + "\t";
                 if(type == "array") {
                     dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y; 
-                }
-                else if(type == "pixel") {
+                } else if (type === 'pixel') {
                     let position = spot.renderPosition;
                     if (transformation !== undefined) {
                         position = mulVec2(transformation, position);

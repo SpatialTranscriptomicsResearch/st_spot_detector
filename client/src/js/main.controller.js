@@ -70,7 +70,17 @@ const main = [
 
         $scope.exportForm = {
             selection: 'selection',
-            coordinateType: 'array'
+            coordinateType: 'array',
+            includeImageSizeLatent: true,
+            includeImageSize(value) {
+                if (arguments.length !== 0) {
+                    this.includeImageSizeLatent = value;
+                }
+                if (this.coordinateType === 'pixel') {
+                    return this.includeImageSizeLatent;
+                }
+                return false;
+            },
         };
 
         // bools which control the visibilty of various elements on the page
@@ -378,6 +388,7 @@ const main = [
                 var getTileData = function() {
                     var tileSuccessCallback = function(response) {
                         $scope.updateScalingFactor(response.data.tiles.cy3.scaling_factor);
+                        $scope.updateImageSize(response.data.tiles.cy3.image_size);
 
                         $scope.receiveTilemap(response.data); // defined in the viewer directive
 
