@@ -159,7 +159,7 @@ const main = [
                     "Right click or Ctrl+click to navigate the canvas.",
                     "Click FINISH ADDING SPOTS to return to selection mode."
                 ];
-                displayToasts(toasts);
+                //displayToasts(toasts);
             }
         };
 
@@ -188,7 +188,7 @@ const main = [
                     "Click DELETE SPOTS to deleted selected spots.<br>" + 
                     "Click ADD SPOTS to add additional spots."
                 ];
-                displayToasts(toasts);
+                //displayToasts(toasts);
             }
             else if($scope.data.state === 'state_error') {
                 toastr.clear();
