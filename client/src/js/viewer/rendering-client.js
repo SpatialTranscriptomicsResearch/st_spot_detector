@@ -40,20 +40,20 @@ function unserializeId(id) {
     return id.split('#');
 }
 
-function createImageData(blob) {
-    return new Promise((resolve, reject) => {
-        createImageBitmap(blob)
-            .then((bitmap) => {
-                const canvas = document.createElement('canvas');
-                canvas.width = bitmap.width;
-                canvas.height = bitmap.height;
+function createImageData(uri) {
+    return new Promise((resolve) => {
+        const image = new Image();
+        image.src = uri;
+        image.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
 
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(bitmap, 0, 0);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(image, 0, 0);
 
-                resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
-            })
-            .catch(reject);
+            resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        };
     });
 }
 
@@ -67,19 +67,23 @@ function startJob(id, jpg, worker) {
         const [msg, [tileData]] = e.data;
         const [x, y, z] = unserializeId(id);
         if (msg === Responses.SUCCESS) {
-            createImageBitmap(tileData)
-                .then((tile) => {
-                    this[cache].set(id, tile);
-                    this.callback(tile, x, y, z);
+            const tile = document.createElement('canvas');
+            tile.width = tileData.width;
+            tile.height = tileData.height;
 
-                    // remove tile objects in insertion order until size is below MAX_CACHE_SIZE.
-                    // (assume image data is stored as uint8 in four channels.)
-                    const tileSize = tile.height * tile.width * 4;
-                    const removeN = Math.max(
-                        0, this[cache].size - Math.floor(MAX_CACHE_SIZE / tileSize));
-                    Array.from(this[cache].keys()).slice(0, removeN)
-                        .forEach(key => this[cache].delete(key));
-                });
+            const ctx = tile.getContext('2d');
+            ctx.putImageData(tileData, 0, 0);
+
+            this[cache].set(id, tile);
+            this.callback(tile, x, y, z);
+
+            // remove tile objects in insertion order until size is below MAX_CACHE_SIZE.
+            // (assume image data is stored as uint8 in four channels.)
+            const tileSize = tile.height * tile.width * 4;
+            const removeN = Math.max(
+                0, this[cache].size - Math.floor(MAX_CACHE_SIZE / tileSize));
+            Array.from(this[cache].keys()).slice(0, removeN)
+                .forEach(key => this[cache].delete(key));
         }
 
         // replace current job with a new one if there is one in queue
@@ -95,19 +99,15 @@ function startJob(id, jpg, worker) {
         this[wrk].push(worker);
     };
 
-    // fetch and decode jpg and send to worker
-    fetch(jpg)
-        .then(response => response.blob())
-        .then(createImageData)
-        .then((imageData) => {
-            worker.postMessage(
-                [
-                    Messages.AFLTR,
-                    [imageData, this[cmod]],
-                ],
-                [imageData.data.buffer],
-            );
-        });
+    createImageData(jpg).then((imagedata) => {
+        worker.postMessage(
+            [
+                Messages.AFLTR,
+                [imagedata, this[cmod]],
+            ],
+            [imagedata.data.buffer],
+        );
+    });
 }
 
 /**
