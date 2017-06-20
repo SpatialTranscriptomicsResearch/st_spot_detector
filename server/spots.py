@@ -35,17 +35,18 @@ class Spots:
             'y': BR['y'] / scaling_factor
         }
         # the average expected space between each spot
+        self.spacer_unscaled = {
+            'x': ((BR['x'] - TL['x']) / (array_size['x'] - 1)),
+            'y': ((BR['y'] - TL['y']) / (array_size['y'] - 1)),
+        }
         self.spacer = {
-            'x': ((self.BR_coords['x'] - self.TL_coords['x'])
-                   / (self.array_size['x'] - 1)),
-            'y': ((self.BR_coords['y'] - self.TL_coords['y'])
-                   / (self.array_size['y'] - 1))
+            k: v / scaling_factor for (k, v) in self.spacer_unscaled.items()
         }
 
     def wrap_spots(self):
         spot_dictionary = {
             'positions': self.spots,
-            'spacer': self.spacer,
+            'spacer': self.spacer_unscaled,
             'transform_matrix': self.transform_matrix
         }
         return spot_dictionary
