@@ -135,17 +135,14 @@ const SpotManager = (function() {
                     continue;
                 }
                 dataString += spot.arrayPosition.x  + "\t" + spot.arrayPosition.y  + "\t";
-                if(type == "array") {
-                    dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y; 
-                } else if (type === 'pixel') {
-                    let position = spot.renderPosition;
-                    if (transformation !== undefined) {
-                        position = mulVec2(transformation, position);
-                    }
-                    position = Vec2.scale(position, self.scalingFactor);
-                    position = Vec2.map(position, Math.round);
-                    dataString += position.x + "\t" + position.y;
+                dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y; 
+                let position = spot.renderPosition;
+                if (transformation !== undefined) {
+                    position = mulVec2(transformation, position);
                 }
+                position = Vec2.scale(position, self.scalingFactor);
+                position = Vec2.map(position, Math.round);
+                dataString += position.x + "\t" + position.y;
                 if(selection == 'all') {
                     // we add a bool 0 or 1, depending on whether the spot is selected or not
                     var selected = spot.selected ? "\t1" : "\t0";
