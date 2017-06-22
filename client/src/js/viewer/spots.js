@@ -123,7 +123,10 @@ const SpotManager = (function() {
             );
         },
         exportSpots: function(type, selection, includeImageSize, transformation) {
-            var dataString = "";
+            var dataString = "x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y\t";
+            var endOfDataStringHeader = selection == 'all' ? "selected\n" : "\n";
+            dataString += endOfDataStringHeader;
+
             if (includeImageSize === true) {
                 dataString += `0\t0\t${self.imageSize[0]}\t${self.imageSize[1]}\n`;
             }
@@ -135,7 +138,7 @@ const SpotManager = (function() {
                     continue;
                 }
                 dataString += spot.arrayPosition.x  + "\t" + spot.arrayPosition.y  + "\t";
-                dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y; 
+                dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y + "\t"; 
                 let position = spot.renderPosition;
                 if (transformation !== undefined) {
                     position = mulVec2(transformation, position);
