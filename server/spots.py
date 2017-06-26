@@ -5,6 +5,10 @@ import math
 import numpy as np
 import random
 from circle_detector import CircleDetector, DetectionType
+import warnings
+
+warnings.simplefilter('ignore', Image.DecompressionBombWarning)
+Image.MAX_IMAGE_PIXELS=None
 
 circle_detector = CircleDetector()
 

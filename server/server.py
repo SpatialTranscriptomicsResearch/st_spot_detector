@@ -17,6 +17,10 @@ from spots import Spots
 from tilemap import Tilemap
 from PIL import Image
 
+import warnings
+warnings.simplefilter('ignore', Image.DecompressionBombWarning)
+Image.MAX_IMAGE_PIXELS=None
+
 from tissue_recognition import recognize_tissue, get_binary_mask, free
 
 from utils import bits_to_ascii
