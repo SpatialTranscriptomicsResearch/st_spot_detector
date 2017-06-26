@@ -122,7 +122,7 @@ const SpotManager = (function() {
                 },
             );
         },
-        exportSpots: function(type, selection, includeImageSize, transformation) {
+        exportSpots: function(selection, includeImageSize, transformation) {
             var dataString = "x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y\t";
             var endOfDataStringHeader = selection == 'all' ? "selected\n" : "\n";
             dataString += endOfDataStringHeader;

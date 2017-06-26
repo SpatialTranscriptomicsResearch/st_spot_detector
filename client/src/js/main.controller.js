@@ -70,7 +70,8 @@ const main = [
 
         $scope.exportForm = {
             selection: 'selection',
-            coordinateType: 'array',
+            includeImageSize: false,
+            /*
             includeImageSizeLatent: true,
             includeImageSize(value) {
                 if (arguments.length !== 0) {
@@ -81,6 +82,7 @@ const main = [
                 }
                 return false;
             },
+            */
         };
 
         // bools which control the visibilty of various elements on the page

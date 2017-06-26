@@ -146,7 +146,7 @@
                     </div>
                     <!-- Exporter Panel -->
                     <div ng-show='visible.panel.button_exporter'>
-                        <form ng-submit='exportSpots(exportForm.coordinateType, exportForm.selection, exportForm.includeImageSize())'>
+                        <form ng-submit='exportSpots(exportForm.selection, exportForm.includeImageSize)'>
                         Selection export:
                         <div class="btn-group radio-button-group" data-toggle="buttons">
                             <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-default radio-button">
@@ -157,6 +157,7 @@
                             </label>
                         </div>
                         <br>
+                        <!--
                         Coordinate format:
                         <div class="btn-group radio-button-group" data-toggle="buttons">
                             <label ng-class="{active: exportForm.coordinateType == 'array'}" class="btn btn-default radio-button">
@@ -166,12 +167,12 @@
                                 <input type="radio" value='pixel' ng-model='exportForm.coordinateType'> Pixel
                             </label>
                         </div>
+                        -->
                         Include image size:
                         <input
                             type="checkbox"
                             ng-model="exportForm.includeImageSize"
                             ng-model-options="{ getterSetter: true }"
-                            ng-disabled="exportForm.coordinateType !== 'pixel'"
                             style="float: right"
                             />
                         <br>
