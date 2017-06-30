@@ -9,18 +9,18 @@ image_processor = ImageProcessor()
 image = Image.open("circles/testimage.jpg")
 image_pixels = image.load()
 
-positions = [
-
-    (116, 195), (200, 195),
-                (200, 282),             (366, 282), (462, 282), (542, 282),
-    (116, 370),             (287, 370)
-]
 #positions = [
-#    (116, 106), (200, 106), (287, 106), (366, 106), (462, 106), (542, 106), (631, 106),
-#    (116, 195), (200, 195), (287, 195), (366, 195), (462, 195), (542, 195), (631, 195),
-#    (116, 282), (200, 282), (287, 282), (366, 282), (462, 282), (542, 282), (631, 282),
-#    (116, 370), (200, 370), (287, 370), (366, 370), (462, 370), (542, 370), (631, 370)
+#
+#    (116, 195), (200, 195),
+#                (200, 282),             (366, 282), (462, 282), (542, 282),
+#    (116, 370),             (287, 370)
 #]
+positions = [
+    (116, 106), (200, 106), (287, 106), (366, 106), (462, 106), (542, 106), (631, 106),
+    (116, 195), (200, 195), (287, 195), (366, 195), (462, 195), (542, 195), (631, 195),
+    (116, 282), (200, 282), (287, 282), (366, 282), (462, 282), (542, 282), (631, 282),
+    (116, 370), (200, 370), (287, 370), (366, 370), (462, 370), (542, 370), (631, 370)
+]
 
 def get_pixel_pos_array(position, direction, length):
     """returns an array of positions from a certain position
@@ -107,6 +107,28 @@ def is_circle(position, search_radius):
         return peak
 
     edges = [edge_detected(position, direction, search_radius) for direction in directions]
+
+    pairs = [(0, 4), (1, 5), (2, 6), (3, 7)]
+
+    for pair in pairs:
+        edge_a = edges[pair[0]]
+        edge_b = edges[pair[1]]
+        if(not edge_a or not edge_b):
+            continue
+
+        edge_a = numpy.array(edge_a)
+        edge_b = numpy.array(edge_b)
+
+        dist = numpy.linalg.norm(edge_a - edge_b)
+        if(dist > 58): # quite a "hardcoded" value: will not work as well for stretched images
+            print("Discarding a point! It is too far away")
+            dist_a = numpy.linalg.norm(numpy.array(position) - edge_a)
+            dist_b = numpy.linalg.norm(numpy.array(position) - edge_b)
+            if(dist_a > dist_b):
+                edges[pair[0]] = None
+            else:
+                edges[pair[1]] = None
+
     edges = [edge for edge in edges if edge is not None] # remove all "None"s
     
     if(len(edges) < 4): # not enough edges to be a circle
