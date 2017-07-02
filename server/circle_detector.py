@@ -24,7 +24,29 @@ class CircleDetector:
     ]
     __pairs = [(0, 4), (1, 5), (2, 6), (3, 7)]
 
-    __search_radius = 50
+    __edge_search_radius = 50
+    __white_search_radius = 20
+
+    __whiteness_threshold = 200.0
+
+    def detect_spot(self, detection_type, image_pixels, position):
+        """Takes a position and image pixels and uses either whiteness
+        detection or circle-detection to determine if a spot is there
+        or not.
+        Returns the corresponding detected spot positions or None if no
+        spot is found there.
+        """
+        spot = None
+        if(detection_type == DetectionType.EDGES):
+            spot_edges = self.__edges_at_position(
+                image_pixels, position, self.__edge_search_radius)
+            spot = self.__circle_from_edges(spot_edges)
+        elif(detection_type == DetectionType.WHITENESS):
+            spot = self.__circle_from_whitness(image_pixels, position)
+        else:
+            raise RuntimeError('Invalid detection_type parameter;\
+                must be DetectionType')
+        return spot
 
     def detect_spots(self, detection_type, image_pixels, positions):
         """Takes an array of positions and image pixels and uses either
@@ -34,16 +56,9 @@ class CircleDetector:
         None, if no spot is found there.
         """
         spot_array = []
-        if(detection_type == DetectionType.EDGES):
-            for position in positions:
-                spot_edges = self.__edges_at_position(
-                    image_pixels, position, self.__search_radius)
-                spot = self.__circle_from_edges(spot_edges)
-                spot_array.append(spot)
-        elif(detection_type == DetectionType.WHITENESS):
-            pass
-        else:
-            raise RuntimeError('Invalid detection_type parameter; must be DetectionType')
+        for position in positions:
+            spot = self.detect_spot(detection_type, image_pixels, position)
+            spot_array.append(spot)
         return spot_array
 
 
@@ -62,12 +77,9 @@ class CircleDetector:
         # will return out-of-bound pixels, may need to fix this if
         # spots are close to the image edge
         pixels = []
-        for y in range(int(position['y'] - radius), int(position['y'] + radius)):
-            for x in range(int(position['x'] - radius), int(position['x'] + radius)):
-                pixel = {
-                    'x': x,
-                    'y': y
-                }
+        for y in range(int(position[1] - radius), int(position[1] + radius)):
+            for x in range(int(position[0] - radius), int(position[0] + radius)):
+                pixel = (x, y)
                 # this check ensures pixels are in a circle
                 if(self.__distance_between(pixel, position) < radius):
                     pixels.append(pixel)
@@ -209,4 +221,16 @@ class CircleDetector:
         else:
             print("Points not circley enough.")
             print("the std radius is %f and there is the mean %f, which is higher than the condition of %f" %(radius_std, radius_mean, radius_mean * 0.20))
+            return None
+
+    def __circle_from_whitness(self, image_pixels, position):
+        whiteness = 0
+        pixels = self.__get_surrounding_pixels(position, self.__white_search_radius)
+        for pixel in pixels:
+            whiteness += self.__intensity_at(image_pixels, pixel)
+            
+        whiteness_avg = float(whiteness) / float(len(pixels))
+        if(whiteness_avg < self.__whiteness_threshold):
+            return position
+        else:
             return None
