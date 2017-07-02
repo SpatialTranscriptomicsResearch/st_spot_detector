@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+now make this a circle-detector-at-position-from-image class, to use in spots.py :D
 
 from imageprocessor import ImageProcessor
 import numpy
