@@ -9,7 +9,9 @@ from circle_detector import CircleDetector
 circle_detector = CircleDetector()
 
 class Spots:
-    """Holds the spot data"""
+    """Holds the spot data. These spots are positioned relative to the stored
+    and processed Cy3 image, not the originally updated Cy3 image.
+    """
 
     def __init__(self, TL, BR, array_size, scaling_factor):
         self.spots = []
@@ -67,8 +69,7 @@ class Spots:
         col_position_count = [0] * self.array_size['x']
 
         def within_threshold(kp_pos, predicted_pos, threshold):
-            predicted_pos = [predicted_pos['x'], predicted_pos['y']]
-            dist = np.linalg.norm(np.array(kp_pos) - predicted_pos)
+            dist = np.linalg.norm(np.array(kp_pos) - np.array(predicted_pos))
             return dist < threshold
             
         # now iterating through the "expected" array positions
@@ -76,10 +77,10 @@ class Spots:
         for i in range(1, self.array_size['y'] - 1):
             for j in range(1, self.array_size['x'] - 1):
                 spot_detected = False
-                predicted_position = {
-                    'x': self.spacer['x'] * j + self.TL_coords['x'],
-                    'y': self.spacer['y'] * i + self.TL_coords['y']
-                }
+                predicted_position = (
+                    self.spacer['x'] * j + self.TL_coords['x'],
+                    self.spacer['y'] * i + self.TL_coords['y']
+                )
                 for keypoint in keypoints:
                 # iterate through the keypoints to see if one of them is at
                 # the current "expected" array position
@@ -87,34 +88,25 @@ class Spots:
                     if(within_threshold(kp, predicted_position, threshold_dist)):
                     # a keypoint is at the expected position if it is close
                     # enough to it
-                        difference = {
-                            'x': kp[0] - predicted_position['x'],
-                            'y': kp[1] - predicted_position['y']
-                        }
-                        array_position_offset = {
-                            'x': difference['x'] / self.spacer['x'],
-                            'y': difference['y'] / self.spacer['y']
-                        }
-                        array_position = {
-                            'x': j + 1,
-                            'y': i + 1
-                        }
-                        new_array_position = {
-                            'x': array_position['x']
-                                 + array_position_offset['x'],
-                            'y': array_position['y']
-                                 + array_position_offset['y']
-                        }
-                        self.spots.append({
-                            'arrayPosition': array_position,
-                            'newArrayPosition': new_array_position,
-                            'renderPosition': {
-                                'x': int(kp[0]),
-                                'y': int(kp[1])
-                            },
-                            'diameter': keypoint.size,
-                            'selected': False
-                        })
+                        difference = (
+                            kp[0] - predicted_position[0],
+                            kp[1] - predicted_position[1]
+                        )
+                        array_position_offset = (
+                            difference[0] / self.spacer['x'],
+                            difference[1] / self.spacer['y']
+                        )
+                        array_position = (j+1, i+1)
+                        new_array_position = (
+                            array_position[0] + array_position_offset[0],
+                            array_position[1] + array_position_offset[1]
+                        )
+                        new_spot = self.__create_spot(
+                            array_position, new_array_position,
+                            kp, keypoint.size, False
+                        )
+                        self.spots.append(new_spot)
+
                         avg_diam = (avg_diam * n_diam + keypoint.size) / (n_diam + 1)
                         n_diam = n_diam + 1
 
@@ -124,8 +116,8 @@ class Spots:
                             # to calculate the average row and column positions
                             row_position_count[i] += 1
                             col_position_count[j] += 1
-                            row_position_sum[i] += new_array_position['y']
-                            col_position_sum[j] += new_array_position['x']
+                            row_position_sum[i] += new_array_position[0]
+                            col_position_sum[j] += new_array_position[1]
 
                         break # to only get one spot per keypoint
 
@@ -223,8 +215,8 @@ class Spots:
         """
         for spot in self.spots:
             spot['renderPosition'] = {
-                'x': float(spot['renderPosition']['x']) * scaling_factor,
-                'y': float(spot['renderPosition']['y']) * scaling_factor,
+                'x': spot['renderPosition']['x'] * scaling_factor,
+                'y': spot['renderPosition']['y'] * scaling_factor,
             }
             spot['diameter'] = spot['diameter'] * scaling_factor
 
@@ -249,6 +241,27 @@ class Spots:
                         self.spots.append(new_spot)
                         break
 
+    def __create_spot(self, array_pos, new_array_pos, render_pos, diam, sel):
+        """Takes tuple values of spot positions and returns a JS friendly
+        dictionary spot to add to the self.spots array.
+        """
+        return {
+            'arrayPosition': {
+                'x': array_pos[0],
+                'y': array_pos[1]
+            },
+            'newArrayPosition': {
+                'x': new_array_pos[0],
+                'y': new_array_pos[1]
+            },
+            'renderPosition': {
+                'x': render_pos[0],
+                'y': render_pos[1]
+            },
+            'diameter': diam,
+            'selected': sel
+        }
+        
 
     def calculate_matrix_from_spots(self, num_spots=20):
         """Calculates a 3x3 affine transformation matrix which transforms
