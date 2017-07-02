@@ -182,39 +182,3 @@ class CircleDetector:
             print("Points not circley enough.")
             print("the std radius is %f and there is the mean %f, which is higher than the condition of %f" %(radius_std, radius_mean, radius_mean * 0.20))
             return None
-
-#############
-
-#positions = [
-#
-#    (116, 195), (200, 195),
-#                (200, 282),             (366, 282), (462, 282), (542, 282),
-#    (116, 370),             (287, 370)
-#]
-positions = [
-    (116, 106), (200, 106), (287, 106), (366, 106), (462, 106), (542, 106), (631, 106),
-    (116, 195), (200, 195), (287, 195), (366, 195), (462, 195), (542, 195), (631, 195),
-    (116, 282), (200, 282), (287, 282), (366, 282), (462, 282), (542, 282), (631, 282),
-    (116, 370), (200, 370), (287, 370), (366, 370), (462, 370), (542, 370), (631, 370)
-]
-
-circle_detector = CircleDetector()
-
-image = Image.open("circles/testimage.jpg")
-pixels = image.load()
-
-bolp = circle_detector.detect_spots(DetectionType.EDGES, pixels, positions)
-
-spot_radius = 10
-canvas = ImageDraw.Draw(image)
-for bol in bolp:
-    if(bol):
-        render_spot = [
-            bol[0] - spot_radius,
-            bol[1] - spot_radius,
-            bol[0] + spot_radius,
-            bol[1] + spot_radius
-        ]
-        canvas.ellipse(render_spot, fill=(255, 255, 0), outline=None)
-
-image.save("circletestoutput.jpg")
