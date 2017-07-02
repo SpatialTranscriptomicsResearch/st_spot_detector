@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import numpy
+import numpy as np
 from PIL import Image, ImageDraw
 
 class DetectionType:
@@ -43,8 +43,36 @@ class CircleDetector:
         elif(detection_type == DetectionType.WHITENESS):
             pass
         else:
-            raise Exception('Invalid detection_type parameter; must be DetectionType')
+            raise RuntimeError('Invalid detection_type parameter; must be DetectionType')
         return spot_array
+
+
+    def __distance_between(self, a, b):
+        """Takes array-like objects and calculates the distances between
+        them using numpy.
+        Returns a float.
+        """
+        dist = np.linalg.norm(np.array(a) - np.array(b))
+        return dist
+
+    def __get_surrounding_pixels(self, position, radius, circle=True):
+        """Returns an array with the positions of pixels surrounding
+        a particular point at a given radius from it.
+        """
+        # will return out-of-bound pixels, may need to fix this if
+        # spots are close to the image edge
+        pixels = []
+        for y in range(int(position['y'] - radius), int(position['y'] + radius)):
+            for x in range(int(position['x'] - radius), int(position['x'] + radius)):
+                pixel = {
+                    'x': x,
+                    'y': y
+                }
+                # this check ensures pixels are in a circle
+                if(self.__distance_between(pixel, position) < radius):
+                    pixels.append(pixel)
+
+        return pixels
 
     def __get_pixel_pos_array(self, position, direction, length):
         """returns an array of positions from a certain position
@@ -107,8 +135,8 @@ class CircleDetector:
             differences.append(average - averages[i - 1])
 
         peak, index = max([(difference, i) for i, difference in enumerate(differences)])
-        difference_mean = numpy.mean(differences)
-        difference_std = numpy.std(differences)
+        difference_mean = np.mean(differences)
+        difference_std = np.std(differences)
 
         if(peak > difference_mean + 2 * difference_std and difference_mean > 0):
             # also need to check if outlier
@@ -136,14 +164,14 @@ class CircleDetector:
             if(not edge_a or not edge_b):
                 continue
 
-            edge_a = numpy.array(edge_a)
-            edge_b = numpy.array(edge_b)
+            edge_a = np.array(edge_a)
+            edge_b = np.array(edge_b)
 
-            dist = numpy.linalg.norm(edge_a - edge_b)
+            dist = self.__distance_between(edge_a, edge_b)
             if(dist > 58): # quite a "hardcoded" value: will not work as well for stretched images
                 print("Discarding a point! It is too far away")
-                dist_a = numpy.linalg.norm(numpy.array(position) - edge_a)
-                dist_b = numpy.linalg.norm(numpy.array(position) - edge_b)
+                dist_a = self.__distance_between(position, edge_a)
+                dist_b = self.__distance_between(position, edge_b)
                 if(dist_a > dist_b):
                     edges[pair[0]] = None
                 else:
@@ -171,9 +199,9 @@ class CircleDetector:
         )
         print(centre)
         # distances of the edges from the centre
-        radii = [numpy.linalg.norm(numpy.array(centre) - numpy.array(edge)) for edge in edges]
-        radius_mean = numpy.mean(radii)
-        radius_std = numpy.std(radii)
+        radii = [self.__distance_between(centre, edge) for edge in edges]
+        radius_mean = np.mean(radii)
+        radius_std = np.std(radii)
 
         if(radius_std < radius_mean * 0.20):
             print("It seems to be a valid circle!")
