@@ -95,7 +95,7 @@ class ImageProcessor:
 
         return tiles
 
-    def apply_BCT(self, image, large_image=False):
+    def apply_BCT(self, image, apply_thresholding=True):
         """Performs colour invert on a PIL image, then converts it to an
         OpenCV image and applies automatic brightness and contrast 
         equalisation (CLAHE) and thresholding, then converts it back and
@@ -108,23 +108,21 @@ class ImageProcessor:
         cv2_image = self.PIL_to_CV2_image(image)
 
         # create a CLAHE object 
-        clahe = cv2.createCLAHE(clipLimit=7.5, tileGridSize=(1,1))
+        clahe = cv2.createCLAHE(clipLimit=15.0, tileGridSize=(1,1))
         
-        # apply CLAHE to image
         cv2_image = clahe.apply(cv2_image)
 
-        #retval, thresholded_image = cv2.threshold(cv2_image, threshold,
-        #                                          255, cv2.THRESH_BINARY)
-        block_size = 103
-        if(large_image):
-            block_size = 2061
+        if(not apply_thresholding):
+            image = self.CV2_to_PIL_image(cv2_image)
+            return image
+
         # Mean adaptive threshold has been chosen here because Gaussian
         # adaptive thresholding is very slow, takes about 15 minutes for a
         # 20k x 20k image and does not yield significantly better results
         thresholded_image = cv2.adaptiveThreshold(cv2_image, 255,
                                                   cv2.ADAPTIVE_THRESH_MEAN_C,
                                                   cv2.THRESH_BINARY,
-                                                  block_size, 20)
+                                                  103, 20)
 
         # convert the image back into a PIL image
         image = self.CV2_to_PIL_image(thresholded_image)
