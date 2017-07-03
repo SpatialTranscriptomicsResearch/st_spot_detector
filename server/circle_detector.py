@@ -157,7 +157,7 @@ class CircleDetector:
                 position[1] + (index + 2) * direction[1]
             )
         else:
-            print("No peak.")
+            #print("No peak.")
             peak = None
 
         return peak
@@ -181,7 +181,7 @@ class CircleDetector:
 
             dist = self.__distance_between(edge_a, edge_b)
             if(dist > 58): # quite a "hardcoded" value: will not work as well for stretched images
-                print("Discarding a point! It is too far away")
+                #print("Discarding a point! It is too far away")
                 dist_a = self.__distance_between(position, edge_a)
                 dist_b = self.__distance_between(position, edge_b)
                 if(dist_a > dist_b):
@@ -199,28 +199,28 @@ class CircleDetector:
         """
 
         if(len(edges) < 4): # not enough edges to be a circle
-            print("Not enough edges.")
+            #print("Not enough edges.")
             return None
 
         b_box = self.__bb_from_points(edges)
-        print(edges)
-        print(b_box)
+        #print(edges)
+        #print(b_box)
         centre = (
             (b_box[0] + b_box[2]) / 2.0,
             (b_box[1] + b_box[3]) / 2.0
         )
-        print(centre)
+        #print(centre)
         # distances of the edges from the centre
         radii = [self.__distance_between(centre, edge) for edge in edges]
         radius_mean = np.mean(radii)
         radius_std = np.std(radii)
 
         if(radius_std < radius_mean * 0.20):
-            print("It seems to be a valid circle!")
+            #print("It seems to be a valid circle!")
             return centre
         else:
-            print("Points not circley enough.")
-            print("the std radius is %f and there is the mean %f, which is higher than the condition of %f" %(radius_std, radius_mean, radius_mean * 0.20))
+            #print("Points not circley enough.")
+            #print("the std radius is %f and there is the mean %f, which is higher than the condition of %f" %(radius_std, radius_mean, radius_mean * 0.20))
             return None
 
     def __circle_from_whitness(self, image_pixels, position):
