@@ -4,13 +4,13 @@ from PIL import Image
 import math
 import numpy as np
 import random
-from circle_detector import CircleDetector
+from circle_detector import CircleDetector, DetectionType
 
 circle_detector = CircleDetector()
 
 class Spots:
-    """Holds the spot data. These spots are positioned relative to the stored
-    and processed Cy3 image, not the originally updated Cy3 image.
+    """Holds the spot data. These spots are stored with positions relative
+    to the originally-uploaded Cy3 image.
     """
 
     def __init__(self, TL, BR, array_size, scaling_factor):
@@ -54,8 +54,8 @@ class Spots:
         tries to match them to their correct array positions.
         It also tries to fill in "missing spots" by finding which array
         positions do not have a corresponding keypoint, then analyses the
-        black/white content of the thresholded image at the missing spot
-        position in order to determine if a spot is likely to be there or not.
+        pixels around that position to determine if a spot is likely
+        to be there or not.
         """
 
         missing_spots = []
@@ -96,11 +96,13 @@ class Spots:
                             difference[0] / self.spacer['x'],
                             difference[1] / self.spacer['y']
                         )
-                        array_position = (j+1, i+1)
+                        array_position = (j + 1, i + 1)
+
                         new_array_position = (
                             array_position[0] + array_position_offset[0],
                             array_position[1] + array_position_offset[1]
                         )
+                        print(new_array_position)
                         new_spot = self.__create_spot(
                             array_position, new_array_position,
                             kp, keypoint.size, False
@@ -116,8 +118,8 @@ class Spots:
                             # to calculate the average row and column positions
                             row_position_count[i] += 1
                             col_position_count[j] += 1
-                            row_position_sum[i] += new_array_position[0]
-                            col_position_sum[j] += new_array_position[1]
+                            row_position_sum[i] += new_array_position[1]
+                            col_position_sum[j] += new_array_position[0]
 
                         break # to only get one spot per keypoint
 
@@ -125,9 +127,8 @@ class Spots:
                 # if no spot has been detected at this array position,
                 # then there is a spot deemed missing, unless it is
                 # actually part of the frame
-                    if(i == 0 or i == self.array_size['y']
-                        or j == 1 or j == self.array_size['x']):
-                        missing_spots.append({'x': j, 'y': i})
+                    #print("there's not spot here at %d, %d" %(j, i))
+                    missing_spots.append((j, i))
 
         # Calculate the average row and column positions. This is to help us
         # determine the most likely positions of the missing spots.
@@ -145,67 +146,58 @@ class Spots:
                 col_position_average[col] = (col_position_sum[col]
                                             / float(col_position_count[col]))
 
-        ## Open up processed (brightness, contrast, threshold) image for
-        ## reading of pixel values. This is very RAM-intensive for large
-        ## images.
-        #image_pixels = thresholded_image.load()
-        #filled_in_spots = []
-        #for spot in missing_spots:
-        #    x = spot['x']
-        #    y = spot['y']
+        edge_spots = []
+        whiteness_spots = []
 
-        #    if(col_position_average[x] == 0 or row_position_average[y] == 0):
-        #        # if no average has been calculated, then we can not guess
-        #        # the position of the missing spot
-        #        continue;
+        image_pixels = thresholded_image.load()
 
-        #    array_position = {
-        #        'x': x + 1,
-        #        'y': y + 1
-        #    }
-        #    new_array_position = {
-        #        # we need to do something else if the average is 0
-        #        'x': col_position_average[x],
-        #        'y': row_position_average[y]
-        #    }
-        #    pixel_position = {
-        #        'x': (int((new_array_position['x'] - 1.0) * self.spacer['x']
-        #              + self.TL_coords['x'])),
-        #        'y': (int((new_array_position['y'] - 1.0) * self.spacer['y']
-        #              + self.TL_coords['y']))
-        #    }
+        for spot in missing_spots:
+            x = spot[0]
+            y = spot[1]
 
-        #    whiteness = 0
-        #    whiteness_threshold = 200.0
+            if(col_position_average[x] == 0 or row_position_average[y] == 0):
+                # if no average has been calculated, then we can not guess
+                # the position of the missing spot
+                #TODO: we can still guess it as array position * spacer
+                continue;
 
-        #    pixels = get_surrounding_pixels(pixel_position, self.spacer['x'] / 5)
-        #    for pixel in pixels:
-        #        # calculating the "whiteness" of area at that position
-        #        # these should all be 255 if white, 0 if black
-        #        r, g, b = image_pixels[pixel['x'], pixel['y']]
-        #        # greyscale so only one channel needs to be checked
-        #        whiteness += r
-        #        
-        #    whiteness_average = float(whiteness) / float(len(pixels))
-        #    if(whiteness_average < whiteness_threshold):
-        #        # not yet added in order
-        #        filled_in_spots.append({
-        #            'arrayPosition': array_position,
-        #            'newArrayPosition': new_array_position,
-        #            'renderPosition': {
-        #                'x': pixel_position['x'],
-        #                'y': pixel_position['y']
-        #            },
-        #            'diameter': avg_diam,
-        #            'selected': False
-        ##        })
+            new_array_position = (
+                col_position_average[x],
+                row_position_average[y]
+            )
+            pixel_position = (
+                int((new_array_position[0] - 1.0) * self.spacer['x']
+                      + self.TL_coords['x']),
+                int((new_array_position[1] - 1.0) * self.spacer['y']
+                      + self.TL_coords['y'])
+            )
 
+            edge_spot = False
+            possible_spot = circle_detector.detect_spot(DetectionType.EDGES,
+                image_pixels, pixel_position)
 
-        #self.__merge_spots(filled_in_spots)
+            if(not possible_spot):
+                possible_spot = circle_detector.detect_spot(DetectionType.WHITENESS,
+                    image_pixels, pixel_position)
+            else:
+                edge_spot = True # spot from edges
 
-        # Spot detection complete
+            if(possible_spot):
+                array_position = (x, y)
+                new_spot = self.__create_spot(array_position, new_array_position,
+                    possible_spot, avg_diam, False)
+                if(edge_spot):
+                    edge_spots.append(new_spot)
+                else:
+                    whiteness_spots.append(new_spot)
 
-        # spots scaled up to client-side image size
+        #return (self.spots, edge_spots, whiteness_spots)
+        self.__merge_spots(edge_spots)
+        self.__merge_spots(whiteness_spots)
+
+        ## Spot detection complete
+
+        ## spots scaled up to client-side image size
         self.__scale_spots(scaling_factor)
 
     def __scale_spots(self, scaling_factor):
@@ -224,7 +216,7 @@ class Spots:
         """Inserts new spots into the currently existing spots in the correct
         array order.
         """
-        for new_spot in filled_in_spots:
+        for new_spot in new_spots:
             new_spot_order = (new_spot['arrayPosition']['y']
                               * self.array_size['x']
                               + new_spot['arrayPosition']['x'])
