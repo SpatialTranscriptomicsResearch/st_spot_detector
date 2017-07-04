@@ -190,7 +190,7 @@ class Spots:
                 else:
                     whiteness_spots.append(new_spot)
 
-        return (self.spots, edge_spots, whiteness_spots)
+        #return (self.spots, edge_spots, whiteness_spots)
         self.__merge_spots(edge_spots)
         self.__merge_spots(whiteness_spots)
 
