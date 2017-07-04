@@ -108,7 +108,7 @@ class ImageProcessor:
         cv2_image = self.PIL_to_CV2_image(image)
 
         # create a CLAHE object 
-        clahe = cv2.createCLAHE(clipLimit=15.0, tileGridSize=(1,1))
+        clahe = cv2.createCLAHE(clipLimit=20.0, tileGridSize=(1,1))
         
         cv2_image = clahe.apply(cv2_image)
 
