@@ -182,7 +182,7 @@ class Spots:
                 edge_spot = True # spot from edges
 
             if(possible_spot):
-                array_position = (x, y)
+                array_position = (x + 1, y + 1)
                 new_spot = self.__create_spot(array_position, new_array_position,
                     possible_spot, avg_diam, False)
                 if(edge_spot):
@@ -190,7 +190,7 @@ class Spots:
                 else:
                     whiteness_spots.append(new_spot)
 
-        #return (self.spots, edge_spots, whiteness_spots)
+        return (self.spots, edge_spots, whiteness_spots)
         self.__merge_spots(edge_spots)
         self.__merge_spots(whiteness_spots)
 
