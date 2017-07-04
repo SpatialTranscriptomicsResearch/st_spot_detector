@@ -4,15 +4,14 @@ from PIL import Image
 import math
 import numpy as np
 import random
+from circle_detector import CircleDetector, DetectionType
 
-def distance_between(a, b):
-    w = a['x'] - b['x']
-    h = a['y'] - b['y']
-    dist = math.sqrt(w * w + h * h)
-    return dist
+circle_detector = CircleDetector()
 
 class Spots:
-    """Holds the spot data"""
+    """Holds the spot data. These spots are stored with positions relative
+    to the originally-uploaded Cy3 image.
+    """
 
     def __init__(self, TL, BR, array_size, scaling_factor):
         self.spots = []
@@ -56,12 +55,12 @@ class Spots:
         tries to match them to their correct array positions.
         It also tries to fill in "missing spots" by finding which array
         positions do not have a corresponding keypoint, then analyses the
-        black/white content of the thresholded image at the missing spot
-        position in order to determine if a spot is likely to be there or not.
+        pixels around that position to determine if a spot is likely
+        to be there or not.
         """
 
         missing_spots = []
-        threshold_distance = self.spacer['x'] / 2 # this can be adjusted for stringency
+        threshold_dist = self.spacer['x'] / 2 # this can be adjusted for stringency
 
         # these arrays are used to calculate the average position at which
         # each spot column and row are at within the spot array
@@ -70,73 +69,47 @@ class Spots:
         row_position_count = [0] * self.array_size['y']
         col_position_count = [0] * self.array_size['x']
 
-        def get_surrounding_pixels(position, radius):
-            """Returns an array with the positions of pixels surrounding
-            a particular point at a given radius from it.
-            """
-            # will return out-of-bound pixels, may need to fix this if
-            # spots are close to the image edge
-            pixels = []
-            for y in range(int(position['y'] - radius), int(position['y'] + radius)):
-                for x in range(int(position['x'] - radius), int(position['x'] + radius)):
-                    pixel = {
-                        'x': x,
-                        'y': y
-                    }
-                    # this check ensures pixels are in a circle
-                    if(distance_between(pixel, position) < radius):
-                        pixels.append(pixel)
-            return pixels
-
+        def within_threshold(kp_pos, predicted_pos, threshold):
+            dist = np.linalg.norm(np.array(kp_pos) - np.array(predicted_pos))
+            return dist < threshold
+            
         # now iterating through the "expected" array positions
         avg_diam, n_diam = 0, 0
         for i in range(1, self.array_size['y'] - 1):
             for j in range(1, self.array_size['x'] - 1):
                 spot_detected = False
-                predicted_position = {
-                    'x': self.spacer['x'] * j + self.TL_coords['x'],
-                    'y': self.spacer['y'] * i + self.TL_coords['y']
-                }
-                for kp in keypoints:
+                predicted_position = (
+                    self.spacer['x'] * j + self.TL_coords['x'],
+                    self.spacer['y'] * i + self.TL_coords['y']
+                )
+                for keypoint in keypoints:
                 # iterate through the keypoints to see if one of them is at
                 # the current "expected" array position
-                    kp_position = {
-                        'x': kp.pt[0],
-                        'y': kp.pt[1]
-                    }
-                    if(distance_between(kp_position, predicted_position)
-                            < threshold_distance):
+                    kp = keypoint.pt
+                    if(within_threshold(kp, predicted_position, threshold_dist)):
                     # a keypoint is at the expected position if it is close
                     # enough to it
-                        difference = {
-                            'x': kp_position['x'] - predicted_position['x'],
-                            'y': kp_position['y'] - predicted_position['y']
-                        }
-                        array_position_offset = {
-                            'x': difference['x'] / self.spacer['x'],
-                            'y': difference['y'] / self.spacer['y']
-                        }
-                        array_position = {
-                            'x': j + 1,
-                            'y': i + 1
-                        }
-                        new_array_position = {
-                            'x': array_position['x']
-                                 + array_position_offset['x'],
-                            'y': array_position['y']
-                                 + array_position_offset['y']
-                        }
-                        self.spots.append({
-                            'arrayPosition': array_position,
-                            'newArrayPosition': new_array_position,
-                            'renderPosition': {
-                                'x': int(kp_position['x']),
-                                'y': int(kp_position['y'])
-                            },
-                            'diameter': kp.size,
-                            'selected': False
-                        })
-                        avg_diam = (avg_diam * n_diam + kp.size) / (n_diam + 1)
+                        difference = (
+                            kp[0] - predicted_position[0],
+                            kp[1] - predicted_position[1]
+                        )
+                        array_position_offset = (
+                            difference[0] / self.spacer['x'],
+                            difference[1] / self.spacer['y']
+                        )
+                        array_position = (j + 1, i + 1)
+
+                        new_array_position = (
+                            array_position[0] + array_position_offset[0],
+                            array_position[1] + array_position_offset[1]
+                        )
+                        new_spot = self.__create_spot(
+                            array_position, new_array_position,
+                            kp, keypoint.size, False
+                        )
+                        self.spots.append(new_spot)
+
+                        avg_diam = (avg_diam * n_diam + keypoint.size) / (n_diam + 1)
                         n_diam = n_diam + 1
 
                         if(not spot_detected):
@@ -145,8 +118,8 @@ class Spots:
                             # to calculate the average row and column positions
                             row_position_count[i] += 1
                             col_position_count[j] += 1
-                            row_position_sum[i] += new_array_position['y']
-                            col_position_sum[j] += new_array_position['x']
+                            row_position_sum[i] += new_array_position[1]
+                            col_position_sum[j] += new_array_position[0]
 
                         break # to only get one spot per keypoint
 
@@ -154,9 +127,7 @@ class Spots:
                 # if no spot has been detected at this array position,
                 # then there is a spot deemed missing, unless it is
                 # actually part of the frame
-                    if(i == 0 or i == self.array_size['y']
-                        or j == 1 or j == self.array_size['x']):
-                        missing_spots.append({'x': j, 'y': i})
+                    missing_spots.append((j, i))
 
         # Calculate the average row and column positions. This is to help us
         # determine the most likely positions of the missing spots.
@@ -174,67 +145,77 @@ class Spots:
                 col_position_average[col] = (col_position_sum[col]
                                             / float(col_position_count[col]))
 
-        # Open up processed (brightness, contrast, threshold) image for
-        # reading of pixel values. This is very RAM-intensive for large
-        # images.
+        edge_spots = []
+        whiteness_spots = []
+
         image_pixels = thresholded_image.load()
-        filled_in_spots = []
+
         for spot in missing_spots:
-            x = spot['x']
-            y = spot['y']
+            x = spot[0]
+            y = spot[1]
 
             if(col_position_average[x] == 0 or row_position_average[y] == 0):
                 # if no average has been calculated, then we can not guess
                 # the position of the missing spot
+                #TODO: we can still guess it as array position * spacer
                 continue;
 
-            array_position = {
-                'x': x + 1,
-                'y': y + 1
+            new_array_position = (
+                col_position_average[x],
+                row_position_average[y]
+            )
+            pixel_position = (
+                int((new_array_position[0] - 1.0) * self.spacer['x']
+                      + self.TL_coords['x']),
+                int((new_array_position[1] - 1.0) * self.spacer['y']
+                      + self.TL_coords['y'])
+            )
+
+            edge_spot = False
+            possible_spot = circle_detector.detect_spot(DetectionType.EDGES,
+                image_pixels, pixel_position)
+
+            if(not possible_spot):
+                possible_spot = circle_detector.detect_spot(DetectionType.WHITENESS,
+                    image_pixels, pixel_position)
+            else:
+                edge_spot = True # spot from edges
+
+            if(possible_spot):
+                array_position = (x, y)
+                new_spot = self.__create_spot(array_position, new_array_position,
+                    possible_spot, avg_diam, False)
+                if(edge_spot):
+                    edge_spots.append(new_spot)
+                else:
+                    whiteness_spots.append(new_spot)
+
+        #return (self.spots, edge_spots, whiteness_spots)
+        self.__merge_spots(edge_spots)
+        self.__merge_spots(whiteness_spots)
+
+        ## Spot detection complete
+
+        ## spots scaled up to client-side image size
+        self.__scale_spots(scaling_factor)
+
+    def __scale_spots(self, scaling_factor):
+        """Spot detection is run on a scaled down image; this function
+        scales up the spot pixel coordinates to a non-scaled version, 
+        rending for sending back to the client.
+        """
+        for spot in self.spots:
+            spot['renderPosition'] = {
+                'x': spot['renderPosition']['x'] * scaling_factor,
+                'y': spot['renderPosition']['y'] * scaling_factor,
             }
+            spot['diameter'] = spot['diameter'] * scaling_factor
 
-            new_array_position = {
-                # we need to do something else if the average is 0
-                'x': col_position_average[x],
-                'y': row_position_average[y]
-            }
-
-
-            pixel_position = {
-                'x': (int((new_array_position['x'] - 1.0) * self.spacer['x']
-                      + self.TL_coords['x'])),
-                'y': (int((new_array_position['y'] - 1.0) * self.spacer['y']
-                      + self.TL_coords['y']))
-            }
-
-            whiteness = 0
-            whiteness_threshold = 200.0
-
-            pixels = get_surrounding_pixels(pixel_position, self.spacer['x'] / 5)
-            for pixel in pixels:
-                # calculating the "whiteness" of area at that position
-                # these should all be 255 if white, 0 if black
-                r, g, b = image_pixels[pixel['x'], pixel['y']]
-                # greyscale so only one channel needs to be checked
-                whiteness += r
-                
-            whiteness_average = float(whiteness) / float(len(pixels))
-            if(whiteness_average < whiteness_threshold):
-                # not yet added in order
-                filled_in_spots.append({
-                    'arrayPosition': array_position,
-                    'newArrayPosition': new_array_position,
-                    'renderPosition': {
-                        'x': pixel_position['x'],
-                        'y': pixel_position['y']
-                    },
-                    'diameter': avg_diam,
-                    'selected': False
-                })
-
-        # Inserting the filled-in spots in the correct order in the spots array
-        # this is identical to the JS version in spot-adjuster.js
-        for new_spot in filled_in_spots:
+    def __merge_spots(self, new_spots):
+        """Inserts new spots into the currently existing spots in the correct
+        array order.
+        """
+        for new_spot in new_spots:
             new_spot_order = (new_spot['arrayPosition']['y']
                               * self.array_size['x']
                               + new_spot['arrayPosition']['x'])
@@ -251,22 +232,27 @@ class Spots:
                         self.spots.append(new_spot)
                         break
 
-        # Spot detection complete
-
-        # spots scaled up to client-side image size
-        self.scale_spots(scaling_factor)
-
-    def scale_spots(self, scaling_factor):
-        """Spot detection is run on a scaled down image; this function
-        scales up the spot pixel coordinates to a non-scaled version, 
-        rending for sending back to the client.
+    def __create_spot(self, array_pos, new_array_pos, render_pos, diam, sel):
+        """Takes tuple values of spot positions and returns a JS friendly
+        dictionary spot to add to the self.spots array.
         """
-        for spot in self.spots:
-            spot['renderPosition'] = {
-                'x': float(spot['renderPosition']['x']) * scaling_factor,
-                'y': float(spot['renderPosition']['y']) * scaling_factor,
-            }
-            spot['diameter'] = spot['diameter'] * scaling_factor
+        return {
+            'arrayPosition': {
+                'x': array_pos[0],
+                'y': array_pos[1]
+            },
+            'newArrayPosition': {
+                'x': new_array_pos[0],
+                'y': new_array_pos[1]
+            },
+            'renderPosition': {
+                'x': render_pos[0],
+                'y': render_pos[1]
+            },
+            'diameter': diam,
+            'selected': sel
+        }
+        
 
     def calculate_matrix_from_spots(self, num_spots=20):
         """Calculates a 3x3 affine transformation matrix which transforms
@@ -274,8 +260,8 @@ class Spots:
         The matrix is saved as a string in the form
         a11 a12 a13 a21 a22 a23 a31 a32 a33
         to be later sent to the client side to download.
-	:param num_spots: The number of spots to used in the computation.
-	"""
+        :param num_spots: The number of spots to used in the computation.
+        """
 
         adjusted_array = []
         pixel_array = []
