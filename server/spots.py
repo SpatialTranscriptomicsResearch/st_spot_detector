@@ -102,7 +102,6 @@ class Spots:
                             array_position[0] + array_position_offset[0],
                             array_position[1] + array_position_offset[1]
                         )
-                        print(new_array_position)
                         new_spot = self.__create_spot(
                             array_position, new_array_position,
                             kp, keypoint.size, False
@@ -127,7 +126,6 @@ class Spots:
                 # if no spot has been detected at this array position,
                 # then there is a spot deemed missing, unless it is
                 # actually part of the frame
-                    #print("there's not spot here at %d, %d" %(j, i))
                     missing_spots.append((j, i))
 
         # Calculate the average row and column positions. This is to help us
