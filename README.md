@@ -2,10 +2,10 @@
 
 A web tool for automatic spot detection and positional adjustments for ST datasets. 
 
-The arrays used to generate ST Datasets may contain positional variations due to printing artifacts. This web tool aims to detect correct spot positions using the images generated from the ST protocol.
+The arrays used to generate ST datasets may contain positional variations due to printing artifacts. This web tool aims to detect correct spot positions using the images generated from the ST protocol.
 In order to obtain relevant experimental data, it is also possible to automatically select the spots which are located under the tissue, using a corresponding HE image.
 The spot positions and selections are further adjustable to one's own needs.
-A file is generated which contains the corrected spot coordinates of the ST data in the format of choice (array coordinates or pixel coordinates) as well as file containing a 3x3 affine matrix to transform array coordinates to pixel coordinates which can be useful for downstream analysis.
+A file is generated which contains the corrected spot coordinates of the ST data as adjusted array coordinates and pixel coordinates as well as file containing a 3x3 affine matrix to transform array coordinates to pixel coordinates which can be useful for downstream analysis.
 
 NOTE: this software is currently not yet fully functional and is in a testing stage of development. 
 
@@ -31,7 +31,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
 1. Install the necessary packages (OS-dependent command)
     e.g. on Ubuntu/Debian
     ```
-        sudo apt install python2.7 python-pip
+        sudo apt install python2.7 python-pip nodejs npm make
     ```
 
 2. Create and activate a Python virtual environment 
@@ -45,12 +45,22 @@ A modern browser with HTML5 support is required for the front-end interface. The
 3. Install the dependencies in requirements.txt.
 
     ```
+    cd server
     pip install -r requirements.txt
     ```
 
 4. Install the tissue recognition library (still within the Python virtual environment). Follow the instructions [here.](https://github.com/SpatialTranscriptomicsResearch/tissue_recognition)
 
-5. Set up uWSGI
+5. Build the client side files
+    The client side uses the Node.js package manager and a Makefile to build
+
+    ```
+    cd ../client
+    npm install
+    make DEVEL=1
+    ```
+
+6. Set up uWSGI
     a uWSGI daemon can be installed, e.g. on Ubuntu/Debian
     ```
     sudo apt install uwsgi uwsgi-core uwsgi-plugin-python
@@ -59,8 +69,13 @@ A modern browser with HTML5 support is required for the front-end interface. The
     ```
     pip install uwsgi
     ```
+    NOTE: the application may also be run directly as a Bottle application but performance is limited:
+    ```
+    cd ../server
+    python server.py
+    ```
 
-6. Edit the uWSGI configuration file uwsg-server-config.ini
+7. Edit the uWSGI configuration file uwsg-server-config.ini
     The following lines require editing
     ```
     chdir = /path/to/server/file/directory/
@@ -77,7 +92,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
     virtualenv = /home/user/st_aligner/venv/
     ```
 
-7. Run the server
+8. Run the server
     uWSGI may then either be daemonized, e.g. on Ubuntu/Debian
 
     ```
@@ -93,7 +108,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
     uwsgi uwsgi-server-config.ini
     ```
 
-8. Optional
+9. Optional
     The server may be configured to run with nginx or Apache (not covered here).
     It may also be desirable to configure port-forwarding to be able to access the web tool through port 80, e.g. on Ubuntu/Debian
     ```
@@ -114,5 +129,4 @@ See AUTHORS.
 
 ## Contact
 Kim Wong <kim.wong@scilifelab.se>
-
 Jose Fernandez <jose.fernandez.navarro@scilifelab.se>
