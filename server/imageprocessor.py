@@ -9,6 +9,10 @@ from PIL import Image, ImageOps, ImageEnhance
 
 from tilemap import Tilemap
 
+import warnings
+warnings.simplefilter('ignore', Image.DecompressionBombWarning)
+Image.MAX_IMAGE_PIXELS=None
+
 class ImageProcessor:
     """Takes the jpeg image and performs various methods on it."""
     URI_header = b'data:image/jpeg;base64,'

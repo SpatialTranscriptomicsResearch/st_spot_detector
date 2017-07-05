@@ -335,20 +335,20 @@ function viewer() {
                 refreshCanvas();
             };
 
-            scope.exportSpots = function(type, selection, includeImageSize) {
+            scope.exportSpots = function(selection, includeImageSize) {
                 // spots are given in Cy3 image coordinates. however, if the user has uploaded an HE
                 // image, export them in HE coordinate space instead.
                 const ls = layerManager.getLayers();
                 let spotDataString;
                 if ('he' in ls) {
                     const tmat = math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat);
-                    spotDataString = spots.exportSpots(type, selection, includeImageSize, tmat);
+                    spotDataString = spots.exportSpots(selection, includeImageSize, tmat);
                 } else {
-                    spotDataString = spots.exportSpots(type, selection, includeImageSize);
+                    spotDataString = spots.exportSpots(selection, includeImageSize);
                 }
 
                 var blob = new Blob([spotDataString]);
-                var filetype = type.slice(0, 3) + "_" + selection.slice(0, 3) + "-";
+                var filetype = selection.slice(0, 3) + "-";
                 var filename = "spot_data-" + filetype + scope.data.cy3Filename.slice(0, -3) + "tsv";
 
                 exportFile(blob, filename, "text/tsv");
