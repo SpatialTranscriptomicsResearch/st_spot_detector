@@ -16,12 +16,13 @@ const curs = Symbol('Current state');
  * Default logic handler for the alignment view.
  */
 class AlignerLHDefault extends LogicHandler {
-    constructor(camera, layerManager, refreshFunc, cursorFunc) {
+    constructor(camera, layerManager, refreshFunc, cursorFunc, undoStack) {
         super();
         this.camera = camera;
         this.layerManager = layerManager;
         this.refresh = refreshFunc;
         this.cursor = cursorFunc;
+        this.undoStack = undoStack;
         this.recordKeyStates();
     }
 
@@ -29,8 +30,13 @@ class AlignerLHDefault extends LogicHandler {
         this.refreshCursor();
     }
 
-    processKeyupEvent() {
-        this.refreshCursor();
+    processKeyupEvent(e) {
+        if (this.keystates.ctrl) {
+            super.processKeyupEvent(e);
+            this.refreshCursor();
+        } else if (e === Codes.keyEvent.undo) {
+            this.undoStack.pop();
+        }
     }
 
     processMouseEvent(e, data) {
@@ -117,8 +123,8 @@ class AlignerLHMove extends AlignerLHDefault {
  * Logic handler for the rotation tool in the alignment view.
  */
 class AlignerLHRotate extends AlignerLHDefault {
-    constructor(camera, layerManager, refreshFunc, cursorFunc, rp, hovering) {
-        super(camera, layerManager, refreshFunc, cursorFunc);
+    constructor(camera, layerManager, refreshFunc, cursorFunc, undoStack, rp, hovering) {
+        super(camera, layerManager, refreshFunc, cursorFunc, undoStack);
         this.rp = rp;
         this.hovering = hovering;
         this[curs] = 'def';
@@ -136,6 +142,9 @@ class AlignerLHRotate extends AlignerLHDefault {
 
     processKeyupEvent(e) {
         if (this.keystates.ctrl) {
+            super.processKeyupEvent(e);
+            return;
+        } else if (e == Codes.keyEvent.undo) {
             super.processKeyupEvent(e);
             return;
         }

@@ -83,6 +83,7 @@ function aligner() {
                     scope.layerManager,
                     scope.layerManager.callback,
                     scope.setCanvasCursor,
+                    scope.undoStack,
                 ),
                 onActive() {
                     scope.aligner.logicHandler.set(this.logicHandler);
@@ -117,6 +118,7 @@ function aligner() {
                     scope.layerManager,
                     scope.layerManager.callback,
                     scope.setCanvasCursor,
+                    scope.undoStack,
                     rotationPoint,
                     pos => (
                         Vec2.distanceBetween(pos, rotationPoint) < ROT_POINT_RADIUS
