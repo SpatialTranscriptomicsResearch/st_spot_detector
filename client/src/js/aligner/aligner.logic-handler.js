@@ -42,12 +42,14 @@ class AlignerLHDefault extends LogicHandler {
                     Object.values(this.layerManager.getLayers()),
                     x => x.get('active'),
                 ),
-                x.tmat = math.eye(3);
-                this.undoStack.pop();
+                x => x.setTransform(math.eye(3))
+                //x -> setTransform(this.undoStack.pop)
+                //this.undoStack.pop();
                 //state = this.undoStack.pop();
                 //x.tmat = state.matrix
                 //this.redoStack.push(state);
             );
+            this.refresh();
             //}
         }
     }
@@ -115,9 +117,7 @@ class AlignerLHMove extends AlignerLHDefault {
             );
         } else if (e === Codes.mouseEvent.up) {
             this.refresh();
-        }
         } else if (e === Codes.mouseEvent.down) {
-            console.log("Is this called continuously while the mouse is pressed down or just at the start?");
             this.undoStack.push();
 
             /*
@@ -126,8 +126,8 @@ class AlignerLHMove extends AlignerLHDefault {
                     Object.values(this.layerManager.getLayers()),
                     x => x.get('active'),
                 ),
-                //this.undoStack.push(UndoAction('aligner', 'layerTransform', x.tmat.clone())); // make sure tmat pushed as copy not reference
             );
+                //this.undoStack.push(UndoAction('aligner', 'layerTransform', x.tmat.clone())); // make sure tmat pushed as copy not reference
             */
         }
         this.refreshCursor();
