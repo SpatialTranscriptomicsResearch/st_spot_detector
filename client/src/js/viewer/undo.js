@@ -51,6 +51,7 @@ class UndoStack {
     push(action) {
         // clear the redo stack if actions are being performed
         this.redoStack = []
+        this.stack.push(action);
         console.log("puuuuuuuuuush!!")
     }
 
@@ -61,9 +62,10 @@ class UndoStack {
      */
     pop() {
         console.log("popping pop pop pop!")
-        //return this.stack.pop()
+        return this.stack.pop()
     }
 
 }
 
+export { UndoAction };
 export default UndoStack;

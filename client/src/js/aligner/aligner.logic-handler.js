@@ -8,7 +8,7 @@ import math from 'mathjs';
 import Codes from '../viewer/keycodes';
 import LogicHandler from '../logic-handler';
 import Vec2 from '../viewer/vec2';
-import UndoAction from '../viewer/undo';
+import { UndoAction } from '../viewer/undo';
 
 // private members
 const curs = Symbol('Current state');
@@ -33,24 +33,21 @@ class AlignerLHDefault extends LogicHandler {
 
     processKeyupEvent(e) {
         if (this.keystates.ctrl) {
-            super.processKeyupEvent(e);
             this.refreshCursor();
         } else if (e === Codes.keyEvent.undo) {
-            //if this.undoStack[-1].tab == "aligner" {
-            _.each(
-                _.filter(
-                    Object.values(this.layerManager.getLayers()),
-                    x => x.get('active'),
-                ),
-                x => x.setTransform(math.eye(3))
-                //x -> setTransform(this.undoStack.pop)
-                //this.undoStack.pop();
-                //state = this.undoStack.pop();
-                //x.tmat = state.matrix
-                //this.redoStack.push(state);
-            );
-            this.refresh();
-            //}
+            if(this.undoStack.stack.length > 0) {
+            //if this.undoStack[-1].tab == "aligner" { 
+                var action = this.undoStack.pop();
+                var matrix = action.state;
+                _.each(
+                    _.filter(
+                        Object.values(this.layerManager.getLayers()),
+                        x => x.get('active'),
+                    ),
+                    x => x.setTransform(matrix)
+                );
+                this.refresh();
+            }
         }
     }
 
@@ -118,7 +115,11 @@ class AlignerLHMove extends AlignerLHDefault {
         } else if (e === Codes.mouseEvent.up) {
             this.refresh();
         } else if (e === Codes.mouseEvent.down) {
-            this.undoStack.push();
+            var action = new UndoAction(
+                'aligner',
+                'layerTransform',
+                math.eye(3)
+            );
 
             /*
             _.each(
@@ -126,9 +127,10 @@ class AlignerLHMove extends AlignerLHDefault {
                     Object.values(this.layerManager.getLayers()),
                     x => x.get('active'),
                 ),
+                x => x.
             );
-                //this.undoStack.push(UndoAction('aligner', 'layerTransform', x.tmat.clone())); // make sure tmat pushed as copy not reference
             */
+            this.undoStack.push(action);
         }
         this.refreshCursor();
     }

@@ -91,7 +91,15 @@ class Layer {
         return this;
     }
     /**
-     * Sets the layer's transforms to the given transformation matrix.
+     * Getter for the layer transformation matrix.
+     *
+     * @returns {mathjs#matrix} The transformation matrix.
+     */
+    setTransform(transMatrix) {
+        return this.tmat;
+    }
+    /**
+     * Sets the layer's transform to the given transformation matrix.
      *
      * @param {mathjs#matrix} transMatrix - The transformation matrix.
      * @returns {Layer} The layer that the function was called on.
