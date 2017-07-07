@@ -36,17 +36,18 @@ class AlignerLHDefault extends LogicHandler {
             this.refreshCursor();
         } else if (e === Codes.keyEvent.undo) {
             if(this.undoStack.stack.length > 0) {
-            //if this.undoStack[-1].tab == "aligner" { 
-                var action = this.undoStack.pop();
-                var matrix = action.state;
-                _.each(
-                    _.filter(
-                        Object.values(this.layerManager.getLayers()),
-                        x => x.get('active'),
-                    ),
-                    x => x.setTransform(matrix)
-                );
-                this.refresh();
+                if this.undoStack[this.undoStack.length - 1].tab == "aligner" { 
+                    var action = this.undoStack.pop();
+                    var matrix = action.state;
+                    _.each(
+                        _.filter(
+                            Object.values(this.layerManager.getLayers()),
+                            x => x.get('active'),
+                        ),
+                        x => x.setTransform(matrix)
+                    );
+                    this.refresh();
+                }
             }
         }
     }

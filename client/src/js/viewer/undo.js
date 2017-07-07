@@ -62,6 +62,7 @@ class UndoStack {
      */
     pop() {
         console.log("popping pop pop pop!")
+        this.redoStack.push(this.stack.slice(-1)[0])
         return this.stack.pop()
     }
 
