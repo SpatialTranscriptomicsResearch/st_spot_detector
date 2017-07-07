@@ -8,6 +8,7 @@ import math from 'mathjs';
 import Codes from '../viewer/keycodes';
 import LogicHandler from '../logic-handler';
 import Vec2 from '../viewer/vec2';
+import UndoAction from '../viewer/undo';
 
 // private members
 const curs = Symbol('Current state');
@@ -125,7 +126,7 @@ class AlignerLHMove extends AlignerLHDefault {
                     Object.values(this.layerManager.getLayers()),
                     x => x.get('active'),
                 ),
-                //this.undoStack.push(UNDO('aligner', x.tmat)); // make sure tmat pushed as copy not reference
+                //this.undoStack.push(UndoAction('aligner', 'layerTransform', x.tmat.clone())); // make sure tmat pushed as copy not reference
             );
             */
         }
