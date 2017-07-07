@@ -22,6 +22,7 @@ class UndoStack {
          * @type {Array}
          */
         this.stack = [];
+        this.redoStack = [];
     }
 
     /**
@@ -30,6 +31,7 @@ class UndoStack {
      * @param {Action} action - The action last performed.
      */
     push(action) {
+        // pushing should clear the redo stack
         console.log("puuuuuuuuuush!!")
     }
 
