@@ -36,15 +36,25 @@ class AlignerLHDefault extends LogicHandler {
             this.refreshCursor();
         } else if (e === Codes.keyEvent.undo) {
             if(this.undoStack.stack.length > 0) {
-                if(this.undoStack[this.undoStack.length - 1].tab == "aligner") { 
+                var lastAction = this.undoStack.stack.slice(-1)[0]
+                if(lastAction.tab == "aligner") { 
                     var action = this.undoStack.pop();
                     var matrices = action.state;
                     _.each(
                         _.filter(
                             Object.entries(this.layerManager.getLayers()),
-                            (k, x) => {k in matrices}
+                            // layer[0] is key, layer[1] is layer
+                            layer => {
+                                console.log(layer);
+                                layer[0] in matrices;
+                            },
                         ),
-                        x => x.setTransform(matrices.k)
+                        layer => {
+                            console.log(layer);
+                            console.log(layer[1]);
+                            layer[1].setTransform(matrices.layer[0]);
+                            console.log(layer[1]);
+                        }
                     );
                     this.refresh();
                 }
@@ -125,10 +135,10 @@ class AlignerLHMove extends AlignerLHDefault {
             _.each(
                 _.filter(
                     Object.entries(this.layerManager.getLayers()),
-                    (k, x) => x.get('active'),
+                    layer => layer[1].get('active'),
                 ),
-                (k, x) => {
-                    action.state[k] = x.getTransform();
+                layer => {
+                    action.state[layer[0]] = layer[1].getTransform();
                 }
             );
             this.undoStack.push(action);
