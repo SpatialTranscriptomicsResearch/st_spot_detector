@@ -35,29 +35,28 @@ class AlignerLHDefault extends LogicHandler {
         if (this.keystates.ctrl) {
             this.refreshCursor();
         } else if (e === Codes.keyEvent.undo) {
-            if(this.undoStack.stack.length > 0) {
-                var lastAction = this.undoStack.stack.slice(-1)[0]
-                if(lastAction.tab == "aligner") { 
-                    var action = this.undoStack.pop();
-                    var matrices = action.state;
-                    _.each(
-                        _.filter(
-                            Object.entries(this.layerManager.getLayers()),
-                            // layer[0] is key, layer[1] is layer
-                            layer => {
-                                console.log(layer);
-                                layer[0] in matrices;
-                            },
-                        ),
+            if(this.undoStack.lastTab() == "aligner") {
+                var action = this.undoStack.pop();
+                var matrices = action.state;
+                _.each(
+                    _.filter(
+                        Object.entries(this.layerManager.getLayers()),
+                        // layer[0] is key, layer[1] is layer object
                         layer => {
                             console.log(layer);
-                            console.log(layer[1]);
-                            layer[1].setTransform(matrices.layer[0]);
-                            console.log(layer[1]);
-                        }
-                    );
-                    this.refresh();
-                }
+                            var key = layer[0]; // e.g. 'he' or 'cy3'
+                            var layerObject = layer[1];
+                            layer[0] in matrices;
+                        },
+                    ),
+                    layer => {
+                        console.log(layer);
+                        console.log(layer[1]);
+                        layer[1].setTransform(matrices.layer[0]);
+                        console.log(layer[1]);
+                    }
+                );
+                this.refresh();
             }
         }
     }
@@ -138,7 +137,10 @@ class AlignerLHMove extends AlignerLHDefault {
                     layer => layer[1].get('active'),
                 ),
                 layer => {
-                    action.state[layer[0]] = layer[1].getTransform();
+                    var key = layer[0]; // e.g. 'he' or 'cy3'
+                    var layerObject = layer[1];
+                    action.state[key] = layerObject.getTransform();
+                    console.log(action.state);
                 }
             );
             this.undoStack.push(action);

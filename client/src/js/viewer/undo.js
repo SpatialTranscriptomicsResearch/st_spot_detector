@@ -66,6 +66,29 @@ class UndoStack {
         return this.stack.pop()
     }
 
+    /**
+     * Get the tab value of the last item in the stack.
+     *
+     * @returns {String} tab - The tab of the last action performed. If the stack is empty, then undefined is returned.
+     */
+    lastTab() {
+        if(this.stack.length == 0)
+            return undefined;
+        else
+            return this.stack.slice(-1)[0].tab;
+    }
+
+    /**
+     * Get the action value of the last item in the stack.
+     *
+     * @returns {String} action - The action of the last action performed. If the stack is empty, then undefined is returned.
+     */
+    lastAction() {
+        if(this.stack.length == 0)
+            return undefined;
+        else
+            return this.stack.slice(-1)[0].action;
+    }
 }
 
 export { UndoAction };
