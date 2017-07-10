@@ -123,13 +123,14 @@ const SpotManager = (function() {
             );
         },
         exportSpots: function(selection, includeImageSize, transformation) {
-            var dataString = "x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y\t";
-            var endOfDataStringHeader = selection == 'all' ? "selected\n" : "\n";
-            dataString += endOfDataStringHeader;
-
+            var dataString = '';
             if (includeImageSize === true) {
                 dataString += `0\t0\t${self.imageSize[0]}\t${self.imageSize[1]}\n`;
             }
+            dataString += 'x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y\t';
+            var endOfDataStringHeader = selection == 'all' ? 'selection\n' : '\n';
+            dataString += endOfDataStringHeader;
+
             for(var i = 0; i < self.spots.length; ++i) {
                 var spot = self.spots[i];
                 if(selection == 'selection' && spot.selected == false) {
@@ -137,22 +138,22 @@ const SpotManager = (function() {
                     // and find that the current spot is not selected
                     continue;
                 }
-                dataString += spot.arrayPosition.x  + "\t" + spot.arrayPosition.y  + "\t";
-                dataString += spot.newArrayPosition.x  + "\t" + spot.newArrayPosition.y + "\t"; 
+                dataString += spot.arrayPosition.x  + '\t' + spot.arrayPosition.y  + '\t';
+                dataString += spot.newArrayPosition.x  + '\t' + spot.newArrayPosition.y + '\t'; 
                 let position = spot.renderPosition;
                 if (transformation !== undefined) {
                     position = mulVec2(transformation, position);
                 }
                 position = Vec2.scale(position, self.scalingFactor);
                 position = Vec2.map(position, Math.round);
-                dataString += position.x + "\t" + position.y;
+                dataString += position.x + '\t' + position.y;
                 if(selection == 'all') {
                     // we add a bool 0 or 1, depending on whether the spot is selected or not
-                    var selected = spot.selected ? "\t1" : "\t0";
+                    var selected = spot.selected ? '\t1' : '\t0';
                     dataString += selected;
                 }
                 if(i != self.spots.length - 1) {
-                    dataString += "\n"
+                    dataString += '\n'
                 }
             }
             return dataString;
