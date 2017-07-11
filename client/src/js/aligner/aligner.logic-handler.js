@@ -61,8 +61,60 @@ class AlignerLHDefault extends LogicHandler {
     processMouseEvent(e, data) {
         switch (e) {
         case Codes.mouseEvent.down:
+            var action = new UndoAction(
+                'aligner',
+                'layerTransform',
+                {}
+            );
+
+            _.each(
+                _.filter(
+                    Object.entries(this.layerManager.getLayers()),
+                    layer => layer[1].get('active'),
+                ),
+                layer => {
+                    var key = layer[0]; // e.g. 'he' or 'cy3'
+                    var layerObject = layer[1];
+                    action.state[key] = layerObject.getTransform();
+                }
+            );
+            this.undoStack.setTemp(action);
             break;
         case Codes.mouseEvent.up:
+            if(this.undoStack.temp) {
+                var state = {};
+                _.each(
+                    _.filter(
+                        Object.entries(this.layerManager.getLayers()),
+                        layer => layer[1].get('active'),
+                    ),
+                    layer => {
+                        var key = layer[0]; // e.g. 'he' or 'cy3'
+                        var layerObject = layer[1];
+                        state[key] = layerObject.getTransform();
+                    }
+                );
+                var tempState = this.undoStack.temp.state;
+                // check to see if the actions differ when the mouse button was clicked down and when it was released
+                if(_.isEqual(Object.keys(state), Object.keys(tempState))) { // check that the keys are equal in the action
+                    let equal = Object.keys(state).every(
+                        key => {
+                            return math.deepEqual(state[key], tempState[key]);
+                        }
+                    )
+                    if(!equal) {
+                        // push action if it differs from when mouse button was pressed down
+                        this.undoStack.pushTemp();
+                    }
+                    else {
+                        // ignore and clear the temporary action if it is the same as when mouse button was pressed down
+                        this.undoStack.clearTemp();
+                    }
+                }
+                else {
+                    this.undoStack.pushTemp();
+                }
+            }
             this.refresh();
             break;
         case Codes.mouseEvent.drag:
@@ -120,62 +172,11 @@ class AlignerLHMove extends AlignerLHDefault {
                 ),
             );
         } else if (e === Codes.mouseEvent.up) {
-            if(this.undoStack.temp) {
-                var state = {};
-                _.each(
-                    _.filter(
-                        Object.entries(this.layerManager.getLayers()),
-                        layer => layer[1].get('active'),
-                    ),
-                    layer => {
-                        var key = layer[0]; // e.g. 'he' or 'cy3'
-                        var layerObject = layer[1];
-                        state[key] = layerObject.getTransform();
-                    }
-                );
-                var tempState = this.undoStack.temp.state;
-                // check to see if the actions differ when the mouse button was clicked down and when it was released
-                if(_.isEqual(Object.keys(state), Object.keys(tempState))) { // check that the keys are equal in the action
-                    let equal = Object.keys(state).every(
-                        key => {
-                            return math.deepEqual(state[key], tempState[key]);
-                        }
-                    )
-                    if(!equal) {
-                        // push action if it differs from when mouse button was pressed down
-                        this.undoStack.pushTemp();
-                    }
-                    else {
-                        // ignore and clear the temporary action if it is the same as when mouse button was pressed down
-                        this.undoStack.clearTemp();
-                    }
-                }
-                else {
-                    this.undoStack.pushTemp();
-                }
-            }
-            this.refresh();
+            super.processMouseEvent(e, data);
         } else if (e === Codes.mouseEvent.down) {
-            var action = new UndoAction(
-                'aligner',
-                'layerTransform',
-                {}
-            );
-
-            _.each(
-                _.filter(
-                    Object.entries(this.layerManager.getLayers()),
-                    layer => layer[1].get('active'),
-                ),
-                layer => {
-                    var key = layer[0]; // e.g. 'he' or 'cy3'
-                    var layerObject = layer[1];
-                    action.state[key] = layerObject.getTransform();
-                }
-            );
-            this.undoStack.setTemp(action);
+            super.processMouseEvent(e, data);
+            this.refreshCursor();
         }
-        this.refreshCursor();
     }
 
     refreshCursor() {
@@ -266,9 +267,12 @@ class AlignerLHRotate extends AlignerLHDefault {
                 this.rp.y = rpNew.y;
                 this.refresh();
             }
+            else {
+                super.processMouseEvent(e, data);
+            }
             break;
         case Codes.mouseEvent.up:
-            this.refresh();
+            super.processMouseEvent(e, data);
             break;
         default:
             break;
