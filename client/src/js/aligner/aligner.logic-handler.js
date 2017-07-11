@@ -41,19 +41,16 @@ class AlignerLHDefault extends LogicHandler {
                 _.each(
                     _.filter(
                         Object.entries(this.layerManager.getLayers()),
-                        // layer[0] is key, layer[1] is layer object
                         layer => {
-                            console.log(layer);
                             var key = layer[0]; // e.g. 'he' or 'cy3'
                             var layerObject = layer[1];
-                            layer[0] in matrices;
+                            return key in matrices;
                         },
                     ),
                     layer => {
-                        console.log(layer);
-                        console.log(layer[1]);
-                        layer[1].setTransform(matrices.layer[0]);
-                        console.log(layer[1]);
+                        var key = layer[0]; // e.g. 'he' or 'cy3'
+                        var layerObject = layer[1];
+                        layerObject.setTransform(matrices[key]);
                     }
                 );
                 this.refresh();
