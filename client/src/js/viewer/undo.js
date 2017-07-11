@@ -101,6 +101,7 @@ class UndoStack {
      *
      */
     clearTemp() {
+        //console.log("clearing temp");
         this.temp = undefined;
     }
 
@@ -110,6 +111,8 @@ class UndoStack {
      * @param {Action} action - The action last performed.
      */
     setTemp(action) {
+        //console.log("setting temp to: ");
+        //console.log(action);
         this.temp = action;
     }
 
@@ -118,6 +121,9 @@ class UndoStack {
      *
      */
     pushTemp() {
+        //console.log("pushing temp: ");
+        //console.log(this.temp);
+        //console.log("to the stack, then clearin git");
         this.push(this.temp);
         this.clearTemp();
     }

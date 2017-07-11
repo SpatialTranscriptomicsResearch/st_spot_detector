@@ -1,17 +1,28 @@
+import _ from 'underscore';
 import Codes from './keycodes';
 import LogicHandler from '../logic-handler';
+import { UndoAction } from '../viewer/undo';
 
 class PredetectionLH extends LogicHandler {
-    constructor(camera, calibrator, setCanvasCursor, refreshCanvas) {
+    constructor(camera, calibrator, setCanvasCursor, refreshCanvas, undoStack) {
         super();
         this.camera = camera;
         this.calibrator = calibrator;
         this.setCanvasCursor = setCanvasCursor;
         this.refreshCanvas = refreshCanvas;
+        this.undoStack = undoStack;
     }
 
     processKeydownEvent(keyEvent) {}
-    processKeyupEvent(keyEvent) {}
+    processKeyupEvent(keyEvent) {
+        if (keyEvent === Codes.keyEvent.undo) {
+            if(this.undoStack.lastTab() == "predetection") {
+                var action = this.undoStack.pop();
+                this.calibrator.setCalibrationLines(action.state);
+                this.refreshCanvas();
+            }
+        }
+    }
 
     processMouseEvent(mouseEvent, eventData) {
         var cursor;
@@ -35,11 +46,31 @@ class PredetectionLH extends LogicHandler {
             cursor = this.checkCalibrationCursor(this.calibrator.calibrationData.highlighted);
         }
         else if(mouseEvent == Codes.mouseEvent.down) {
-            this.calibrator.detectSelection(eventData.position);
+            var selected = this.calibrator.detectSelection(eventData.position);
             cursor = this.checkCalibrationCursor(this.calibrator.selected);
+            if(selected) {
+                var action = new UndoAction(
+                    'predetection',
+                    'frameAdjustment',
+                    this.calibrator.getCalibrationLines()
+                );
+                this.undoStack.setTemp(action);
+            }
         }
         else if(mouseEvent == Codes.mouseEvent.up) {
-            this.calibrator.endSelection();
+            if(this.calibrator.selected.length != 0) {
+                this.calibrator.endSelection();
+                if(this.undoStack.temp) {
+                    var lines = this.calibrator.getCalibrationLines();
+                    var tempState = this.undoStack.temp.state;
+                    if(!_.isEqual(lines, tempState)) {
+                        this.undoStack.pushTemp();
+                    }
+                    else {
+                        this.undoStack.clearTemp();
+                    }
+                }
+            }
             this.calibrator.detectHighlight(eventData.position);
             cursor = this.checkCalibrationCursor(this.calibrator.calibrationData.highlighted);
         }

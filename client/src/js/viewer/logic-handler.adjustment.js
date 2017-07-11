@@ -2,13 +2,14 @@ import Codes from './keycodes';
 import LogicHandler from '../logic-handler';
 
 class AdjustmentLH extends LogicHandler {
-    constructor(camera, spotAdjuster, spotSelector, setCanvasCursor, refreshCanvas) {
+    constructor(camera, spotAdjuster, spotSelector, setCanvasCursor, refreshCanvas, undoStack) {
         super();
         this.camera = camera;
         this.spotAdjuster = spotAdjuster;
         this.spotSelector = spotSelector;
         this.setCanvasCursor = setCanvasCursor;
         this.refreshCanvas = refreshCanvas;
+        this.undoStack = undoStack;
 
         this.addingSpots = false;
     }

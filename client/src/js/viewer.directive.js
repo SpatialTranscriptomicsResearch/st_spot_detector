@@ -64,9 +64,9 @@ function viewer() {
             scope.eventHandler = new EventHandler(scope.data, fg, camera);
 
             scope.predetectionLH = new PredetectionLH(
-                camera, calibrator, scope.setCanvasCursor, refreshCanvas);
+                camera, calibrator, scope.setCanvasCursor, refreshCanvas, scope.undoStack);
             scope.adjustmentLH = new AdjustmentLH(
-                camera, spotAdjuster, spotSelector, scope.setCanvasCursor, refreshCanvas);
+                camera, spotAdjuster, spotSelector, scope.setCanvasCursor, refreshCanvas, scope.undoStack);
 
             scope.loadSpots = function(spotData) {
                 spots.loadSpots(spotData);
