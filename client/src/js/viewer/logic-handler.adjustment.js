@@ -1,4 +1,5 @@
 import _ from 'underscore';
+            console.log("setting temp!");
 import Codes from './keycodes';
 import LogicHandler from '../logic-handler';
 import { UndoAction } from '../viewer/undo';
@@ -23,6 +24,12 @@ class AdjustmentLH extends LogicHandler {
             }
             else {
                 if(this.spotSelector.selected) {
+                    var action = new UndoAction(
+                        'adjustment',
+                        'moveSpot',
+                        this.spotAdjuster.getSpotsCopy()
+                    );
+                    this.undoStack.push(action);
                     this.spotAdjuster.adjustSpots(keyEvent);
                 }
                 else {
