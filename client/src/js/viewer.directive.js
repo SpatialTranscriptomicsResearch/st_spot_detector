@@ -19,7 +19,7 @@ import SpotAdjuster from './viewer/spot-adjuster';
 import SpotManager from './viewer/spots';
 import SpotSelector from './viewer/spot-selector';
 import Vec2 from './viewer/vec2';
-import UndoStack from './viewer/undo';
+import UndoStack, { UndoAction } from './viewer/undo';
 
 import { MAX_THREADS } from './config';
 import { mathjsToTransform, toLayerCoordinates, transformToMathjs } from './utils';
@@ -95,6 +95,12 @@ function viewer() {
             };
 
             scope.selectInsideTissue = function() {
+                var action = new UndoAction(
+                    'adjustment',
+                    'selectSpots',
+                    spotAdjuster.getSpotsCopy()
+                );
+                scope.undoStack.push(action);
                 spots.selectTissueSpots(
                     math.multiply(
                         math.inv(layerManager.getLayer('he').tmat),
@@ -262,6 +268,12 @@ function viewer() {
             };
 
             scope.deleteSpots = function() {
+                var action = new UndoAction(
+                    'adjustment',
+                    'deleteSpots',
+                    spotAdjuster.getSpotsCopy()
+                );
+                scope.undoStack.push(action);
                 spotAdjuster.deleteSelectedSpots();
                 refreshCanvas();
             };

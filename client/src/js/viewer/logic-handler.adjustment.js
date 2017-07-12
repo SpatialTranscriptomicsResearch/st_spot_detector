@@ -1,5 +1,4 @@
 import _ from 'underscore';
-            console.log("setting temp!");
 import Codes from './keycodes';
 import LogicHandler from '../logic-handler';
 import { UndoAction } from '../viewer/undo';
@@ -126,7 +125,7 @@ class AdjustmentLH extends LogicHandler {
                     this.spotSelector.beginSelection(eventData.position);
                     action = new UndoAction(
                         'adjustment',
-                        'selectSpot',
+                        'selectSpots',
                         this.spotAdjuster.getSpotsCopy()
                     );
                 }
