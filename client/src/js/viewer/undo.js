@@ -50,13 +50,17 @@ class UndoStack {
      * @param {Action} action - The action last performed.
      */
     push(action) {
-        //console.log("pushing: ");
-        //console.log(action);
+        /*
+        console.log("pushing: ");
+        console.log(action);
+        */
         // clear the redo stack if actions are being performed
         this.redoStack = []
         this.stack.push(action);
-        //console.log("stack is now: ");
-        //console.log(this.stack);
+        /*
+        console.log("stack is now: ");
+        console.log(this.stack);
+        */
         if(action.action == "addSpots") {
         }
     }
@@ -69,8 +73,10 @@ class UndoStack {
     pop() {
         this.redoStack.push(this.stack.slice(-1)[0])
         var action = this.stack.pop()
-        //console.log("popping: ");
-        //console.log(this.stack);
+        /*
+        console.log("popping: ");
+        console.log(this.stack);
+        */
         return action;
     }
 
@@ -113,8 +119,10 @@ class UndoStack {
      * @param {Action} action - The action last performed.
      */
     setTemp(action) {
-        //console.log("setting temp to: ");
-        //console.log(action);
+        /*
+        console.log("setting temp to: ");
+        console.log(action);
+        */
         this.temp = action;
     }
 
@@ -123,9 +131,11 @@ class UndoStack {
      *
      */
     pushTemp() {
-        //console.log("pushing temp: ");
-        //console.log(this.temp);
-        //console.log("to the stack, then clearin git");
+        /*
+        console.log("pushing temp: ");
+        console.log(this.temp);
+        console.log("to the stack, then clearin git");
+        */
         this.push(this.temp);
         this.clearTemp();
     }

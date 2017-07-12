@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import Codes from './keycodes';
 import LogicHandler from '../logic-handler';
+import { UndoAction } from '../viewer/undo';
 
 class AdjustmentLH extends LogicHandler {
     constructor(camera, spotAdjuster, spotSelector, setCanvasCursor, refreshCanvas, undoStack) {
@@ -72,7 +73,7 @@ class AdjustmentLH extends LogicHandler {
                     action = new UndoAction(
                         'adjustment',
                         'moveSpot',
-                        this.spotAdjuster.getSpotsCopy();
+                        this.spotAdjuster.getSpotsCopy()
                     );
                 }
             }
@@ -108,7 +109,7 @@ class AdjustmentLH extends LogicHandler {
                     action = new UndoAction(
                         'adjustment',
                         'addSpot',
-                        this.spotAdjuster.getSpotsCopy();
+                        this.spotAdjuster.getSpotsCopy()
                     );
                 }
             }
@@ -119,7 +120,7 @@ class AdjustmentLH extends LogicHandler {
                     action = new UndoAction(
                         'adjustment',
                         'selectSpot',
-                        this.spotAdjuster.getSpotsCopy();
+                        this.spotAdjuster.getSpotsCopy()
                     );
                 }
                 else if(mouseEvent == Codes.mouseEvent.up) {

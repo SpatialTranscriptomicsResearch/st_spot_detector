@@ -115,8 +115,18 @@ const SpotAdjuster = (function() {
         finishAddSpots: function() {
         },
         getSpotsCopy: function() {
-            // TODO: need to get as a copy
-            return self.spots.getSpots().spots;
+            var spots = self.spots.getSpots().spots;
+            var copy = spots.map(spot => {
+                var newSpot = {
+                    'arrayPosition': Vec2.copy(spot.arrayPosition),
+                    'newArrayPosition': Vec2.copy(spot.newArrayPosition),
+                    'renderPosition': Vec2.copy(spot.renderPosition),
+                    'diameter': spot.diameter,
+                    'selected': spot.selected
+                };
+                return newSpot;
+            });
+            return copy;
         },
         getSpots: function() {
             return self.spots.getSpots().spots;
