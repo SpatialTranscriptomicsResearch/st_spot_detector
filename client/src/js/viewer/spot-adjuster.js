@@ -18,8 +18,9 @@ const SpotAdjuster = (function() {
 
     SpotAdjuster.prototype = {
         atSelectedSpots: function(position) {
-            // detects if the mouse is close to a selected spot and
-            // whether the selection can be dragged around or not
+            /* detects if the mouse is close to a selected spot and
+               whether the selection can be dragged around or not.
+               Returns true if closeby. */
             var atSpots = false;
 
             position = self.camera.mouseToCameraPosition(position, 'cy3');
@@ -112,6 +113,16 @@ const SpotAdjuster = (function() {
             }
         },
         finishAddSpots: function() {
+        },
+        getSpotsCopy: function() {
+            // TODO: need to get as a copy
+            return self.spots.getSpots().spots;
+        },
+        getSpots: function() {
+            return self.spots.getSpots().spots;
+        },
+        setSpots: function(spots) {
+            self.spots.setSpots(spots);
         }
     };
 

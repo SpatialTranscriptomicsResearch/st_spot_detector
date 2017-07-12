@@ -57,6 +57,8 @@ class UndoStack {
         this.stack.push(action);
         //console.log("stack is now: ");
         //console.log(this.stack);
+        if(action.action == "addSpots") {
+        }
     }
 
     /**

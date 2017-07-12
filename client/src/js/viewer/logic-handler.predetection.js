@@ -14,6 +14,7 @@ class PredetectionLH extends LogicHandler {
     }
 
     processKeydownEvent(keyEvent) {}
+
     processKeyupEvent(keyEvent) {
         if (keyEvent === Codes.keyEvent.undo) {
             if(this.undoStack.lastTab() == "predetection") {
@@ -63,11 +64,12 @@ class PredetectionLH extends LogicHandler {
                 if(this.undoStack.temp) {
                     var lines = this.calibrator.getCalibrationLines();
                     var tempState = this.undoStack.temp.state;
-                    if(!_.isEqual(lines, tempState)) {
-                        this.undoStack.pushTemp();
+                    if(_.isEqual(lines, tempState)) {
+                        this.undoStack.clearTemp();
                     }
                     else {
-                        this.undoStack.clearTemp();
+                        // only push action to undo stack if the calibration lines have been adjusted
+                        this.undoStack.pushTemp();
                     }
                 }
             }

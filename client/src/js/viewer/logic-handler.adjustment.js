@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import Codes from './keycodes';
 import LogicHandler from '../logic-handler';
 
@@ -45,7 +46,12 @@ class AdjustmentLH extends LogicHandler {
             }
         }
 
-        if(keyEvent == Codes.keyEvent.ctrl) {
+        if(keyEvent === Codes.keyEvent.undo) {
+            if(this.undoStack.lastTab() == "adjustment") {
+                var action = this.undoStack.pop();
+                this.spotAdjuster.setSpots(action.state);
+            }
+        } else if(keyEvent == Codes.keyEvent.ctrl) {
             this.setCanvasCursor('crosshair');
         }
         this.refreshCanvas();
@@ -54,12 +60,21 @@ class AdjustmentLH extends LogicHandler {
     processMouseEvent(mouseEvent, eventData) {
         var cursor;
         cursor = 'crosshair';
+
+        var action;
         // right click moves canvas or spots
         if(eventData.button == Codes.mouseButton.right ||
             eventData.ctrl == true) {
             if(mouseEvent == Codes.mouseEvent.down) {
                 this.spotAdjuster.moving = this.spotAdjuster.atSelectedSpots(eventData.position);
                 cursor = 'grabbed';
+                if(this.spotAdjuster.moving) {
+                    action = new UndoAction(
+                        'adjustment',
+                        'moveSpot',
+                        this.spotAdjuster.getSpotsCopy();
+                    );
+                }
             }
             else if(mouseEvent == Codes.mouseEvent.up) {
                 this.spotAdjuster.moving = false;
@@ -89,11 +104,23 @@ class AdjustmentLH extends LogicHandler {
                 if(mouseEvent == Codes.mouseEvent.up) {
                     this.spotAdjuster.addSpot(eventData.position);
                 }
+                else if(mouseEvent == Codes.mouseEvent.down) {
+                    action = new UndoAction(
+                        'adjustment',
+                        'addSpot',
+                        this.spotAdjuster.getSpotsCopy();
+                    );
+                }
             }
             // but in selection state, left click to make a selection
             else {
                 if(mouseEvent == Codes.mouseEvent.down) {
                     this.spotSelector.beginSelection(eventData.position);
+                    action = new UndoAction(
+                        'adjustment',
+                        'selectSpot',
+                        this.spotAdjuster.getSpotsCopy();
+                    );
                 }
                 else if(mouseEvent == Codes.mouseEvent.up) {
                     this.spotSelector.endSelection();
@@ -106,6 +133,23 @@ class AdjustmentLH extends LogicHandler {
         else if(mouseEvent == Codes.mouseEvent.wheel) {
             // scrolling
             this.camera.navigate(eventData.direction, eventData.position);
+        }
+
+        /* undo stuff */
+        if(action) {
+            this.undoStack.setTemp(action);
+        }
+        // check if there is an action to push to the undo stack
+        else if(mouseEvent == Codes.mouseEvent.up && this.undoStack.temp) {
+            var currentSpots = this.spotAdjuster.getSpots();
+            var tempState = this.undoStack.temp.state;
+            if(_.isEqual(currentSpots, tempState)) {
+                this.undoStack.clearTemp();
+            }
+            else {
+                // only push action to undo stack if spots have been adjusted
+                this.undoStack.pushTemp();
+            }
         }
         this.setCanvasCursor(cursor);
         this.refreshCanvas();
