@@ -55,6 +55,9 @@ const SpotManager = (function() {
                 )),
             );
         },
+        setSpots: function(spots) {
+            self.spots = spots;
+        },
         loadMask: function(mask) {
             self.mask = _.reduce(
                 _.map(

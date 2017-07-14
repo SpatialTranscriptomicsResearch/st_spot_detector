@@ -19,6 +19,7 @@ import SpotAdjuster from './viewer/spot-adjuster';
 import SpotManager from './viewer/spots';
 import SpotSelector from './viewer/spot-selector';
 import Vec2 from './viewer/vec2';
+import UndoStack, { UndoAction } from './viewer/undo';
 
 import { MAX_THREADS } from './config';
 import { mathjsToTransform, toLayerCoordinates, transformToMathjs } from './utils';
@@ -37,6 +38,8 @@ function viewer() {
             fg.oncontextmenu = function(e) { e.preventDefault(); }
 
             var scaleManager = new ScaleManager();
+
+            scope.undoStack = new UndoStack(scope.visible.undo);
 
             const layerManager = new LayerManager(layers);
 
@@ -61,9 +64,9 @@ function viewer() {
             scope.eventHandler = new EventHandler(scope.data, fg, camera);
 
             scope.predetectionLH = new PredetectionLH(
-                camera, calibrator, scope.setCanvasCursor, refreshCanvas);
+                camera, calibrator, scope.setCanvasCursor, refreshCanvas, scope.undoStack);
             scope.adjustmentLH = new AdjustmentLH(
-                camera, spotAdjuster, spotSelector, scope.setCanvasCursor, refreshCanvas);
+                camera, spotAdjuster, spotSelector, scope.setCanvasCursor, refreshCanvas, scope.undoStack);
 
             scope.loadSpots = function(spotData) {
                 spots.loadSpots(spotData);
@@ -92,6 +95,12 @@ function viewer() {
             };
 
             scope.selectInsideTissue = function() {
+                var action = new UndoAction(
+                    'state_adjustment',
+                    'selectSpots',
+                    spotAdjuster.getSpotsCopy()
+                );
+                scope.undoStack.push(action);
                 spots.selectTissueSpots(
                     math.multiply(
                         math.inv(layerManager.getLayer('he').tmat),
@@ -259,6 +268,12 @@ function viewer() {
             };
 
             scope.deleteSpots = function() {
+                var action = new UndoAction(
+                    'state_adjustment',
+                    'deleteSpots',
+                    spotAdjuster.getSpotsCopy()
+                );
+                scope.undoStack.push(action);
                 spotAdjuster.deleteSelectedSpots();
                 refreshCanvas();
             };
@@ -334,6 +349,46 @@ function viewer() {
                 camera.navigate(Codes.keyEvent[direction]);
                 refreshCanvas();
             };
+
+            scope.undo = function(direction) {
+                if(direction == "undo") {
+                    var lastState = scope.undoStack.lastTab();
+                    if(lastState == scope.data.state) {
+                        var action = scope.undoStack.pop();
+                        if(lastState == "state_alignment") {
+                            var matrices = action.state;
+                            _.each(
+                                _.filter(
+                                    Object.entries(layerManager.getLayers()),
+                                    layer => {
+                                        var key = layer[0]; // e.g. 'he' or 'cy3'
+                                        var layerObject = layer[1];
+                                        return key in matrices;
+                                    },
+                                ),
+                                layer => {
+                                    var key = layer[0]; // e.g. 'he' or 'cy3'
+                                    var layerObject = layer[1];
+                                    layerObject.setTransform(matrices[key]);
+                                }
+                            );
+                        }
+                        else if(lastState == "state_predetection") {
+                            calibrator.setCalibrationLines(action.state);
+                        }
+                        if(lastState == "state_adjustment") {
+                            spotAdjuster.setSpots(action.state);
+                        }
+                    }
+                }
+                else if(direction == "redo") {
+                }
+
+                scope.visible.undo.undo = (scope.undoStack.stack.length == 0) ? true : false;
+                scope.visible.undo.redo = (scope.undoStack.redoStack.length == 0) ? true : false;
+                refreshCanvas();
+            };
+
 
             scope.exportSpots = function(selection, includeImageSize) {
                 // spots are given in Cy3 image coordinates. however, if the user has uploaded an HE

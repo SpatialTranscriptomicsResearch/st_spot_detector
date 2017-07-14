@@ -94,6 +94,10 @@ const main = [
             spinner: false,
             canvas: false,
             error: false,
+            undo: {
+                undo: true,
+                redo: true,
+            },
             panel: {
                 button_uploader: true,
                 button_aligner: false,
@@ -285,6 +289,10 @@ const main = [
             // click the button
             $scope.menuButtonClick(button, ...args);
         }
+
+        $scope.undoButtonClick = function(direction) {
+            $scope.undo(direction); // defined in the viewer directive
+        };
 
         $scope.zoomButtonClick = function(direction) {
             $scope.zoom(direction); // defined in the viewer directive

@@ -8,6 +8,7 @@ import math from 'mathjs';
 import Codes from '../viewer/keycodes';
 import LogicHandler from '../logic-handler';
 import Vec2 from '../viewer/vec2';
+import { UndoAction } from '../viewer/undo';
 
 // private members
 const curs = Symbol('Current state');
@@ -16,12 +17,13 @@ const curs = Symbol('Current state');
  * Default logic handler for the alignment view.
  */
 class AlignerLHDefault extends LogicHandler {
-    constructor(camera, layerManager, refreshFunc, cursorFunc) {
+    constructor(camera, layerManager, refreshFunc, cursorFunc, undoStack) {
         super();
         this.camera = camera;
         this.layerManager = layerManager;
         this.refresh = refreshFunc;
         this.cursor = cursorFunc;
+        this.undoStack = undoStack;
         this.recordKeyStates();
     }
 
@@ -29,15 +31,90 @@ class AlignerLHDefault extends LogicHandler {
         this.refreshCursor();
     }
 
-    processKeyupEvent() {
-        this.refreshCursor();
+    processKeyupEvent(e) {
+        if (this.keystates.ctrl) {
+            this.refreshCursor();
+        } else if (e === Codes.keyEvent.undo) {
+            if(this.undoStack.lastTab() == "state_alignment") {
+                var action = this.undoStack.pop();
+                var matrices = action.state;
+                _.each(
+                    _.filter(
+                        Object.entries(this.layerManager.getLayers()),
+                        layer => {
+                            var key = layer[0]; // e.g. 'he' or 'cy3'
+                            var layerObject = layer[1];
+                            return key in matrices;
+                        },
+                    ),
+                    layer => {
+                        var key = layer[0]; // e.g. 'he' or 'cy3'
+                        var layerObject = layer[1];
+                        layerObject.setTransform(matrices[key]);
+                    }
+                );
+                this.refresh();
+            }
+        }
     }
 
     processMouseEvent(e, data) {
         switch (e) {
         case Codes.mouseEvent.down:
+            var action = new UndoAction(
+                'state_alignment',
+                'layerTransform',
+                {}
+            );
+
+            _.each(
+                _.filter(
+                    Object.entries(this.layerManager.getLayers()),
+                    layer => layer[1].get('active'),
+                ),
+                layer => {
+                    var key = layer[0]; // e.g. 'he' or 'cy3'
+                    var layerObject = layer[1];
+                    action.state[key] = layerObject.getTransform();
+                }
+            );
+            this.undoStack.setTemp(action);
             break;
         case Codes.mouseEvent.up:
+            if(this.undoStack.temp) {
+                var state = {};
+                _.each(
+                    _.filter(
+                        Object.entries(this.layerManager.getLayers()),
+                        layer => layer[1].get('active'),
+                    ),
+                    layer => {
+                        var key = layer[0]; // e.g. 'he' or 'cy3'
+                        var layerObject = layer[1];
+                        state[key] = layerObject.getTransform();
+                    }
+                );
+                var tempState = this.undoStack.temp.state;
+                // check to see if the actions differ when the mouse button was clicked down and when it was released
+                if(_.isEqual(Object.keys(state), Object.keys(tempState))) { // check that the keys are equal in the action
+                    let equal = Object.keys(state).every(
+                        key => {
+                            return math.deepEqual(state[key], tempState[key]);
+                        }
+                    )
+                    if(!equal) {
+                        // push action if it differs from when mouse button was pressed down
+                        this.undoStack.pushTemp();
+                    }
+                    else {
+                        // ignore and clear the temporary action if it is the same as when mouse button was pressed down
+                        this.undoStack.clearTemp();
+                    }
+                }
+                else {
+                    this.undoStack.pushTemp();
+                }
+            }
             this.refresh();
             break;
         case Codes.mouseEvent.drag:
@@ -95,9 +172,11 @@ class AlignerLHMove extends AlignerLHDefault {
                 ),
             );
         } else if (e === Codes.mouseEvent.up) {
-            this.refresh();
+            super.processMouseEvent(e, data);
+        } else if (e === Codes.mouseEvent.down) {
+            super.processMouseEvent(e, data);
+            this.refreshCursor();
         }
-        this.refreshCursor();
     }
 
     refreshCursor() {
@@ -117,8 +196,8 @@ class AlignerLHMove extends AlignerLHDefault {
  * Logic handler for the rotation tool in the alignment view.
  */
 class AlignerLHRotate extends AlignerLHDefault {
-    constructor(camera, layerManager, refreshFunc, cursorFunc, rp, hovering) {
-        super(camera, layerManager, refreshFunc, cursorFunc);
+    constructor(camera, layerManager, refreshFunc, cursorFunc, undoStack, rp, hovering) {
+        super(camera, layerManager, refreshFunc, cursorFunc, undoStack);
         this.rp = rp;
         this.hovering = hovering;
         this[curs] = 'def';
@@ -136,6 +215,9 @@ class AlignerLHRotate extends AlignerLHDefault {
 
     processKeyupEvent(e) {
         if (this.keystates.ctrl) {
+            super.processKeyupEvent(e);
+            return;
+        } else if (e == Codes.keyEvent.undo) {
             super.processKeyupEvent(e);
             return;
         }
@@ -185,9 +267,12 @@ class AlignerLHRotate extends AlignerLHDefault {
                 this.rp.y = rpNew.y;
                 this.refresh();
             }
+            else {
+                super.processMouseEvent(e, data);
+            }
             break;
         case Codes.mouseEvent.up:
-            this.refresh();
+            super.processMouseEvent(e, data);
             break;
         default:
             break;

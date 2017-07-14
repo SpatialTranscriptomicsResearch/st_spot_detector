@@ -51,6 +51,8 @@ const Calibrator = (function() {
             else if(Math.abs(position.y - self.calibrationData.BR.y) < self.thresholdSelectionDistance) {
                 self.selected.push('B');
             }
+            // returns true if something selected
+            return (self.selected.length != 0);
         },
         endSelection: function() {
             self.selected = [];
@@ -70,7 +72,24 @@ const Calibrator = (function() {
             else if(self.selected.includes('B')) {
                 self.calibrationData.BR.y = position.y;
             }
-        }
+        },
+        getCalibrationLines: function() {
+            // returns a copy
+            return {
+                'TL': {
+                    'x': self.calibrationData.TL.x,
+                    'y': self.calibrationData.TL.y
+                },
+                'BR': {
+                    'x': self.calibrationData.BR.x,
+                    'y': self.calibrationData.BR.y
+                }
+            }
+        },
+        setCalibrationLines: function(positions) {
+            self.calibrationData.TL = positions.TL;
+            self.calibrationData.BR = positions.BR;
+        },
     };
   
     return Calibrator;

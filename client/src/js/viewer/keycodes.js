@@ -13,7 +13,9 @@ const Codes = (function() {
             shift: [ 20, 16], // shift
             ctrl:  [     17], // ctrl
             esc:   [     27], // escape
-            del:   [ 46,  8]  // delete, backspace
+            del:   [ 46,  8], // delete, backspace
+            undo:  [ 85, 90], // u, z
+            redo:  [ 82, 84]  // r, y
         }),
 
         keyEvent: Object.freeze({
@@ -26,7 +28,8 @@ const Codes = (function() {
             shift:  7,
             ctrl:   8,
             esc:    9,
-            del:   10
+            undo:  10,
+            redo:  11,
         }),
 
         mouseEvent: Object.freeze({

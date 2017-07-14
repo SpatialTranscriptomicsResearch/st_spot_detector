@@ -181,6 +181,11 @@ canvas:active {
     text-shadow: 1px 1px 2px black;
 }
 
+.undo-wrapper {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+}
 .zoom-wrapper {
     position: fixed;
     bottom: 20px;
@@ -192,7 +197,7 @@ canvas:active {
     -moz-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
     box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
 }
-#button-zoom-in {
+#button-zoom-in, #button-undo {
     /* not sure why it isn't this already */
     border-top-right-radius: 4px;
 }

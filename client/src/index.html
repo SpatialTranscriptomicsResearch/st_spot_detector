@@ -196,6 +196,21 @@
                 </div>
             </div>
         </div>
+        <div ng-show='visible.zoomBar' class='undo-wrapper'>
+            <!-- Undo/Redo -->
+            <div class='zoom-bar btn-group btn-group-vertical' role='group'>
+                <!-- Undo -->
+                <button ng-disabled='visible.undo.undo' ng-click='undoButtonClick("undo")' type='button' class='btn btn-default' id='button-undo'>
+                    <span class='fa fa-undo'></span>
+                </button>
+                <!-- Redo -->
+                <!--
+                <button ng-disabled='visible.undo.redo' ng-click='undoButtonClick("redo")' type='button' class='btn btn-default'>
+                    <span class='fa fa-repeat'></span>
+                </button>
+                -->
+            </div>
+        </div>
         <div ng-show='visible.zoomBar' class='zoom-wrapper'>
             <!-- Zoom Bar -->
             <div class='zoom-bar btn-group btn-group-vertical' role='group'>
