@@ -96,7 +96,7 @@ function viewer() {
 
             scope.selectInsideTissue = function() {
                 var action = new UndoAction(
-                    'adjustment',
+                    'state_adjustment',
                     'selectSpots',
                     spotAdjuster.getSpotsCopy()
                 );
@@ -269,7 +269,7 @@ function viewer() {
 
             scope.deleteSpots = function() {
                 var action = new UndoAction(
-                    'adjustment',
+                    'state_adjustment',
                     'deleteSpots',
                     spotAdjuster.getSpotsCopy()
                 );
@@ -355,7 +355,7 @@ function viewer() {
                     var lastState = scope.undoStack.lastTab();
                     if(lastState == scope.data.state) {
                         var action = scope.undoStack.pop();
-                        if(lastState == "state_aligner") {
+                        if(lastState == "state_alignment") {
                             var matrices = action.state;
                             _.each(
                                 _.filter(
