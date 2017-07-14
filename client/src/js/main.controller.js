@@ -95,8 +95,8 @@ const main = [
             canvas: false,
             error: false,
             undo: {
-                undo: false,
-                redo: false,
+                undo: true,
+                redo: true,
             },
             panel: {
                 button_uploader: true,

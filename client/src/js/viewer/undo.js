@@ -32,13 +32,16 @@ class UndoStack {
      * Constructs a new Undo stack
      *
      */
-    constructor() {
+    constructor(visibility) {
         /**
          * The stack.
+         *
+         * @param {Object} visibility - Scope-based object which holds information on the visibility of the undo HTML buttons
          * @type {Array} stack - The undo stack
          * @type {Array} redoStack - The redo stack
          * @type {Array} temp - A variable to hold undo actions ready for pushing to the stack once ready (e.g. actions formed when mouse button clicked, then pushed once mouse button released)
          */
+        this.visibility = visibility;
         this.stack = [];
         this.redoStack = [];
         this.temp;
@@ -61,8 +64,8 @@ class UndoStack {
         console.log("stack is now: ");
         console.log(this.stack);
         */
-        if(action.action == "addSpots") {
-        }
+        this.visibility.undo = false;
+        this.visibility.redo = true;
     }
 
     /**
@@ -77,6 +80,10 @@ class UndoStack {
         console.log("popping: ");
         console.log(this.stack);
         */
+        if(this.stack.length == 0) {
+            this.visibility.undo = true;
+        }
+        this.visibility.redo = false;
         return action;
     }
 

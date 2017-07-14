@@ -39,7 +39,7 @@ function viewer() {
 
             var scaleManager = new ScaleManager();
 
-            scope.undoStack = new UndoStack();
+            scope.undoStack = new UndoStack(scope.visible.undo);
 
             const layerManager = new LayerManager(layers);
 
@@ -352,17 +352,40 @@ function viewer() {
 
             scope.undo = function(direction) {
                 if(direction == "undo") {
-                    console.log("undo");
-                    if(scope.undoStack.lastTab() == scope.data.state) {
-                        scope.undoStack.pop();
+                    var lastState = scope.undoStack.lastTab();
+                    if(lastState == scope.data.state) {
+                        var action = scope.undoStack.pop();
+                        if(lastState == "state_aligner") {
+                            var matrices = action.state;
+                            _.each(
+                                _.filter(
+                                    Object.entries(layerManager.getLayers()),
+                                    layer => {
+                                        var key = layer[0]; // e.g. 'he' or 'cy3'
+                                        var layerObject = layer[1];
+                                        return key in matrices;
+                                    },
+                                ),
+                                layer => {
+                                    var key = layer[0]; // e.g. 'he' or 'cy3'
+                                    var layerObject = layer[1];
+                                    layerObject.setTransform(matrices[key]);
+                                }
+                            );
+                        }
+                        else if(lastState == "state_predetection") {
+                            calibrator.setCalibrationLines(action.state);
+                        }
+                        if(lastState == "state_adjustment") {
+                            spotAdjuster.setSpots(action.state);
+                        }
                     }
                 }
                 else if(direction == "redo") {
-                    console.log("redo");
                 }
 
-                scope.visible.undo.undo = (scope.undoStack.stack.length == 0) ? false : true;
-                scope.visible.undo.redo = (scope.undoStack.redoStack.length == 0) ? false : true;
+                scope.visible.undo.undo = (scope.undoStack.stack.length == 0) ? true : false;
+                scope.visible.undo.redo = (scope.undoStack.redoStack.length == 0) ? true : false;
                 refreshCanvas();
             };
 
