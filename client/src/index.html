@@ -200,11 +200,11 @@
             <!-- Undo/Redo -->
             <div class='zoom-bar btn-group btn-group-vertical' role='group'>
                 <!-- Undo -->
-                <button ng-click='undoButtonClick()' type='button' class='btn btn-default' id='button-undo'>
+                <button ng-show='visible.undo.undo' ng-click='undoButtonClick("undo")' type='button' class='btn btn-default' id='button-undo'>
                     <span class='fa fa-undo'></span>
                 </button>
                 <!-- Redo -->
-                <button ng-click='redoButtonClick()' type='button' class='btn btn-default'>
+                <button ng-show='visible.undo.redo' ng-click='undoButtonClick("redo")' type='button' class='btn btn-default'>
                     <span class='fa fa-repeat'></span>
                 </button>
             </div>

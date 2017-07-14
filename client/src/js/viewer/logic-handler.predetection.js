@@ -17,7 +17,7 @@ class PredetectionLH extends LogicHandler {
 
     processKeyupEvent(keyEvent) {
         if (keyEvent === Codes.keyEvent.undo) {
-            if(this.undoStack.lastTab() == "predetection") {
+            if(this.undoStack.lastTab() == "state_predetection") {
                 var action = this.undoStack.pop();
                 this.calibrator.setCalibrationLines(action.state);
                 this.refreshCanvas();
@@ -51,7 +51,7 @@ class PredetectionLH extends LogicHandler {
             cursor = this.checkCalibrationCursor(this.calibrator.selected);
             if(selected) {
                 var action = new UndoAction(
-                    'predetection',
+                    'state_predetection',
                     'frameAdjustment',
                     this.calibrator.getCalibrationLines()
                 );

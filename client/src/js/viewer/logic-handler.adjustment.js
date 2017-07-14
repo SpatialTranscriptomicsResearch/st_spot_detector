@@ -24,7 +24,7 @@ class AdjustmentLH extends LogicHandler {
             else {
                 if(this.spotSelector.selected) {
                     var action = new UndoAction(
-                        'adjustment',
+                        'state_adjustment',
                         'moveSpot',
                         this.spotAdjuster.getSpotsCopy()
                     );
@@ -54,7 +54,7 @@ class AdjustmentLH extends LogicHandler {
         }
 
         if(keyEvent === Codes.keyEvent.undo) {
-            if(this.undoStack.lastTab() == "adjustment") {
+            if(this.undoStack.lastTab() == "state_adjustment") {
                 var action = this.undoStack.pop();
                 this.spotAdjuster.setSpots(action.state);
             }
@@ -77,7 +77,7 @@ class AdjustmentLH extends LogicHandler {
                 cursor = 'grabbed';
                 if(this.spotAdjuster.moving) {
                     action = new UndoAction(
-                        'adjustment',
+                        'state_adjustment',
                         'moveSpot',
                         this.spotAdjuster.getSpotsCopy()
                     );
@@ -113,7 +113,7 @@ class AdjustmentLH extends LogicHandler {
                 }
                 else if(mouseEvent == Codes.mouseEvent.down) {
                     action = new UndoAction(
-                        'adjustment',
+                        'state_adjustment',
                         'addSpot',
                         this.spotAdjuster.getSpotsCopy()
                     );
@@ -124,7 +124,7 @@ class AdjustmentLH extends LogicHandler {
                 if(mouseEvent == Codes.mouseEvent.down) {
                     this.spotSelector.beginSelection(eventData.position);
                     action = new UndoAction(
-                        'adjustment',
+                        'state_adjustment',
                         'selectSpots',
                         this.spotAdjuster.getSpotsCopy()
                     );

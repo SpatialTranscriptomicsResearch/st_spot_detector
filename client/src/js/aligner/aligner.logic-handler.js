@@ -35,7 +35,7 @@ class AlignerLHDefault extends LogicHandler {
         if (this.keystates.ctrl) {
             this.refreshCursor();
         } else if (e === Codes.keyEvent.undo) {
-            if(this.undoStack.lastTab() == "aligner") {
+            if(this.undoStack.lastTab() == "state_aligner") {
                 var action = this.undoStack.pop();
                 var matrices = action.state;
                 _.each(
@@ -62,7 +62,7 @@ class AlignerLHDefault extends LogicHandler {
         switch (e) {
         case Codes.mouseEvent.down:
             var action = new UndoAction(
-                'aligner',
+                'state_aligner',
                 'layerTransform',
                 {}
             );

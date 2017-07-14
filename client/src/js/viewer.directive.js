@@ -350,6 +350,23 @@ function viewer() {
                 refreshCanvas();
             };
 
+            scope.undo = function(direction) {
+                if(direction == "undo") {
+                    console.log("undo");
+                    if(scope.undoStack.lastTab() == scope.data.state) {
+                        scope.undoStack.pop();
+                    }
+                }
+                else if(direction == "redo") {
+                    console.log("redo");
+                }
+
+                scope.visible.undo.undo = (scope.undoStack.stack.length == 0) ? false : true;
+                scope.visible.undo.redo = (scope.undoStack.redoStack.length == 0) ? false : true;
+                refreshCanvas();
+            };
+
+
             scope.exportSpots = function(selection, includeImageSize) {
                 // spots are given in Cy3 image coordinates. however, if the user has uploaded an HE
                 // image, export them in HE coordinate space instead.
