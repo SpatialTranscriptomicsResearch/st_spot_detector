@@ -1,5 +1,4 @@
 *.swp
-*.jpg
 *.pyc
 cv2
 blobdetection.py
