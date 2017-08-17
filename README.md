@@ -86,7 +86,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
 
     They may for example look like
     ```
-    chdir = /home/user/st_aligner/
+    chdir = /home/user/st_aligner/server
     logto = /home/user/.st_log/%n.log
     plugin = /usr/lib/uwsgi/plugins/python_plugin.so
     virtualenv = /home/user/st_aligner/venv/
