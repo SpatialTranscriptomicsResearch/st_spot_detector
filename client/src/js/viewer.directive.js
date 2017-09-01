@@ -81,7 +81,7 @@ function viewer() {
                 const tmat = 'he' in ls ?
                     math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat) :
                     math.eye(3);
-                return _.compose(
+                const resultMat = _.compose(
                     _.partial(
                         math.multiply,
                         math.matrix([
@@ -91,7 +91,18 @@ function viewer() {
                         ]),
                     ),
                     _.partial(math.multiply, tmat),
-                )(spots.transformMatrix).toString();
+                )(spots.transformMatrix);
+                const matString = ""
+                    + math.subset(resultMat, math.index(0, 0)) + " "
+                    + math.subset(resultMat, math.index(1, 0)) + " "
+                    + math.subset(resultMat, math.index(2, 0)) + " "
+                    + math.subset(resultMat, math.index(0, 1)) + " "
+                    + math.subset(resultMat, math.index(1, 1)) + " "
+                    + math.subset(resultMat, math.index(2, 1)) + " "
+                    + math.subset(resultMat, math.index(0, 2)) + " "
+                    + math.subset(resultMat, math.index(1, 2)) + " "
+                    + math.subset(resultMat, math.index(2, 2));
+                return matString;
             };
 
             scope.selectInsideTissue = function() {
