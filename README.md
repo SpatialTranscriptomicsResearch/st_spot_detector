@@ -7,8 +7,6 @@ In order to obtain relevant experimental data, it is also possible to automatica
 The spot positions and selections are further adjustable to one's own needs.
 A file is generated which contains the corrected spot coordinates of the ST data as adjusted array coordinates and pixel coordinates as well as file containing a 3x3 affine matrix to transform array coordinates to pixel coordinates which can be useful for downstream analysis.
 
-NOTE: this software is currently not yet fully functional and is in a testing stage of development. 
-
 ## Dependencies
 The server uses Python 2.7 with the libraries OpenCV-Python and Pillow (PIL Fork) for image processing. These can easily be installed within a virtual environment using pip and requirements.txt (see Usage).
 It also uses another [tissue recognition library](https://github.com/SpatialTranscriptomicsResearch/tissue_recognition). 
@@ -20,11 +18,11 @@ A modern browser with HTML5 support is required for the front-end interface. The
 1. Clone the repository
 
     ```
-    git clone https://github.com/SpatialTranscriptomicsResearch/st_aligner.git
+    git clone https://github.com/SpatialTranscriptomicsResearch/st_spot_detector.git
     ```
 2. Move into the directory
     ```
-    cd st_aligner
+    cd st_spot_detector
     ```
 
 ### Server setup (all `pip` and `Python` commands assume Python 2)
@@ -86,10 +84,10 @@ A modern browser with HTML5 support is required for the front-end interface. The
 
     They may for example look like
     ```
-    chdir = /home/user/st_aligner/server
+    chdir = /home/user/st_spot_detector/server
     logto = /home/user/.st_log/%n.log
     plugin = /usr/lib/uwsgi/plugins/python_plugin.so
-    virtualenv = /home/user/st_aligner/venv/
+    virtualenv = /home/user/st_spot_detector/venv/
     ```
 
 8. Run the server
@@ -119,7 +117,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
 For any queries or concerns, feel free to contact the authors at the addresses given below.
 
 ### Client interface
-For a guide on using the ST spots detection tool, please refer to [this guide.](https://github.com/SpatialTranscriptomicsResearch/st_aligner/wiki/ST-Spot-Detector-Usage-Guide)
+For a guide on using the ST spots detection tool, please refer to [this guide.](https://github.com/SpatialTranscriptomicsResearch/st_spot_detector/wiki/ST-Spot-Detector-Usage-Guide)
 
 ## License
 MIT (see LICENSE).
