@@ -14,6 +14,11 @@ It also uses another [tissue recognition library](https://github.com/SpatialTran
 A modern browser with HTML5 support is required for the front-end interface. The web app has been tested on the lastest version of Chrome and Firefox.
 
 ## Usage
+
+If you want to use deploy the ST Spot detector locally on your computer
+you can use this [singularity](https://github.com/SpatialTranscriptomicsResearch/st_aligner_singularity)
+container. Otherwise follow the deployment instructions below.
+
 ### Download
 1. Clone the repository
 
@@ -116,7 +121,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
 
 For any queries or concerns, feel free to contact the authors at the addresses given below.
 
-### Client interface
+### Manual
 For a guide on using the ST spots detection tool, please refer to [this guide.](https://github.com/SpatialTranscriptomicsResearch/st_spot_detector/wiki/ST-Spot-Detector-Usage-Guide)
 
 ## License
