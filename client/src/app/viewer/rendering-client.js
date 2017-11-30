@@ -2,9 +2,9 @@
 
 import _ from 'underscore';
 
-import { MAX_CACHE_SIZE, WORKER_PATH } from '../config';
+import { Messages, Responses } from 'worker/return-codes';
 
-import { Messages, Responses } from './rendering-worker';
+import { MAX_CACHE_SIZE, WORKER_PATH } from '../config';
 
 /**
  * Return code enum for {@link module:rendering-client~RenderingClient}. Contains the following

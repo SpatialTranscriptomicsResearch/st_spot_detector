@@ -1,5 +1,9 @@
 import toastr from 'toastr';
 
+import framealignment from 'assets/images/framealignment.png';
+import imageToggleCy from 'assets/images/imageToggleCy3.png';
+import imageToggleHE from 'assets/images/imageToggleHE.png';
+
 const main = [
     '$scope',
     '$http',
@@ -58,10 +62,6 @@ const main = [
             cy3Filename: '',
             errorText: '',
             rotate: false,
-            imageToggleImage: {
-                Cy3: 'images/imageToggleCy3.png',
-                HE: 'images/imageToggleHE.png'
-            },
         };
 
         $scope.classes = {
@@ -178,7 +178,7 @@ const main = [
             else if($scope.data.state === 'state_predetection') {
                 toastr["info"](
                     "Adjust the lines to frame the spots, as shown:<br>" + 
-                    "<img src='images/framealignment.png'/><br>" +
+                    `<img src='${framealignment}'/><br>` +
                     "Click DETECT SPOTS to begin automatic spot detection."
                 );
             }
@@ -379,15 +379,17 @@ const main = [
         };
 
         $scope.getImageToggleImage = function() {
-            if($scope.data.cy3Active)
-                return $scope.data.imageToggleImage.HE;
-            else return $scope.data.imageToggleImage.Cy3;
+            if ($scope.data.cy3Active) {
+                return imageToggleHE;
+            }
+            return imageToggleCy;
         };
 
         $scope.getImageToggleText = function() {
-            if($scope.data.cy3Active)
-                return "HE";
-            else return "Cy3";
+            if ($scope.data.cy3Active) {
+                return 'HE';
+            }
+            return 'Cy3';
         };
 
         $scope.uploadImage = function() {

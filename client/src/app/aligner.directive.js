@@ -4,6 +4,8 @@
  * Directive for the alignment/editor view.
  */
 
+import template from 'assets/html/aligner.html';
+
 import _ from 'underscore';
 import sortable from 'sortablejs';
 
@@ -195,7 +197,7 @@ function aligner() {
             scope.aligner.initialize = initialize;
         },
         restrict: 'E',
-        templateUrl: '../aligner.html',
+        template,
     };
 }
 
