@@ -9,7 +9,7 @@ A file is generated which contains the corrected spot coordinates of the ST data
 
 ## Dependencies
 The server uses Python 2.7 with the libraries OpenCV-Python and Pillow (PIL Fork) for image processing. These can easily be installed within a virtual environment using pip and requirements.txt (see Usage).
-It also uses another [tissue recognition library](https://github.com/SpatialTranscriptomicsResearch/tissue_recognition). 
+It also uses another [tissue recognition library](https://github.com/SpatialTranscriptomicsResearch/st_tissue_recognition). 
 
 A modern browser with HTML5 support is required for the front-end interface. The web app has been tested on the lastest version of Chrome and Firefox.
 
@@ -52,7 +52,7 @@ container. Otherwise follow the deployment instructions below.
     pip install -r requirements.txt
     ```
 
-4. Install the tissue recognition library (still within the Python virtual environment). Follow the instructions [here.](https://github.com/SpatialTranscriptomicsResearch/tissue_recognition)
+4. Install the tissue recognition library (still within the Python virtual environment). Follow the instructions [here.](https://github.com/SpatialTranscriptomicsResearch/st_tissue_recognition)
 
 5. Build the client side files
     The client side uses the Node.js package manager and a Makefile to build
