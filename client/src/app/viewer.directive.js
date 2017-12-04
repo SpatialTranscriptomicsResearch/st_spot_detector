@@ -420,6 +420,15 @@ function viewer() {
                 exportFile(blob, filename, "text/tsv");
             };
 
+            scope.exportTMat = function() {
+                const filename = scope.data.cy3Filename.split(/(\.[^.]+$)/)[0];
+                exportFile(
+                    new Blob([scope.getTransformationMatrix()]),
+                    `transformation_matrix-${filename}.txt`,
+                    'text/plain',
+                );
+            };
+
             scope.getSpotMatrix = function() {
                 return spots.transformMatrix;
             };

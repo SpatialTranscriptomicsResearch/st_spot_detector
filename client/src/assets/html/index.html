@@ -158,12 +158,13 @@
                             ng-model-options="{ getterSetter: true }"
                             style="float: right"
                             />
-                        <br>
+                        <div class='clear'></div>
                         <button class='btn btn-primary btn-sm submit-button' type='submit'>Export Spot Data</button>
                         </form>
-                        Spot transformation matrix:
-                        {{ getTransformationMatrix() }}
-                        <p class='clear'></p>
+                        <div class='clear'></div>
+                        <form ng-submit='exportTMat()'>
+                            <button class='btn btn-primary btn-sm submit-button' type='submit'>Export transformation matrix</button>
+                        </form>
                     </div>
                     <!-- Help Panel -->
                     <div ng-show='visible.panel.button_help'>

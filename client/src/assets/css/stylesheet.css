@@ -139,9 +139,7 @@ canvas:active {
 }
 
 .submit-button {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
+    float: right;
 }
 
 .radio-button-group {
@@ -207,8 +205,8 @@ hr {
 }
 
 .clear {
-    height: 20px;
-    margin-bottom: 10px;
+    clear: both;
+    height: 1em;
 }
 
 .spot-color-selector {
