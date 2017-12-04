@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 
 const DynamicCdnWebpackPlugin = require('dynamic-cdn-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -80,6 +81,11 @@ function configBuilder(deploy = false) {
             new HtmlWebpackPlugin({
                 excludeChunks: ['worker'],
                 template: 'src/assets/html/index.html',
+            }),
+            new webpack.ProvidePlugin({
+                // jquery object must be global or bootstrap won't be able to find it
+                $: 'jquery',
+                jQuery: 'jquery',
             }),
         ],
     };

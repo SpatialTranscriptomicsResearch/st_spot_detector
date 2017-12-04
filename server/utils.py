@@ -47,3 +47,16 @@ def bits_to_ascii(list_):
         map(bits_to_int, chunks_of(7, list_)),
         '',
     )
+
+def equal(list_):
+    """
+    Returns True iff all the elements in a list are equal.
+
+    >>> equal([1,1,1])
+    True
+    """
+    return reduce(
+        lambda a, x: a and (x[0] == x[1]),
+        zip(list_[1:], list_[:-1]),
+        True,
+    )

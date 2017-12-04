@@ -1,15 +1,71 @@
+import _ from 'underscore';
 import toastr from 'toastr';
 
 import framealignment from 'assets/images/framealignment.png';
 import imageToggleCy from 'assets/images/imageToggleCy3.png';
 import imageToggleHE from 'assets/images/imageToggleHE.png';
 
+import modal from './modal';
+
+function error(message) {
+    modal(
+        'Error',
+        `<b>Error</b>: ${message === null ? 'Unkown error' : message}`,
+    );
+}
+
+function warning(message) {
+    modal(
+        'Warning',
+        `<b>Warning</b>: ${message === null ? 'Unkown warning' : message}`,
+    );
+}
+
+function unwrapRequest(request) {
+    return new Promise(
+        (resolve, reject) => {
+            request
+                .then((response) => {
+                    const success = response.data.success;
+                    const warnings = response.data.warnings;
+                    const result = response.data.result;
+                    _.each(warnings, warning);
+                    if (!success) {
+                        error(result);
+                        return reject(result);
+                    }
+                    return resolve(result);
+                })
+                .catch((response) => {
+                    const result = response.data;
+                    error(result);
+                    reject(result);
+                })
+            ;
+        },
+    );
+}
+
+function tryState(scope, state, request) {
+    const oldState = scope.data.state;
+    scope.updateState(state);
+    return new Promise(
+        (resolve, reject) => {
+            request.then(resolve).catch((result) => {
+                scope.updateState(oldState, false);
+                reject(result);
+            });
+        },
+    );
+}
+
 const main = [
     '$scope',
     '$http',
     '$sce',
     '$compile',
-    function($scope, $http, $sce, $compile) {
+    '$q',
+    function($scope, $http, $sce, $compile, $q) {
         var addSpotsToastsDisplayed = false;
 
         // texts to display in the menu bar panel when clicking the help button
@@ -60,8 +116,6 @@ const main = [
             heImage: '',
             cy3Active: null,
             cy3Filename: '',
-            errorText: '',
-            rotate: false,
         };
 
         $scope.classes = {
@@ -93,7 +147,6 @@ const main = [
             imageToggleBar: Boolean(),
             spinner: Boolean(),
             canvas: Boolean(),
-            error: Boolean(),
             undo: {
                 undo: Boolean(),
                 redo: Boolean(),
@@ -255,14 +308,12 @@ const main = [
                 $scope.visible.zoomBar = false;
                 $scope.visible.spinner = true;
                 $scope.visible.canvas = false;
-                $scope.visible.errorText = false;
             }
             else if($scope.data.state === 'state_predetection') {
                 $scope.visible.menuBar = true;
                 $scope.visible.zoomBar = true;
                 $scope.visible.spinner = false;
                 $scope.visible.canvas = true;
-                $scope.visible.errorText = false;
 
                 $scope.data.logicHandler = $scope.predetectionLH;
             }
@@ -271,7 +322,6 @@ const main = [
                 $scope.visible.zoomBar = true;
                 $scope.visible.spinner = false;
                 $scope.visible.canvas = true;
-                $scope.visible.errorText = false;
                 $scope.visible.imageToggleBar = false;
 
                 $scope.aligner.initialize();
@@ -283,23 +333,14 @@ const main = [
                 $scope.visible.zoomBar = false;
                 $scope.visible.spinner = true;
                 $scope.visible.canvas = false;
-                $scope.visible.errorText = false;
             }
             else if($scope.data.state === 'state_adjustment') {
                 $scope.visible.menuBar = true;
                 $scope.visible.zoomBar = true;
                 $scope.visible.spinner = false;
                 $scope.visible.canvas = true;
-                $scope.visible.errorText = false;
 
                 $scope.data.logicHandler = $scope.adjustmentLH;
-            }
-            else if($scope.data.state === 'state_error') {
-                $scope.visible.menuBar = true;
-                $scope.visible.zoomBar = false;
-                $scope.visible.spinner = false;
-                $scope.visible.canvas = false;
-                $scope.visible.errorText = true;
             }
 
             if ('he' in $scope.layerManager.getLayers() && new_state !== 'state_alignment') {
@@ -362,36 +403,24 @@ const main = [
         };
 
         $scope.detectSpots = function() {
-            $scope.updateState('state_detection');
+            // we want to send the calibration data to the server,
+            // so we retrieve it from the viewer directive
+            const calibrationData = $scope.getCalibrationData();
+            // append the session id to this data so the server knows
+            // who we are
+            calibrationData.session_id = $scope.data.sessionId;
 
-            var getSpotData = function() {
-                var successCallback = function(response) {
-                    $scope.updateState('state_adjustment');
-                    openPanel('button_exporter');
-                    openPanel('button_adjuster');
-                    $scope.loadSpots(response.data); // defined in the viewer directive
-                    $scope.data.spotTransformMatrx = response.data.transform_matrix;
-                };
-                var errorCallback = function(response) {
-                    $scope.data.errorText = response.data;
-                    console.error(response.data);
-                    $scope.updateState('state_error');
-                };
-
-                // we want to send the calibration data to the server,
-                // so we retrieve it from the viewer directive
-                var calibrationData = $scope.getCalibrationData();
-                // append the session id to this data so the server knows
-                // who we are
-                calibrationData.session_id = $scope.data.sessionId;
-
-                var config = {
-                    params: calibrationData
-                };
-                $http.get('../detect_spots', config)
-                    .then(successCallback, errorCallback);
-            };
-            getSpotData();
+            $q.when(tryState(
+                $scope,
+                'state_detection',
+                unwrapRequest($http.get('../detect_spots', { params: calibrationData })),
+            )).then((result) => {
+                $scope.updateState('state_adjustment');
+                openPanel('button_exporter');
+                openPanel('button_adjuster');
+                $scope.loadSpots(result); // defined in the viewer directive
+                $scope.data.spotTransformMatrx = result.transform_matrix;
+            }, _.noop);
         };
 
         $scope.reshowToasts = function(state) {
@@ -427,17 +456,28 @@ const main = [
         $scope.uploadImage = function() {
             if($scope.data.cy3Image != '') {
                 $scope.updateState('state_start', false);
-                $scope.updateState('state_upload');
-                var getTileData = function() {
-                    var tileSuccessCallback = function(response) {
-                        $scope.updateScalingFactor(response.data.tiles.cy3.scaling_factor);
-                        $scope.updateImageSize(response.data.tiles.cy3.image_size);
 
-                        $scope.receiveTilemap(response.data); // defined in the viewer directive
-
+                unwrapRequest($http.get('../session_id')).then((response) => {
+                    $scope.data.sessionId = response;
+                    $q.when(tryState(
+                        $scope,
+                        'state_upload',
+                        unwrapRequest(
+                            $http.post(
+                                '../tiles',
+                                {
+                                    cy3_image: $scope.data.cy3Image,
+                                    he_image: $scope.data.heImage,
+                                    session_id: $scope.data.sessionId,
+                                },
+                            ),
+                        ),
+                    )).then((result) => {
+                        $scope.updateScalingFactor(result.tiles.cy3.scaling_factor);
+                        $scope.updateImageSize(result.tiles.cy3.image_size);
+                        $scope.receiveTilemap(result); // defined in the viewer directive
                         $scope.data.cy3Active = true;
-
-                        if (response.data.tiles.he) {
+                        if (result.tiles.he) {
                             $scope.visible.spotAdjuster.div_insideTissue = true;
                             $scope.menuButtonDisabled.button_detector = false;
                             $scope.updateState('state_predetection', false);
@@ -447,35 +487,8 @@ const main = [
                             $scope.updateState('state_predetection', true);
                             openPanel('button_detector');
                         }
-                    };
-                    var tileErrorCallback = function(response) {
-                        $scope.data.errorText = response.data;
-                        console.error(response.data);
-                        $scope.updateState('state_error');
-                    };
-
-                    $http.post('../tiles', {
-                        cy3_image: $scope.data.cy3Image,
-                        he_image: $scope.data.heImage,
-                        session_id: $scope.data.sessionId,
-                        rotate: $scope.data.rotate.toString()
-                    }).then(tileSuccessCallback, tileErrorCallback);
-                };
-
-                var getSessionId = function() {
-                    var sessionSuccessCallback = function(response) {
-                        $scope.data.sessionId = response.data;
-                        getTileData();
-                    };
-                    var sessionErrorCallback = function(response) {
-                        $scope.data.errorText = response.data;
-                        console.error(response.data);
-                        $scope.updateState('state_error');
-                    };
-                    $http.get('../session_id')
-                        .then(sessionSuccessCallback, sessionErrorCallback);
-                };
-                getSessionId();
+                    }, _.noop);
+                }, _.noop);
             }
         };
 
