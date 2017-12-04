@@ -91,9 +91,11 @@ const Renderer = (function() {
             self.camera.end();
         },
         renderSpotSelection: function(rectCoords) {
+            self.ctx.save();
             self.ctx.strokeStyle = self.spotSelectionColor;
             self.ctx.setLineDash([4, 3]);
             self.ctx.strokeRect(rectCoords.TL.x, rectCoords.TL.y, rectCoords.WH.x, rectCoords.WH.y);
+            self.ctx.restore();
         }
   };
 
