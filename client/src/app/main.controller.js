@@ -52,7 +52,7 @@ const main = [
         // variables which hold more "global" important information, some shared between
         // other controllers/directives
         $scope.data = {
-            state: 'state_start',
+            state: '',
             logicHandler: null,
             button: 'button_uploader',
             sessionId: '',
@@ -87,44 +87,76 @@ const main = [
 
         // bools which control the visibilty of various elements on the page
         $scope.visible = {
-            menuBar: true,
-            menuBarPanel: true,
-            zoomBar: false,
-            imageToggleBar: false,
-            spinner: false,
-            canvas: false,
-            error: false,
+            menuBar: Boolean(),
+            menuBarPanel: Boolean(),
+            zoomBar: Boolean(),
+            imageToggleBar: Boolean(),
+            spinner: Boolean(),
+            canvas: Boolean(),
+            error: Boolean(),
             undo: {
-                undo: true,
-                redo: true,
+                undo: Boolean(),
+                redo: Boolean(),
             },
             panel: {
-                button_uploader: true,
-                button_aligner: false,
-                button_detector: false,
-                button_adjuster: false,
-                button_exporter: false,
-                button_help: false,
-                button_info: false
+                button_uploader: Boolean(),
+                button_aligner: Boolean(),
+                button_detector: Boolean(),
+                button_adjuster: Boolean(),
+                button_exporter: Boolean(),
+                button_help: Boolean(),
+                button_info: Boolean(),
             },
             spotAdjuster: {
-                button_addSpots: true,
-                button_finishAddSpots: false,
-                button_deleteSpots: true,
-                div_insideTissue: false
-            }
+                button_addSpots: Boolean(),
+                button_finishAddSpots: Boolean(),
+                button_deleteSpots: Boolean(),
+                div_insideTissue: Boolean(),
+            },
         };
 
         // strings which determine the clickable state of the menu bar buttons 
         $scope.menuButtonDisabled = {
-            button_uploader: '',
-            button_aligner: 'false',
-            button_detector: 'false',
-            button_adjuster: 'false',
-            button_exporter: 'false',
-            button_help: '',
-            button_info: ''
+            button_uploader: Boolean(),
+            button_aligner: Boolean(),
+            button_detector: Boolean(),
+            button_adjuster: Boolean(),
+            button_exporter: Boolean(),
+            button_help: Boolean(),
+            button_info: Boolean(),
         };
+
+        function init_state() {
+            $scope.data.state = 'state_start';
+
+            $scope.visible.menuBar = true;
+            $scope.visible.menuBarPanel = true;
+            $scope.visible.zoomBar = false;
+            $scope.visible.imageToggleBar = false;
+            $scope.visible.spinner = false;
+            $scope.visible.canvas = false;
+            $scope.visible.undo.undo = true;
+            $scope.visible.undo.redo = true;
+            $scope.visible.panel.button_uploader = true;
+            $scope.visible.panel.button_aligner = false;
+            $scope.visible.panel.button_detector = false;
+            $scope.visible.panel.button_adjuster = false;
+            $scope.visible.panel.button_exporter = false;
+            $scope.visible.panel.button_help = false;
+            $scope.visible.panel.button_info = false;
+            $scope.visible.spotAdjuster.button_addSpots = true;
+            $scope.visible.spotAdjuster.button_finishAddSpots = false;
+            $scope.visible.spotAdjuster.button_deleteSpots = true;
+            $scope.visible.spotAdjuster.div_insideTissue = false;
+
+            $scope.menuButtonDisabled.button_uploader = false;
+            $scope.menuButtonDisabled.button_aligner = true;
+            $scope.menuButtonDisabled.button_detector = true;
+            $scope.menuButtonDisabled.button_adjuster = true;
+            $scope.menuButtonDisabled.button_exporter = true;
+            $scope.menuButtonDisabled.button_help = false;
+            $scope.menuButtonDisabled.button_info = false;
+        }
 
         var toggleMenuBarPanelVisibility = function(previousButton, thisButton) {
             // the panel is closed if the same button is pressed again
@@ -216,7 +248,7 @@ const main = [
             $scope.data.state = new_state;
 
             if($scope.data.state === 'state_start') {
-                // reinitialise things
+                init_state();
             }
             else if($scope.data.state === 'state_upload') {
                 $scope.visible.menuBar = false;
@@ -285,7 +317,7 @@ const main = [
 
         function openPanel(button, ...args) {
             // undisable the button
-            $scope.menuButtonDisabled[button] = '';
+            $scope.menuButtonDisabled[button] = false;
             // click the button
             $scope.menuButtonClick(button, ...args);
         }
@@ -307,26 +339,26 @@ const main = [
 
         $scope.menuButtonClick = function(button, state) {
             // only clickable if not disabled
-            //if($scope.menuButtonDisabled[button] != 'false') {
-            // switch off all the panel visibilities
-            for(var panel in $scope.visible.panel) {
-                $scope.visible.panel[panel] = false;
-            }
-            // except for the one we just selected
-            $scope.visible.panel[button] = true;
-            toggleMenuBarPanelVisibility($scope.data.button, button);
-            $scope.data.button = button;
-
-            if (state !== undefined) {
-                if (state !== $scope.data.state) {
-                    prevState = $scope.data.state;
-                    $scope.updateState(state);
+            if (!$scope.menuButtonDisabled[button]) {
+                // switch off all the panel visibilities
+                for(var panel in $scope.visible.panel) {
+                    $scope.visible.panel[panel] = false;
                 }
-            } else if (prevState !== null) {
-                $scope.updateState(prevState);
-                prevState = null;
+                // except for the one we just selected
+                $scope.visible.panel[button] = true;
+                toggleMenuBarPanelVisibility($scope.data.button, button);
+                $scope.data.button = button;
+
+                if (state !== undefined) {
+                    if (state !== $scope.data.state) {
+                        prevState = $scope.data.state;
+                        $scope.updateState(state);
+                    }
+                } else if (prevState !== null) {
+                    $scope.updateState(prevState);
+                    prevState = null;
+                }
             }
-            //}
         };
 
         $scope.detectSpots = function() {
@@ -394,6 +426,7 @@ const main = [
 
         $scope.uploadImage = function() {
             if($scope.data.cy3Image != '') {
+                $scope.updateState('state_start', false);
                 $scope.updateState('state_upload');
                 var getTileData = function() {
                     var tileSuccessCallback = function(response) {
@@ -406,7 +439,7 @@ const main = [
 
                         if (response.data.tiles.he) {
                             $scope.visible.spotAdjuster.div_insideTissue = true;
-                            $scope.menuButtonDisabled.button_detector = '';
+                            $scope.menuButtonDisabled.button_detector = false;
                             $scope.updateState('state_predetection', false);
                             openPanel('button_aligner', 'state_alignment');
                         } else {
@@ -445,6 +478,8 @@ const main = [
                 getSessionId();
             }
         };
+
+        init_state();
 
         toastr.options = {
             "closeButton": false,
