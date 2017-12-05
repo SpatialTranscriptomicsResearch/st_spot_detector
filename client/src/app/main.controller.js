@@ -100,7 +100,7 @@ const main = [
             button_aligner: 'Alignment',
             button_detector: 'Detection Parameters',
             button_adjuster: 'Spot adjustment',
-            button_exporter: 'Spot export',
+            button_exporter: 'Export',
             button_help: 'Help',
             button_info: 'Info'
         };

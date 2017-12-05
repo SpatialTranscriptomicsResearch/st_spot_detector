@@ -59,25 +59,17 @@
                 <div class='panel-content-wrapper'>
                     <div ng-show='visible.panel.button_uploader'>
                         <form image-upload name='imageUploaderForm' ng-submit='uploadImage()'>
-                            <p class='image-upload-title'>Cy3 Image:</p>
                             <label class='cy3-upload-button'>
-                                <span class='btn btn-default btn-sm'>Choose file</span>
+                                <span class='btn btn-default btn-sm'>Choose Cy3 image</span>
                                 <input id='cy3-upload' type='file' accept='image/jpg, image/jpeg' style='display:none;' required>
                             </label>
                             <p class='upload-filename' id='cy3-upload-filename' ng-model='data.cy3Filename'>No file selected.</p>
-                            <br>
-                            <p class='image-upload-title'>HE Image: (optional)</p>
                             <label class='he-upload-button'>
-                                <span class='btn btn-default btn-sm'>Choose file</span>
+                                <span class='btn btn-default btn-sm'>Choose HE image</span>
                                 <input id='he-upload' type='file' accept='image/jpg, image/jpeg' style='display:none;'>
                             </label>
                             <p class='upload-filename' id='he-upload-filename'>No file selected.</p>
-                            <!--
-                            <p>Image requires 180° rotation: 
-                            <input type='checkbox' ng-model='data.rotate'></p>
-                            <br>
-                            -->
-                            <br><small>The image(s) must be in .jpg format and rotated so that the frame cluster appears at the top left of the image.</small><br>
+                            <small>The image(s) must be in .jpg format and rotated so that the frame cluster appears at the top left of the image.</small><br>
                             <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Images</button>
                         </form>
                     </div>
@@ -103,7 +95,7 @@
                         <button ng-click='addSpots()'           ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-default btn-block'>Add spots</button>
                         <button ng-click='finishAddSpots()'     ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-default btn-block'>Finish adding spots</button>
                         <button ng-click='deleteSpots()'        ng-show='visible.spotAdjuster.button_deleteSpots'    type='button' class='btn btn-default btn-block'>Delete selected spots</button>
-                        <button ng-click='selectInsideTissue()' ng-show='visible.spotAdjuster.div_insideTissue'      type='button' class='btn btn-default btn-block'>Automatically select spots<br>inside tissue</button>
+                        <button ng-click='selectInsideTissue()' ng-show='visible.spotAdjuster.div_insideTissue'      type='button' class='btn btn-default btn-block'>Select spots inside tissue</button>
                         <div class='spot-color-selector'>
                             Spot Opacity
                             <div class='spot-color-bar clickable'>
@@ -129,41 +121,41 @@
                     </div>
                     <!-- Exporter Panel -->
                     <div ng-show='visible.panel.button_exporter'>
-                        <form ng-submit='exportSpots(exportForm.selection, exportForm.includeImageSize)'>
-                        Selection export:
-                        <div class="btn-group radio-button-group" data-toggle="buttons">
-                            <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-default radio-button">
-                                <input type="radio" value='all' ng-model='exportForm.selection'> All spots
-                            </label>
-                            <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-default radio-button">
-                                <input type="radio" value='selection' ng-model='exportForm.selection' checked> Selection only
-                            </label>
-                        </div>
-                        <br>
-                        <!--
-                        Coordinate format:
-                        <div class="btn-group radio-button-group" data-toggle="buttons">
-                            <label ng-class="{active: exportForm.coordinateType == 'array'}" class="btn btn-default radio-button">
-                                <input type="radio" value='array' ng-model='exportForm.coordinateType' checked> Array
-                            </label>
-                            <label ng-class="{active: exportForm.coordinateType == 'pixel'}" class="btn btn-default radio-button">
-                                <input type="radio" value='pixel' ng-model='exportForm.coordinateType'> Pixel
-                            </label>
-                        </div>
-                        -->
-                        Include image size:
-                        <input
-                            type="checkbox"
-                            ng-model="exportForm.includeImageSize"
-                            ng-model-options="{ getterSetter: true }"
-                            style="float: right"
-                            />
-                        <div class='clear'></div>
-                        <button class='btn btn-primary btn-sm submit-button' type='submit'>Export Spot Data</button>
+                        <form class="panel panel-default" ng-submit='exportSpots(exportForm.selection, exportForm.includeImageSize)'>
+                            <div class="panel-heading grid2">
+                                <h2>Spot data</h2>
+                                <button class='btn btn-primary btn-sm submit-button' type='submit'>
+                                    <span class='glyphicon glyphicon-save'></span>
+                                </button>
+                            </div>
+                            <div class="panel-body">
+                                <p>Include spots:</p>
+                                <div class="btn-group" data-toggle="buttons">
+                                    <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-default">
+                                        <input type="radio" value='all' ng-model='exportForm.selection'>All
+                                    </label>
+                                    <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-default radio-button">
+                                        <input type="radio" value='selection' ng-model='exportForm.selection' checked>Selected
+                                    </label>
+                                </div>
+                                <div class="grid2">
+                                    <p>Include image size:</p>
+                                    <input
+                                     type="checkbox"
+                                     ng-model="exportForm.includeImageSize"
+                                     ng-model-options="{ getterSetter: true }"
+                                     style="float: right"
+                                     />
+                                </div>
+                            </div>
                         </form>
-                        <div class='clear'></div>
-                        <form ng-submit='exportTMat()'>
-                            <button class='btn btn-primary btn-sm submit-button' type='submit'>Export transformation matrix</button>
+                        <form class="panel panel-default" ng-submit='exportTMat()'>
+                            <div class="panel-heading grid2">
+                                <h2>Transformation matrix</h2>
+                                <button class='btn btn-primary btn-sm submit-button' type='submit'>
+                                    <span class='glyphicon glyphicon-save'></span>
+                                </button>
+                            </div>
                         </form>
                     </div>
                     <!-- Help Panel -->
