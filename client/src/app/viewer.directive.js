@@ -156,6 +156,16 @@ function viewer() {
                 refreshCanvas();
             };
 
+            function resizeCanvas() {
+                Array.from(element[0].getElementsByTagName('canvas')).forEach(
+                    (canvas) => {
+                        /* eslint-disable no-param-reassign */
+                        canvas.width = window.innerWidth;
+                        canvas.height = window.innerHeight;
+                    },
+                );
+            }
+
             function refreshCanvas() {
                 scaleManager.updateScaleLevel(camera.scale);
                 tilemapLevel = 1 / scaleManager.currentScaleLevel;
@@ -455,9 +465,15 @@ function viewer() {
 
             window.addEventListener(
                 'resize',
-                _.compose(refreshCanvas, camera.updateViewport),
+                () => {
+                    resizeCanvas();
+                    camera.updateViewport();
+                    refreshCanvas();
+                },
                 false,
             );
+
+            window.addEventListener('load', resizeCanvas, false);
         }
     };
 }

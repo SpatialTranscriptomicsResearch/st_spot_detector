@@ -242,20 +242,4 @@
         </div>
     </div>
 </body>
-<script>
-// This script serves to resize the canvas element according to the size of the window
-// It is derived from http://stackoverflow.com/a/8486324/1748928
-(function() {
-    function resize() {
-        const canvases = document.getElementsByTagName('canvas');
-        Array.from(canvases).forEach(
-                (canvas) => {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-                });
-    }
-    window.addEventListener('resize', resize, false);
-    resize();
-}());
-</script>
 </html>
