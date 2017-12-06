@@ -24,9 +24,11 @@
   },
   "dependencies": {
     "angular": "^1.6.7",
-    "bootstrap": "^3.3.7",
+    "bootstrap": "^4.0.0-beta.2",
+    "font-awesome": "^4.7.0",
     "jquery": "^3.2.1",
     "mathjs": "^3.17.0",
+    "popper.js": "^1.12.9",
     "sortablejs": "^1.7.0",
     "spinkit": "^1.2.5",
     "toastr": "^2.1.2",

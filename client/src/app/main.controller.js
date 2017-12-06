@@ -70,7 +70,7 @@ const main = [
 
         // texts to display in the menu bar panel when clicking the help button
         const helpTexts = {
-            state_start:         "Click on the top-most icon to select and upload image(s).",
+            state_start:         "Click on the top-most icon to select and upload image(s). The image(s) must be in .jpg format and rotated so that the frame cluster appears at the top left of the image.",
             state_upload:        "",
             state_predetection:  "Adjust the lines to align on top of the outermost spot frame.\n" +
             "Click on 'Detect spots' to begin spot detection.",

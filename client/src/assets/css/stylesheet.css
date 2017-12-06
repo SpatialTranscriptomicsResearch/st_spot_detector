@@ -1,3 +1,8 @@
+:root {
+    --panel-bg: var(--white);
+    --panel-fg: var(--dark);
+}
+
 html {
     /*
     height: 100%;
@@ -82,10 +87,6 @@ canvas:active {
     cursor:         move;
 }
 
-.panel {
-    margin: 0;
-}
-
 .menu-wrapper {
     position: fixed;
     top: 20px;
@@ -109,48 +110,71 @@ canvas:active {
     border-bottom-right-radius: 4px;
 }
 
+.menu-bar .btn.active {
+    color: var(--panel-fg)            !important;
+    background-color: var(--panel-bg) !important;
+    box-shadow: none                  !important;
+    border: none                      !important;
+}
+
 .menu-bar-panel {
-    background-color: white;
+    padding: 0.5rem;
+    color: var(--panel-fg);
+    background-color: var(--panel-bg);
     display: flex;
     flex-direction: column;
     width: 248px;
 }
 
+.menu-bar-panel h1 {
+    font-size: 20px;
+}
+
 .panel-content-wrapper {
-    padding: 5px;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    margin-top: 0.5rem;
+}
+
+.panel-content-wrapper label {
+    margin: 0;
 }
 
 .panel-content-wrapper div, .panel-content-wrapper form {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
     justify-content: space-between;
 }
 
-.panel-content-wrapper div > *, .panel-content-wrapper form > * {
+.panel-content-wrapper > div {
     margin-top: auto;
 }
 
-.panel-content-wrapper p {
-    margin: auto 0;
+.panel-content-wrapper div * + * {
+    margin-top: 0.5rem;
+}
+
+.panel-content-wrapper .card-text, .card-title {
+    margin: 0;
 }
 
 .panel-content-wrapper .grid2 {
-  display: grid;
-  grid-template-columns: auto auto;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-column-gap: 0.5rem;
+}
+
+.panel-content-wrapper .grid2 > * {
+    margin: auto 0;
 }
 
 .panel-content-wrapper .btn {
     width: 100%;
-    white-space: normal;
 }
 
 .menu-bar-panel-title {
-    margin-left: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
 }
 
 .upload-filename {
@@ -162,7 +186,6 @@ canvas:active {
 }
 
 .menu-bar-panel h2 {
-    margin: 0.5em 0;
     font-size: 14px;
     font-weight: bold;
 }
@@ -170,19 +193,22 @@ canvas:active {
 .menu-bar-panel .btn-group {
     display: flex;
     flex-direction: row;
-    margin: 0.5em 0;
 }
 
-.menu-bar-panel .panel-heading {
-    padding: 5px;
+.menu-bar-panel .btn-group * + * {
+    margin: 0;
 }
 
-.menu-bar-panel .panel-body {
-    padding: 5px;
+.menu-bar-panel .card-title {
+    padding: 0.5rem;
 }
 
-.menu-bar-panel .panel + .panel {
-    margin-top: 5px;
+.menu-bar-panel .card-title > * {
+    margin: auto 0;
+}
+
+.menu-bar-panel .card-text {
+    padding: 0.5rem;
 }
 
 .image-toggle-bar {
@@ -234,19 +260,16 @@ hr {
     height: 1em;
 }
 
-.spot-color-selector {
-}
-
 .panel-content-wrapper .spot-color-bar {
-    display: flex;
     flex-direction: row;
-    font-size: 0;
-    border: #000 0.1px solid;
+    height: 39px;
+    border: #000 1px solid;
 }
 
 .panel-content-wrapper .spot-color {
-    width: 39px;
-    height: 39px;
+    flex-grow: 1;
+    margin: 0;
+    height: 100%;
 }
 
 #spot-color-1 {

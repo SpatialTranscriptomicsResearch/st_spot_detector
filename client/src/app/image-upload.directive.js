@@ -16,7 +16,7 @@ function imageUpload() {
             if(event.target.files.length != 0) {
                 var filename = event.target.files[0].name;
                 scope.data.cy3Filename = filename;
-                filename = shortenFilename(filename, 20);
+                filename = shortenFilename(filename, 12);
                 cy3File.text(filename);
                 var img = event.target.files[0];
                 var reader = new FileReader();
@@ -36,7 +36,7 @@ function imageUpload() {
         heInput.bind('change', function(event) {
             if(event.target.files.length != 0) {
                 var filename = event.target.files[0].name;
-                filename = shortenFilename(filename, 15);
+                filename = shortenFilename(filename, 12);
                 heFile.text(filename);
                 var img = event.target.files[0];
                 var reader = new FileReader();

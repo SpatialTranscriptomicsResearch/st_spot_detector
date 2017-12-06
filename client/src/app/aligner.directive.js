@@ -4,6 +4,7 @@
  * Directive for the alignment/editor view.
  */
 
+import 'assets/css/aligner.css';
 import template from 'assets/html/aligner.html';
 
 import _ from 'underscore';
