@@ -87,7 +87,7 @@ const main = [
         // texts to display underneath the spinner while loading
         const spinnerTexts = {
             state_start:         "",
-            state_upload:        "Processing image. This may take a few minutes.",
+            state_upload:        "Processing image(s). This may take a few minutes.",
             state_predetection:  "",
             state_detection:     "Detecting spots.",
             state_adjustment:     "",
