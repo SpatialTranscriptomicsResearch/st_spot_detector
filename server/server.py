@@ -209,7 +209,7 @@ def get_tiles():
 @app.route('/')
 @app.route('/<filepath:path>')
 def serve_site(filepath='index.html'):
-    return static_file(filepath, root='../client/devel')
+    return static_file(filepath, root='../client/dist')
 
 @app.error(404)
 def error404(error):

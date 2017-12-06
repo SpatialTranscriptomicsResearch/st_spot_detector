@@ -60,7 +60,7 @@ container. Otherwise follow the deployment instructions below.
     ```
     cd ../client
     npm install
-    make DEVEL=1
+    make dist
     ```
 
 6. Set up uWSGI
