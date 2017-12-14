@@ -131,6 +131,8 @@ MIT (see LICENSE).
 See AUTHORS. 
 
 ## Contact
+Kim Wong <kim.wong@scilifelab.se>
+
 Ludvig Bergenstråhle <ludvig.bergenstrahle@scilifelab.se>
 
 Jose Fernandez <jose.fernandez.navarro@scilifelab.se>
