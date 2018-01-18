@@ -121,6 +121,12 @@ container. Otherwise follow the deployment instructions below.
 
 For any queries or concerns, feel free to contact the authors at the addresses given below.
 
+### Citation
+If you want to cite the ST Spot detector:
+
+ST Spot Detector: a web-based application for automatic spot and tissue detection for Spatial Transcriptomics image data sets
+DOI: 10.1093/bioinformatics/bty030
+
 ### Manual
 For a guide on using the ST spots detection tool, please refer to [this guide.](https://github.com/SpatialTranscriptomicsResearch/st_spot_detector/wiki/ST-Spot-Detector-Usage-Guide)
 
