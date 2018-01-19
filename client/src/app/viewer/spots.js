@@ -126,34 +126,37 @@ const SpotManager = (function() {
             );
         },
         exportSpots(selection, transformation) {
-            let dataString = '';
-            dataString += 'x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y';
-            dataString += selection === 'all' ? '\tselection\n' : '\n';
-            for (let i = 0; i < self.spots.length; i += 1) {
-                const spot = self.spots[i];
-                if (selection === 'selection' && spot.selected === false) {
-                    // we want to skip adding the spot if we are only exporting the selection
-                    // and find that the current spot is not selected
-                    continue;
-                }
-                dataString += `${spot.arrayPosition.x}\t`;
-                dataString += `${spot.arrayPosition.y}\t`;
-                dataString += `${spot.newArrayPosition.x.toFixed(2)}\t`;
-                dataString += `${spot.newArrayPosition.y.toFixed(2)}\t`;
-                let position = spot.renderPosition;
-                if (transformation !== undefined) {
-                    position = mulVec2(transformation, position);
-                }
-                position = Vec2.scale(position, self.scalingFactor);
-                position = Vec2.map(position, Math.round);
-                dataString += `${position.x}\t${position.y}`;
-                if (selection === 'all') {
-                    // we add a bool 0 or 1, depending on whether the spot is selected or not
-                    dataString += spot.selected ? '\t1' : '\t0';
-                }
-                dataString += '\n';
-            }
-            return dataString;
+            let header = 'x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y';
+            header += selection === 'all' ? '\tselection\n' : '\n';
+            const data = _.reduce(
+                self.spots,
+                (a, x) => {
+                    if (selection === 'selection' && x.selected === false) {
+                        // we want to skip adding the spot if we are only exporting the selection
+                        // and find that the current spot is not selected
+                        return a;
+                    }
+                    a += `${x.arrayPosition.x}\t`;
+                    a += `${x.arrayPosition.y}\t`;
+                    a += `${x.newArrayPosition.x.toFixed(2)}\t`;
+                    a += `${x.newArrayPosition.y.toFixed(2)}\t`;
+                    let position = x.renderPosition;
+                    if (transformation !== undefined) {
+                        position = mulVec2(transformation, position);
+                    }
+                    position = Vec2.scale(position, self.scalingFactor);
+                    position = Vec2.map(position, Math.round);
+                    a += `${position.x}\t${position.y}`;
+                    if (selection === 'all') {
+                        // we add a bool 0 or 1, depending on whether the spot is selected or not
+                        a += x.selected ? '\t1' : '\t0';
+                    }
+                    a += '\n';
+                    return a;
+                },
+                '',
+            );
+            return header + data;
         },
     };
 
