@@ -141,15 +141,17 @@ const SpotManager = (function() {
                     // and find that the current spot is not selected
                     continue;
                 }
-                dataString += spot.arrayPosition.x  + '\t' + spot.arrayPosition.y  + '\t';
-                dataString += spot.newArrayPosition.x  + '\t' + spot.newArrayPosition.y + '\t'; 
+                dataString += `${spot.arrayPosition.x}\t`;
+                dataString += `${spot.arrayPosition.y}\t`;
+                dataString += `${spot.newArrayPosition.x.toFixed(2)}\t`;
+                dataString += `${spot.newArrayPosition.y.toFixed(2)}\t`;
                 let position = spot.renderPosition;
                 if (transformation !== undefined) {
                     position = mulVec2(transformation, position);
                 }
                 position = Vec2.scale(position, self.scalingFactor);
                 position = Vec2.map(position, Math.round);
-                dataString += position.x + '\t' + position.y;
+                dataString += `${position.x}\t${position.y}`;
                 if(selection == 'all') {
                     // we add a bool 0 or 1, depending on whether the spot is selected or not
                     var selected = spot.selected ? '\t1' : '\t0';
