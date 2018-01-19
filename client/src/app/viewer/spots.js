@@ -130,8 +130,8 @@ const SpotManager = (function() {
             if (includeImageSize === true) {
                 dataString += `0\t0\t${self.imageSize[0]}\t${self.imageSize[1]}\n`;
             }
-            dataString += 'x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y\t';
-            dataString += selection === 'all' ? 'selection\n' : '\n';
+            dataString += 'x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y';
+            dataString += selection === 'all' ? '\tselection\n' : '\n';
 
             for (let i = 0; i < self.spots.length; i += 1) {
                 const spot = self.spots[i];
