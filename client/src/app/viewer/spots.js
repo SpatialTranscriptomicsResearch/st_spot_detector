@@ -155,9 +155,7 @@ const SpotManager = (function() {
                     // we add a bool 0 or 1, depending on whether the spot is selected or not
                     dataString += spot.selected ? '\t1' : '\t0';
                 }
-                if (i !== self.spots.length - 1) {
-                    dataString += '\n';
-                }
+                dataString += '\n';
             }
             return dataString;
         },
