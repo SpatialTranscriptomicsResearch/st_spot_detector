@@ -125,14 +125,10 @@ const SpotManager = (function() {
                 },
             );
         },
-        exportSpots(selection, includeImageSize, transformation) {
+        exportSpots(selection, transformation) {
             let dataString = '';
-            if (includeImageSize === true) {
-                dataString += `0\t0\t${self.imageSize[0]}\t${self.imageSize[1]}\n`;
-            }
             dataString += 'x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y';
             dataString += selection === 'all' ? '\tselection\n' : '\n';
-
             for (let i = 0; i < self.spots.length; i += 1) {
                 const spot = self.spots[i];
                 if (selection === 'selection' && spot.selected === false) {

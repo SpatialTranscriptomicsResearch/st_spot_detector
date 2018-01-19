@@ -138,7 +138,7 @@
                     </div>
                     <!-- Exporter Panel -->
                     <div ng-show='visible.panel.button_exporter'>
-                        <form class="card card-default" ng-submit='exportSpots(exportForm.selection, exportForm.includeImageSize)'>
+                        <form class="card card-default" ng-submit='exportSpots(exportForm.selection)'>
                             <div class="card-title grid2">
                                 <h2>Spot data</h2>
                                 <button class='btn btn-primary btn-sm submit-button' type='submit'>
@@ -154,15 +154,6 @@
                                     <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-light radio-button">
                                         <input type="radio" value='selection' ng-model='exportForm.selection' checked>Selected
                                     </label>
-                                </div>
-                                <div class="grid2">
-                                    Include image size:
-                                    <input
-                                     type="checkbox"
-                                     ng-model="exportForm.includeImageSize"
-                                     ng-model-options="{ getterSetter: true }"
-                                     style="float: right"
-                                     />
                                 </div>
                             </div>
                         </form>

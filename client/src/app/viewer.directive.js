@@ -411,16 +411,16 @@ function viewer() {
             };
 
 
-            scope.exportSpots = function(selection, includeImageSize) {
+            scope.exportSpots = function(selection) {
                 // spots are given in Cy3 image coordinates. however, if the user has uploaded an HE
                 // image, export them in HE coordinate space instead.
                 const ls = layerManager.getLayers();
                 let spotDataString;
                 if ('he' in ls) {
                     const tmat = math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat);
-                    spotDataString = spots.exportSpots(selection, includeImageSize, tmat);
+                    spotDataString = spots.exportSpots(selection, tmat);
                 } else {
-                    spotDataString = spots.exportSpots(selection, includeImageSize);
+                    spotDataString = spots.exportSpots(selection);
                 }
 
                 var blob = new Blob([spotDataString]);
