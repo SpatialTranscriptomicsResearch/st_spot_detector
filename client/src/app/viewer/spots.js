@@ -125,18 +125,17 @@ const SpotManager = (function() {
                 },
             );
         },
-        exportSpots: function(selection, includeImageSize, transformation) {
-            var dataString = '';
+        exportSpots(selection, includeImageSize, transformation) {
+            let dataString = '';
             if (includeImageSize === true) {
                 dataString += `0\t0\t${self.imageSize[0]}\t${self.imageSize[1]}\n`;
             }
             dataString += 'x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y\t';
-            var endOfDataStringHeader = selection == 'all' ? 'selection\n' : '\n';
-            dataString += endOfDataStringHeader;
+            dataString += selection === 'all' ? 'selection\n' : '\n';
 
-            for(var i = 0; i < self.spots.length; ++i) {
-                var spot = self.spots[i];
-                if(selection == 'selection' && spot.selected == false) {
+            for (let i = 0; i < self.spots.length; i += 1) {
+                const spot = self.spots[i];
+                if (selection === 'selection' && spot.selected === false) {
                     // we want to skip adding the spot if we are only exporting the selection
                     // and find that the current spot is not selected
                     continue;
@@ -152,17 +151,16 @@ const SpotManager = (function() {
                 position = Vec2.scale(position, self.scalingFactor);
                 position = Vec2.map(position, Math.round);
                 dataString += `${position.x}\t${position.y}`;
-                if(selection == 'all') {
+                if (selection === 'all') {
                     // we add a bool 0 or 1, depending on whether the spot is selected or not
-                    var selected = spot.selected ? '\t1' : '\t0';
-                    dataString += selected;
+                    dataString += spot.selected ? '\t1' : '\t0';
                 }
-                if(i != self.spots.length - 1) {
-                    dataString += '\n'
+                if (i !== self.spots.length - 1) {
+                    dataString += '\n';
                 }
             }
             return dataString;
-        }
+        },
     };
 
     return SpotManager;
