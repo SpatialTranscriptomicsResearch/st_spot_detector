@@ -3,6 +3,25 @@ import Codes from './keycodes';
 import LogicHandler from '../logic-handler';
 import { UndoAction } from '../viewer/undo';
 
+function checkCalibrationCursor(selection) {
+    switch (selection) {
+    case 'l':
+    case 'r':
+        return 'ew-resize';
+    case 't':
+    case 'b':
+        return 'ns-resize';
+    case 'lt':
+    case 'rb':
+        return 'nwse-resize';
+    case 'lb':
+    case 'rt':
+        return 'nesw-resize';
+    default:
+        return 'grabbable';
+    }
+}
+
 class PredetectionLH extends LogicHandler {
     constructor(camera, calibrator, setCanvasCursor, refreshCanvas, undoStack) {
         super();
@@ -26,89 +45,50 @@ class PredetectionLH extends LogicHandler {
     }
 
     processMouseEvent(mouseEvent, eventData) {
-        var cursor;
-        // if at least one line has been selected
-        if(this.calibrator.selected.length != 0) {
-            if(mouseEvent == Codes.mouseEvent.drag) {
-                this.calibrator.moveLine(eventData.position);
-                cursor = this.checkCalibrationCursor(this.calibrator.selected);
-            }
-        }
-        else {
-            // moving the canvas normally
-            if(mouseEvent == Codes.mouseEvent.drag) {
+        switch (mouseEvent) {
+        case Codes.mouseEvent.drag:
+            if (this.calibrator.selection.length > 0) {
+                const p = this.camera.mouseToCameraPosition(eventData.position);
+                this.calibrator.setSelectionCoordinates(p.x, p.y);
+            } else {
                 // maybe this should take the position rather than the difference
                 this.camera.pan(eventData.difference);
-                cursor = 'grabbed';
+                this.setCanvasCursor('grabbed');
             }
-        }
-        if(mouseEvent == Codes.mouseEvent.move) {
-            this.calibrator.detectHighlight(eventData.position);
-            cursor = this.checkCalibrationCursor(this.calibrator.calibrationData.highlighted);
-        }
-        else if(mouseEvent == Codes.mouseEvent.down) {
-            var selected = this.calibrator.detectSelection(eventData.position);
-            cursor = this.checkCalibrationCursor(this.calibrator.selected);
-            if(selected) {
-                var action = new UndoAction(
+            break;
+        case Codes.mouseEvent.wheel:
+            this.camera.navigate(eventData.direction, eventData.position);
+            // fall through
+        case Codes.mouseEvent.move: {
+            const p = this.camera.mouseToCameraPosition(eventData.position);
+            this.calibrator.setSelection(p.x, p.y);
+            this.setCanvasCursor(checkCalibrationCursor(this.calibrator.selection));
+        } break;
+        case Codes.mouseEvent.down:
+            if (this.calibrator.selection.length > 0) {
+                this.undoStack.setTemp(new UndoAction(
                     'state_predetection',
                     'frameAdjustment',
-                    this.calibrator.getCalibrationLines()
-                );
-                this.undoStack.setTemp(action);
+                    this.calibrator.points,
+                ));
             }
-        }
-        else if(mouseEvent == Codes.mouseEvent.up) {
-            if(this.calibrator.selected.length != 0) {
-                this.calibrator.endSelection();
-                if(this.undoStack.temp) {
-                    var lines = this.calibrator.getCalibrationLines();
-                    var tempState = this.undoStack.temp.state;
-                    if(_.isEqual(lines, tempState)) {
-                        this.undoStack.clearTemp();
-                    }
-                    else {
-                        // only push action to undo stack if the calibration lines have been adjusted
-                        this.undoStack.pushTemp();
-                    }
+            break;
+        case Codes.mouseEvent.up:
+            if (this.undoStack.temp) {
+                const points = this.calibrator.points;
+                const tempState = this.undoStack.temp.state;
+                if (_.isEqual(points, tempState)) {
+                    this.undoStack.clearTemp();
+                } else {
+                    // only push action to undo stack if the calibration lines have been adjusted
+                    this.undoStack.pushTemp();
                 }
             }
-            this.calibrator.detectHighlight(eventData.position);
-            cursor = this.checkCalibrationCursor(this.calibrator.calibrationData.highlighted);
+            break;
+        default:
+            // do nothing
         }
-        else if(mouseEvent == Codes.mouseEvent.wheel) {
-            this.camera.navigate(eventData.direction, eventData.position);
-            this.calibrator.detectHighlight(eventData.position);
-            cursor = this.checkCalibrationCursor(this.calibrator.calibrationData.highlighted);
-        }
-        this.setCanvasCursor(cursor);
         this.refreshCanvas();
-    }
-
-    checkCalibrationCursor(highlights) {
-        var cursor;
-        if(highlights.length == 1) {
-            if(highlights[0] == 'L' || highlights[0] == 'R') {
-                cursor = 'ew-resize';
-            }
-            else if(highlights[0] == 'T' || highlights[0] == 'B') {
-                cursor = 'ns-resize';
-            }
-        }
-        else if(highlights.length == 2) {
-            if((highlights[0] == 'L' && highlights[1] == 'T') ||
-                (highlights[0] == 'R' && highlights[1] == 'B')) {
-                cursor = 'nwse-resize';
-            }
-            else if((highlights[0] == 'L' && highlights[1] == 'B') ||
-                (highlights[0] == 'R' && highlights[1] == 'T')) {
-                cursor = 'nesw-resize';
-            }
-        }
-        else {
-            cursor = 'grabbable';
-        }
-        return cursor;
     }
 }
 

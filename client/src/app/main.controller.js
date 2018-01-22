@@ -473,11 +473,9 @@ const main = [
                             ),
                         ),
                     )).then((result) => {
-                        $scope.updateScalingFactor(result.tiles.cy3.scaling_factor);
-                        $scope.updateImageSize(result.tiles.cy3.image_size);
                         $scope.receiveTilemap(result); // defined in the viewer directive
                         $scope.data.cy3Active = true;
-                        if (result.tiles.he) {
+                        if (result.he !== undefined) {
                             $scope.visible.spotAdjuster.div_insideTissue = true;
                             $scope.menuButtonDisabled.button_detector = false;
                             $scope.updateState('state_predetection', false);

@@ -37,7 +37,7 @@ function serializeId(x, y, z) {
 }
 
 function unserializeId(id) {
-    return id.split('#');
+    return _.map(id.split('#'), x => parseInt(x, 10));
 }
 
 function createImageData(uri) {

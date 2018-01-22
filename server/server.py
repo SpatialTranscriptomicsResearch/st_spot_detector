@@ -96,9 +96,6 @@ def get_spots():
     TL_coords = ast.literal_eval(request.query['TL'])
     BR_coords = ast.literal_eval(request.query['BR'])
     array_size = ast.literal_eval(request.query['array_size'])
-    brightness = float(request.query['brightness'])
-    contrast = float(request.query['contrast'])
-    threshold = float(request.query['threshold'])
 
     # converts the image into a BW thresholded image for easier
     # keypoint detection
@@ -181,17 +178,9 @@ def get_tiles():
     for key, image in image_string.items():
         logger.log(session_id[:20] + ": Transforming " + key + " image.")
         image = ip.jpeg_URI_to_Image(image)
-        image_size = image.size
-        # scaled down to 20k x 20k
-        image, scaling_factor = ip.transform_original_image(image)
 
         logger.log(session_id[:20] + ": Tiling " + key + " images.")
-        tiles_ = Tilemap()
-        for x in tiles_.tilemapLevels:
-            tiles_.put_tiles_at(x,
-                ip.tile_image(image, x))
-
-        session_cache.tiles[key] = tiles_
+        tiles_ = Tilemap(image)
 
         if(key == 'cy3'):
             # we want to save a scaled down version of the image
@@ -208,26 +197,22 @@ def get_tiles():
         tiles.update({
             key: {
                 'histogram': image.histogram(),
-                # we want to send back the scaling factor of the image to
-                # the client, so it can convert its spot data back to the
-                # original image size.
-                # if the image is scaled down to 4k the scaling factor
-                # will for example be 20k / 4k, i.e. 5
-                'scaling_factor': scaling_factor,
-                'image_size': image_size,
+                'image_size': image.size,
                 'tiles': tiles_.tilemaps,
+                'tile_size': [tiles_.tile_width, tiles_.tile_height],
             },
         })
 
     logger.log(session_id[:20] + ": Image tiling complete.")
     #TODO: make sure the large images get cleared out of the memory
 
-    if not equal(map(lambda x: x.get('scaling_factor'), tiles.values())):
-        warnings.warn('Images are not all of equal scale.', ClientWarning)
+    sss = list(map(lambda x: x.get('image_size'), tiles.values()))
+    if not any([ss[1:] == ss[:-1] for ss in zip(*sss)]):
+        warnings.warn('Images have different widths and heights. '
+                      'Check that all images have the correct zoom level.',
+                      ClientWarning)
 
-    return dict(tiles=tiles,
-                levels=Tilemap.tilemapLevels,
-                dim=[Tilemap.tileWidth, Tilemap.tileHeight])
+    return tiles
 
 @app.route('/')
 @app.route('/<filepath:path>')

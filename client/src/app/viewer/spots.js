@@ -16,8 +16,6 @@ const SpotManager = (function() {
         self.maskShape = [];
         self.spacer = {};
         self.average = {};
-        self.scalingFactor;
-        self.imageSize;
         self.transformMatrix;
         self.spotToAdd = {
             renderPosition: Vec2.Vec2(0, 0)
@@ -25,15 +23,6 @@ const SpotManager = (function() {
     };
 
     SpotManager.prototype = {
-        updateScalingFactor: function(scalingFactor) {
-            // the uploaded image is scaled down to approximately 20k x 20k;
-            // this scaling factor is necessary to scale the pixel spot coordinates up again
-            self.scalingFactor = scalingFactor;
-        },
-        updateImageSize(imageSize) {
-            // used for normalizing spot coordinates
-            self.imageSize = imageSize;
-        },
         loadSpots: function(data) {
             self.spots = data.spots.positions;
             self.spacer = data.spots.spacer;
@@ -46,6 +35,7 @@ const SpotManager = (function() {
                     ([n, s], x) => [n + 1, s + x], [0, 0],
                 ),
             );
+            self.spotToAdd.diameter = self.average.diameter;
             // the 3x3 affine transformation matrix between the adjusted array and pixel coordinates
             // represented as a string in the format a11 a12 a13 a21 a22 a23 a31 a32 a33
             self.transformMatrix = math.matrix(
@@ -144,7 +134,6 @@ const SpotManager = (function() {
                     if (transformation !== undefined) {
                         position = mulVec2(transformation, position);
                     }
-                    position = Vec2.scale(position, self.scalingFactor);
                     position = Vec2.map(position, Math.round);
                     a += `${position.x}\t${position.y}`;
                     if (selection === 'all') {

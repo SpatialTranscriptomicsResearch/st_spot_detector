@@ -23,6 +23,7 @@ import UndoStack, { UndoAction } from './viewer/undo';
 
 import { MAX_THREADS } from './config';
 import { mathjsToTransform, toLayerCoordinates, transformToMathjs } from './utils';
+import { render } from './viewer/graphics/functions';
 
 function viewer() {
     return {
@@ -37,19 +38,17 @@ function viewer() {
             // prevents the context menu from appearing on right click
             fg.oncontextmenu = function(e) { e.preventDefault(); }
 
-            var scaleManager = new ScaleManager();
-
             scope.undoStack = new UndoStack(scope.visible.undo);
 
             const layerManager = new LayerManager(layers);
 
-            let tileDim;
-            var tilemapLevel = 16;
             var tilePosition;
             var camera = new Camera(fgCtx, layerManager);
             var renderer = new Renderer(fgCtx, camera);
 
-            var calibrator = new Calibrator(camera);
+            const calibrator = new Calibrator();
+            calibrator.width = 33;
+            calibrator.height = 35;
 
             scope.setCanvasCursor = function(cursor) {
                 scope.$apply(function() {
@@ -59,7 +58,7 @@ function viewer() {
 
             var spots = new SpotManager();
             var spotSelector = new SpotSelector(camera, layerManager, spots);
-            var spotAdjuster = new SpotAdjuster(camera, spots, calibrator.calibrationData);
+            const spotAdjuster = new SpotAdjuster(camera, spots, calibrator);
 
             scope.eventHandler = new EventHandler(scope.data, fg, camera);
 
@@ -126,28 +125,18 @@ function viewer() {
                 return spots.getSpots();
             };
 
-            scope.updateScalingFactor = function(scalingFactor) {
-                return spots.updateScalingFactor(scalingFactor);
-            };
-
-            scope.updateImageSize = function(imageSize) {
-                return spots.updateImageSize(imageSize);
-            };
-
             scope.getCalibrationData = function() {
+                const [x0, y0, x1, y1] = calibrator.points;
                 return {
                     TL: toLayerCoordinates(
                         layerManager.getLayer('cy3'),
-                        calibrator.calibrationData.TL,
+                        Vec2.Vec2(x0, y0),
                     ),
                     BR: toLayerCoordinates(
                         layerManager.getLayer('cy3'),
-                        calibrator.calibrationData.BR,
+                        Vec2.Vec2(x1, y1),
                     ),
-                    array_size: calibrator.calibrationData.arraySize,
-                    brightness: calibrator.calibrationData.brightness,
-                    contrast: calibrator.calibrationData.contrast,
-                    threshold: calibrator.calibrationData.threshold,
+                    array_size: Vec2.Vec2(calibrator.width, calibrator.height),
                 };
             };
 
@@ -167,11 +156,9 @@ function viewer() {
             }
 
             function refreshCanvas() {
-                scaleManager.updateScaleLevel(camera.scale);
-                tilemapLevel = 1 / scaleManager.currentScaleLevel;
-
                 Object.values(layerManager.getLayers()).forEach(
                     (layer) => {
+                        const level = layer.scaleManager.level(1 / camera.scale);
                         const canvas = layer.canvas;
                         const context = canvas.getContext('2d');
 
@@ -218,8 +205,8 @@ function viewer() {
                                 /* eslint-disable no-underscore-dangle */
                                 v => v._data,
                                 v => math.floor(v),
-                                v => math.dotDivide(v, tilemapLevel),
-                                v => math.dotDivide(v, tileDim),
+                                v => math.dotDivide(v, level),
+                                v => math.dotDivide(v, layer.tdim),
                                 v => math.subset(v, math.index([0, 1])),
                                 v => math.multiply(math.inv(tmat), v),
                                 v => math.matrix(v),
@@ -230,10 +217,10 @@ function viewer() {
                         const it = layer.renderingClient.requestAll(
                             ...math.min(range, 0),
                             ...math.max(range, 0),
-                            tilemapLevel,
+                            level,
                             layer.getAll(),
                         );
-                        const tsz = _.map(tileDim, x => x * tilemapLevel);
+                        const tsz = _.map(layer.tdim, x => x * level);
                         Array.from(it).forEach(
                             ([x, y, /* z */, retCode]) => {
                                 if (retCode === ReturnCodes.OOB) {
@@ -248,7 +235,9 @@ function viewer() {
 
                 renderer.clearCanvas();
                 if(scope.data.state == 'state_predetection') {
-                    renderer.renderCalibrationPoints(calibrator.calibrationData);
+                    scope.camera.begin();
+                    _.each(calibrator.renderables, _.partial(render, fgCtx));
+                    scope.camera.end();
                 } else if (scope.data.state === 'state_alignment') {
                     scope.camera.begin();
                     scope.aligner.renderFG(fgCtx);
@@ -300,6 +289,7 @@ function viewer() {
             };
 
             function constructTileCallback(layer, tdim) {
+                const scaleManager = layer.scaleManager;
                 const context = layer.canvas.getContext('2d');
                 function callback(tile, x, y, z) {
                     window.requestAnimationFrame(() => {
@@ -308,7 +298,7 @@ function viewer() {
                             return;
                         }
                         // exit if the z-coordinate doesn't match the current tilemap level
-                        if (parseInt(z, 10) !== tilemapLevel) {
+                        if (z !== scaleManager.level()) {
                             return;
                         }
                         context.drawImage(
@@ -325,25 +315,16 @@ function viewer() {
                 return callback;
             }
 
-            scope.receiveTilemap = function(data) {
-                tileDim = data.dim;
-                scaleManager.setTilemapLevels(data.levels, tilemapLevel);
-
-                // centers the camera to the middle of the first layer
-                const fst = Object.values(data.tiles)[0].tiles[1];
-                const dim = [
-                    tileDim[0] * fst.length,
-                    tileDim[1] * fst[0].length,
-                ];
-                camera.position = Vec2.Vec2(...dim.map(x => x / 2));
-                camera.scale = 1 / tilemapLevel;
-                camera.updateViewport();
-
+            scope.receiveTilemap = function (data) {
                 // delete all current layers and add the ones in data.tiles
-                Object.keys(layerManager.getLayers()).forEach(
-                    layer => layerManager.deleteLayer(layer));
+                _.each(Object.keys(layerManager.getLayers()), x => layerManager.deleteLayer(x));
 
-                Object.entries(data.tiles).forEach(
+                let maxWidth = 0;
+                let maxHeight = 0;
+                let maxLevel = 1;
+
+                _.each(
+                    Object.entries(data),
                     ([layerName, tiles]) => {
                         const layer = layerManager.addLayer(layerName);
 
@@ -352,18 +333,33 @@ function viewer() {
                         canvas.height = fg.height;
                         $(canvas).addClass('fullscreen');
 
-                        const nThreads = Math.floor(
-                            MAX_THREADS / Object.keys(data.tiles).length,
-                        );
+                        const levels = _.map(Object.keys(tiles.tiles), x => parseInt(x, 10));
+                        layer.scaleManager = new ScaleManager(levels);
+                        maxLevel = Math.max(maxLevel, ...levels);
+
+                        layer.tdim = tiles.tile_size;
+                        maxWidth = Math.max(maxWidth, tiles.image_size[0]);
+                        maxHeight = Math.max(maxHeight, tiles.image_size[1]);
+
+                        const nThreads = Math.floor(MAX_THREADS / Object.keys(data).length);
                         layer.renderingClient = new RenderingClient(
                             Math.max(1, nThreads),
-                            constructTileCallback(layer, tileDim),
+                            constructTileCallback(layer, tiles.tile_size),
                         );
                         layer.renderingClient.loadTileData(
                             tiles.tiles,
                             tiles.histogram,
                         ).then(refreshCanvas);
-                    });
+                    },
+                );
+
+                // center camera
+                camera.position = Vec2.Vec2(maxWidth / 2, maxHeight / 2);
+                camera.scale = 1 / maxLevel;
+                camera.updateViewport();
+
+                // reset calibrator points
+                calibrator.points = [0, 0, maxWidth, maxHeight];
             };
 
             scope.zoom = function(direction) {
@@ -395,7 +391,7 @@ function viewer() {
                             );
                         }
                         else if(lastState == "state_predetection") {
-                            calibrator.setCalibrationLines(action.state);
+                            calibrator.points = action.state;
                         }
                         if(lastState == "state_adjustment") {
                             spotAdjuster.setSpots(action.state);

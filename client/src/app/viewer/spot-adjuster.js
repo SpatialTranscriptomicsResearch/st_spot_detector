@@ -7,11 +7,11 @@ import Vec2 from './vec2';
 
 const SpotAdjuster = (function() {
     var self;
-    var SpotAdjuster = function(camera, spots, calibrationData) {
+    var SpotAdjuster = function(camera, spots, calibrator) {
         self = this;
         self.camera = camera;
         self.spots = spots;
-        self.calibrationData = calibrationData;
+        self.calibrator = calibrator;
         self.adjustFactor = 10;
         self.moving = false;
     };
@@ -26,7 +26,7 @@ const SpotAdjuster = (function() {
             position = self.camera.mouseToCameraPosition(position, 'cy3');
             for(var i = 0; i < self.spots.spots.length; ++i) {
                 if(self.spots.spots[i].selected) {
-                    if(Vec2.distanceBetween(position, self.spots.spots[i].renderPosition) < 100) {
+                    if(Vec2.distanceBetween(position, self.spots.spots[i].renderPosition) < self.spots.average.diameter / 2) {
                         atSpots = true;
                         break;
                     }
@@ -81,7 +81,10 @@ const SpotAdjuster = (function() {
         addSpot: function(position) {
             var renderPosition = self.camera.mouseToCameraPosition(position, 'cy3');
             renderPosition = Vec2.truncate(renderPosition);
-            var adjustedPosition = Vec2.subtract(renderPosition, self.calibrationData.TL);
+            var adjustedPosition = Vec2.subtract(
+                renderPosition,
+                Vec2.Vec2(self.calibrator.x0, self.calibrator.y0),
+            );
             // we don't want negative array coordinates
             adjustedPosition = Vec2.clamp(adjustedPosition, 0);
             var newArrayPosition = Vec2.add(Vec2.divide(adjustedPosition, self.spots.spacer), Vec2.Vec2(1, 1));
@@ -94,10 +97,10 @@ const SpotAdjuster = (function() {
                 'selected': false
             };
             // inserting the spot in order in the array
-            var newSpotOrder = arrayPosition.y * self.calibrationData.arraySize.x + arrayPosition.x;
+            var newSpotOrder = arrayPosition.y * self.calibrator.width + arrayPosition.x;
             for(var i = 0; i < self.spots.spots.length; ++i) {
                 var spotPos = self.spots.spots[i].arrayPosition;
-                var spotOrder = spotPos.y * self.calibrationData.arraySize.x + spotPos.x;
+                var spotOrder = spotPos.y * self.calibrator.width + spotPos.x;
                 if(newSpotOrder <= spotOrder) {
                     self.spots.spots.splice(i, 0, newSpot);
                     break;

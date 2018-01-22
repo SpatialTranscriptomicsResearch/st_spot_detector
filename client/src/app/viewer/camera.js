@@ -35,7 +35,7 @@ const Camera = (function() {
     Camera.prototype = {
         begin: function(context = self.context) {
             context.save();
-            context.scale(self.viewport.scale.x, self.viewport.scale.y);
+            context.scale(self.scale, self.scale);
             context.translate(-self.viewport.l + self.positionOffset.x, -self.viewport.t + self.positionOffset.y);
         },
         end: function(context = self.context) {
@@ -64,8 +64,6 @@ const Camera = (function() {
             self.viewport.t = self.position.y - (self.viewport.height / 2.0);
             self.viewport.r = self.viewport.l + self.viewport.width;
             self.viewport.b = self.viewport.t + self.viewport.height;
-            self.viewport.scale.x = self.scale;
-            self.viewport.scale.y = self.scale;
         },
         zoomTo: function(z) {
             self.scale = z;

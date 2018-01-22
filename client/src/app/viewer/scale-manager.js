@@ -1,62 +1,37 @@
-'use strict';
+/** @module scale-manager */
 
-const ScaleManager = (function() {
-    var ScaleManager = function() {
-    };
-  
-    ScaleManager.prototype = {
-        setTilemapLevels: function(tilemapLevels, tilemapLevel) {
-            this.scaleLevels = this.getScaleLevels(tilemapLevels);
+import _ from 'underscore';
 
-            /* the scale checkpoint level at which everything is rendered and scaled
-               scaled around but is *not* necessarily the same as the camera scale */
-            this.currentScaleLevel = 1 / tilemapLevel;
-        },
-        getScaleLevels: function(tilemapLevels) {
-            /* the possible scale levels based on the tilemap levels; i.e.
-               the scales at which the various tilemaps should be rendered */
-            var scaleLevels = [];
-            for(var i = 0; i < tilemapLevels.length; ++i) {
-                scaleLevels.push(1 / tilemapLevels[i]);
-            }
-            return scaleLevels;
-        },
-        updateScaleLevel: function(cameraScale) {
-            /* assumes no 'skipping' between scale levels, so
-               may encounter some problems with fast zooming */
-            var prevLevel;
-            var nextLevel;
-            var index = this.scaleLevels.indexOf(this.currentScaleLevel); 
+// private members
+const level = Symbol('Current tile level');
+const levels = Symbol('Tile levels');
 
-            if(index != 0 && index != this.scaleLevels.length - 1) {
-                prevLevel = this.scaleLevels[index - 1];
-                nextLevel = this.scaleLevels[index + 1];
-            }
-            else if(index == 0) {
-                prevLevel = this.currentScaleLevel;
-                nextLevel = this.scaleLevels[index + 1];
+/**
+ * Manages the scaling of a canvas layer.
+ */
+class ScaleManager {
+    constructor(tileLevels) {
+        this[level] = Number();
+        this[levels] = Array(...tileLevels);
+        this[levels] = _.sortBy(this[levels], _.id);
+    }
 
+    level(cameraLevel) {
+        if (cameraLevel !== undefined) {
+            let a = 1;
+            let b = this[levels].length;
+            while (b > a) {
+                const c = Math.floor((a + b) / 2);
+                if (this[levels][c] > cameraLevel) {
+                    b = c;
+                } else {
+                    a = c + 1;
+                }
             }
-            else if(index == this.scaleLevels.length - 1) {
-                prevLevel = this.scaleLevels[index - 1];
-                nextLevel = this.currentScaleLevel;
-            }
-
-            if(cameraScale == this.currentScaleLevel ||
-               cameraScale >  nextLevel) {
-                // do nothing
-            }
-            if(cameraScale > this.currentScaleLevel) {
-                this.currentScaleLevel = prevLevel;
-            }
-            else if(cameraScale <= nextLevel) {
-                this.currentScaleLevel = nextLevel;
-            }
-        },
-    };
-
-    return ScaleManager;
-  
-}());
+            this[level] = this[levels][a - 1];
+        }
+        return this[level];
+    }
+}
 
 export default ScaleManager;

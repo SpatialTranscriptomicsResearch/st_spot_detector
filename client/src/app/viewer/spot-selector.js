@@ -35,7 +35,7 @@ const SpotSelector = (function() {
             {
                 for(var i = 0; i < spots.length; ++i) {
                     const pos = fromLayerCoordinates(cy3layer, spots[i].renderPosition);
-                    if(Vec2.distanceBetween(pos, self.selectionRect.TL) < 100) {
+                    if(Vec2.distanceBetween(pos, self.selectionRect.TL) < self.spotManager.average.diameter / 2) {
                         if(self.shiftPressed && spots[i].selected) {
                             // deselect spots that are already selected
                             spots[i].selected = false;
