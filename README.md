@@ -15,6 +15,7 @@ A modern browser with HTML5 support is required for the front-end interface. The
 
 ## Usage
 
+We recommend to use Firefox as Chrome may present some memory issues for large images.
 If you want to use deploy the ST Spot detector locally on your computer
 you can use this [singularity](https://github.com/SpatialTranscriptomicsResearch/st_spot_detector_singularity)
 container. Otherwise follow the deployment instructions below.
