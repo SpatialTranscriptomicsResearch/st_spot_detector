@@ -243,17 +243,11 @@ function viewer() {
                     scope.aligner.renderFG(fgCtx);
                     scope.camera.end();
                 } else if(scope.data.state == 'state_adjustment') {
-                    fgCtx.save();
-                    fgCtx.setTransform(...mathjsToTransform(
-                        math.multiply(
-                            camera.getTransform(),
-                            layerManager.getLayer('cy3').tmat,
-                        ),
-                    ));
-                    renderer.renderSpots(spots.spots)
-                    fgCtx.restore();
+                    scope.camera.begin();
+                    renderer.renderSpots(spots.spots);
+                    scope.camera.end();
 
-                    renderer.renderSpotSelection(spotSelector.renderingRect)
+                    renderer.renderSpotSelection(spotSelector.renderingRect);
                     if(scope.adjustmentLH.addingSpots) {
                         renderer.renderSpotToAdd(spots.spotToAdd);
                     }
