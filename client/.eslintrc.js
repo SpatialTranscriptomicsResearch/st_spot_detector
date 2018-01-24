@@ -7,6 +7,15 @@ const config = {
     },
     rules: {
         indent: ['error', 4],
+        'no-multi-spaces': [
+            'error',
+            {
+                exceptions: {
+                    VariableDeclarator: true,
+                    ImportDeclaration: true,
+                },
+            },
+        ],
     },
     settings: {
         'import/resolver': {
