@@ -32,13 +32,15 @@ class PredetectionLH extends LogicHandler {
         this.undoStack = undoStack;
     }
 
-    processKeydownEvent(keyEvent) {}
+    processKeydownEvent(/* keyEvent */) {
+        /* eslint class-methods-use-this: 0 */
+    }
 
     processKeyupEvent(keyEvent) {
         if (keyEvent === Codes.keyEvent.undo) {
-            if(this.undoStack.lastTab() == "state_predetection") {
-                var action = this.undoStack.pop();
-                this.calibrator.setCalibrationLines(action.state);
+            if (this.undoStack.lastTab() === 'state_predetection') {
+                const action = this.undoStack.pop();
+                this.calibrator.points = action.state;
                 this.refreshCanvas();
             }
         }

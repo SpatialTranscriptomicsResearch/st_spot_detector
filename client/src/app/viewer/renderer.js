@@ -69,7 +69,7 @@ const Renderer = (function() {
             self.ctx.setLineDash([4, 3]);
             self.ctx.strokeRect(rectCoords.TL.x, rectCoords.TL.y, rectCoords.WH.x, rectCoords.WH.y);
             self.ctx.restore();
-        }
+        },
   };
 
   return Renderer;

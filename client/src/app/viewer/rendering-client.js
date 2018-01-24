@@ -24,9 +24,9 @@ const ReturnCodes = Object.freeze({
 
 // private members
 const cache = Symbol('Tile cache');
+const cmod = Symbol('Current modifiers');
 const data = Symbol('Tile data');
 const fltr = Symbol('Filters');
-const cmod = Symbol('Current modifiers');
 const mthrd = Symbol('Maximum number of threads');
 const queue = Symbol('Rendering queue');
 const tn = Symbol('Number of tiles');
