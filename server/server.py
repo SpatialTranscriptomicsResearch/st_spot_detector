@@ -12,7 +12,7 @@ import bottle
 from bottle import BaseRequest, error, get, post, response, request, route, \
     run, static_file
 
-from imageprocessor import ImageProcessor
+import imageprocessor as ip
 from logger import Logger
 from sessioncacher import SessionCacher
 from spots import Spots
@@ -28,7 +28,6 @@ from tissue_recognition import recognize_tissue, get_binary_mask, free
 from utils import bits_to_ascii, equal
 
 session_cacher = SessionCacher()
-image_processor = ImageProcessor()
 
 app = application = bottle.Bottle()
 
@@ -104,10 +103,8 @@ def get_spots():
     # converts the image into a BW thresholded image for easier
     # keypoint detection
 
-    BCT_image = image_processor.apply_BCT(
-        session_cache.spot_image
-    )
-    keypoints = image_processor.detect_keypoints(BCT_image)
+    BCT_image = ip.apply_BCT(session_cache.spot_image)
+    keypoints = ip.detect_keypoints(BCT_image)
     spots = Spots(TL_coords, BR_coords, array_size,
         session_cache.spot_scaling_factor)
     spots.create_spots_from_keypoints(keypoints, BCT_image,
@@ -177,37 +174,35 @@ def get_tiles():
         image_string['he'] = data['he_image']
 
     if not reduce(lambda a, x: a and x,
-                  map(image_processor.validate_jpeg_URI, image_string.values())):
+                  map(ip.validate_jpeg_URI, image_string.values())):
         raise ClientError('Invalid image format. Please upload only jpeg images.')
 
     tiles = dict()
     for key, image in image_string.items():
         logger.log(session_id[:20] + ": Transforming " + key + " image.")
-        image = image_processor.jpeg_URI_to_Image(image)
+        image = ip.jpeg_URI_to_Image(image)
         image_size = image.size
         # scaled down to 20k x 20k
-        image, scaling_factor = image_processor.transform_original_image(image)
+        image, scaling_factor = ip.transform_original_image(image)
 
         logger.log(session_id[:20] + ": Tiling " + key + " images.")
         tiles_ = Tilemap()
         for x in tiles_.tilemapLevels:
             tiles_.put_tiles_at(x,
-                image_processor.tile_image(image, x))
+                ip.tile_image(image, x))
 
         session_cache.tiles[key] = tiles_
 
         if(key == 'cy3'):
             # we want to save a scaled down version of the image
             # for spot detection later :)
-            spot_img, spot_sf = image_processor.resize_image(image,
-                [4000, 4000])
+            spot_img, spot_sf = ip.resize_image(image, [4000, 4000])
             session_cache.spot_image = spot_img
             session_cache.spot_scaling_factor = spot_sf
 
         if(key == 'he'):
             # also save a scaled down version of the tissue image
-            tissue_img = image_processor.resize_image(image,
-                [500, 500])[0]
+            tissue_img = ip.resize_image(image, [500, 500])[0]
             session_cache.tissue_image = tissue_img
 
         tiles.update({
