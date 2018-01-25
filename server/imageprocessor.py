@@ -50,9 +50,9 @@ def Image_to_jpeg_URI(image):
     jpeg_string = unicode(jpeg_string, 'utf-8')
     return jpeg_string
 
-def tile_image(image, level, tile_width, tile_height):
+def tile_image(image, tile_width, tile_height):
     """Takes a jpeg image, scales its size down and splits it up
-    into tiles, the amount depends on the "level" of tile splitting.
+    into tiles.
 
     A 2D array of tiles is returned.
     """
@@ -61,20 +61,9 @@ def tile_image(image, level, tile_width, tile_height):
     tile_size = [tile_width, tile_height]
     # width and height of the tilemap (ints)
     tilemap_size = [
-        (image.size[0] / level) / tile_size[0] + 1,
-        (image.size[1] / level) / tile_size[1] + 1
+        image.size[0] / tile_size[0] + 1,
+        image.size[1] / tile_size[1] + 1
     ]
-
-    # the size of the scaled down photo
-    new_image_size = [
-        image.size[0] / level,
-        image.size[1] / level
-    ]
-
-    if level != 1:
-        scaled_image = image.resize(tuple(new_image_size))
-    else:
-        scaled_image = image
 
     for x in range(0, tilemap_size[0]):
         new_row = []
@@ -88,7 +77,7 @@ def tile_image(image, level, tile_width, tile_height):
                 crop_start[1] + tile_size[1]
             ]
 
-            cropped_image = scaled_image.crop(
+            cropped_image = image.crop(
                 tuple(crop_start + crop_stop))
 
             new_row.append(Image_to_jpeg_URI(cropped_image))

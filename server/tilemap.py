@@ -13,9 +13,11 @@ class Tilemap:
 
         level = 1
         width, height = image.width, image.height
-        while width > tile_width or height > tile_height:
-            self.tilemaps[level] = tile_image(
-                image, level, tile_width, tile_height)
-            level *= 2
+        while True:
+            self.tilemaps[level] = tile_image(image, tile_width, tile_height)
             width /= 2
             height /= 2
+            if width < tile_width and height < tile_height:
+                break
+            level *= 2
+            image = image.resize((int(width), int(height)))
