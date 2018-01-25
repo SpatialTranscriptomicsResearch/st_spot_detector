@@ -29,14 +29,6 @@ const Renderer = (function() {
             context.clearRect(0, 0, context.canvas.width, context.canvas.height);
             context.restore();
         },
-        renderImages: function(canvas, images) {
-            const ctx = canvas.getContext('2d');
-            self.camera.begin(ctx);
-                for(var i = 0; i < images.length; ++i) {
-                    ctx.drawImage(images[i], images[i].renderPosition.x, images[i].renderPosition.y, images[i].scaledSize.x, images[i].scaledSize.y);
-                }
-            self.camera.end(ctx);
-        },
         renderSpots: function(spots) {
                 for(var i = 0; i < spots.length; ++i) {
                     var spot = spots[i];
