@@ -3,7 +3,53 @@ import math from 'mathjs';
 
 import Vec2 from './vec2';
 
+import opacityMixin from './graphics/opacity';
+import { FilledCircle } from './graphics/circle';
 import { chunksOf, combinations, intBounds, mulVec2 } from '../utils';
+import {
+    SPOT_COL_DEF,
+    SPOT_COL_HLT,
+    SPOT_OPACITY,
+} from '../config';
+
+// private members of Spot
+const sdiameter = Symbol('Spot diameter');
+const srpos     = Symbol('Spot render position');
+
+class Spot extends opacityMixin(FilledCircle) {
+    constructor({
+        arrayPosition,
+        diameter,
+        newArrayPosition,
+        renderPosition,
+        selected,
+    }) {
+        super();
+        this.arrayPosition = arrayPosition;
+        this.newArrayPosition = newArrayPosition;
+        this.renderPosition = renderPosition;
+        this.diameter = diameter;
+        this.selected = selected;
+        this.opacity = SPOT_OPACITY;
+        this.color = SPOT_COL_DEF;
+    }
+
+    get diameter() { return this[sdiameter]; }
+    set diameter(value) {
+        this[sdiameter] = value;
+        this.r = value / 2;
+    }
+
+    get renderPosition() { return this[srpos]; }
+    set renderPosition(value) {
+        this[srpos] = value;
+        this.x = value.x;
+        this.y = value.y;
+    }
+
+    get fillColor() { return this.selected ? SPOT_COL_HLT : this.color; }
+    set fillColor(value) { this.color = value; }
+}
 
 const SpotManager = (function() {
 
@@ -17,14 +63,18 @@ const SpotManager = (function() {
         self.spacer = {};
         self.average = {};
         self.transformMatrix;
-        self.spotToAdd = {
-            renderPosition: Vec2.Vec2(0, 0)
-        };
+        self.spotToAdd = new Spot({
+            arrayPosition: Vec2.Vec2(0, 0),
+            newArrayPosition: Vec2.Vec2(0, 0),
+            renderPosition: Vec2.Vec2(0, 0),
+            diameter: 0,
+            selected: false,
+        });
     };
 
     SpotManager.prototype = {
         loadSpots: function(data) {
-            self.spots = data.spots.positions;
+            self.spots = _.map(data.spots.positions, x => new Spot(x));
             self.spacer = data.spots.spacer;
             if (data.tissue_mask !== null) {
                 self.loadMask(data.tissue_mask);
@@ -115,6 +165,12 @@ const SpotManager = (function() {
                 },
             );
         },
+        setSpotColor(value) {
+            _.each(self.spots, (x) => { x.color = value; });
+        },
+        setSpotOpacity(value) {
+            _.each(self.spots, (x) => { x.opacity = value; });
+        },
         exportSpots(selection, transformation) {
             let header = 'x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y';
             header += selection === 'all' ? '\tselection\n' : '\n';
@@ -154,3 +210,4 @@ const SpotManager = (function() {
 }());
 
 export default SpotManager;
+export { Spot };

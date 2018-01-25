@@ -35,6 +35,8 @@ function viewer() {
 
             const layers = element[0].querySelector('#layers');
 
+            const rfnc = _.partial(render, fgCtx);
+
             // prevents the context menu from appearing on right click
             fg.oncontextmenu = function(e) { e.preventDefault(); }
 
@@ -140,8 +142,13 @@ function viewer() {
                 };
             };
 
-            scope.clickSpotColor = function(color, type) {
-                renderer.changeSpotColor(color, type);
+            scope.setSpotColor = function(value) {
+                spots.setSpotColor(value);
+                refreshCanvas();
+            };
+
+            scope.setSpotOpacity = function(value) {
+                spots.setSpotOpacity(value);
                 refreshCanvas();
             };
 
@@ -236,7 +243,7 @@ function viewer() {
                 renderer.clearCanvas();
                 if(scope.data.state == 'state_predetection') {
                     scope.camera.begin();
-                    _.each(calibrator.renderables, _.partial(render, fgCtx));
+                    _.each(calibrator.renderables, rfnc);
                     scope.camera.end();
                 } else if (scope.data.state === 'state_alignment') {
                     scope.camera.begin();
@@ -244,13 +251,13 @@ function viewer() {
                     scope.camera.end();
                 } else if(scope.data.state == 'state_adjustment') {
                     scope.camera.begin();
-                    renderer.renderSpots(spots.spots);
+                    _.each(spots.spots, rfnc);
+                    if (scope.adjustmentLH.addingSpots) {
+                        rfnc(spots.spotToAdd);
+                    }
                     scope.camera.end();
 
                     renderer.renderSpotSelection(spotSelector.renderingRect);
-                    if(scope.adjustmentLH.addingSpots) {
-                        renderer.renderSpotToAdd(spots.spotToAdd);
-                    }
                 }
             }
 

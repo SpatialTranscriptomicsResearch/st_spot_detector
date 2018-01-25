@@ -15,3 +15,8 @@ export const CALIBRATOR_LINE_DASH    = [0.002, 0.001];
 export const CALIBRATOR_LINE_WGHT    = 0.0015;
 export const CALIBRATOR_CORNER_COL   = CALIBRATOR_LINE_COL_HLT;
 export const CALIBRATOR_CORNER_WGHT  = CALIBRATOR_LINE_WGHT;
+
+// Options for spot rendering
+export const SPOT_COL_DEF = 'hsl(  6, 78%, 57%)';
+export const SPOT_COL_HLT = 'hsl(140, 63%, 42%)';
+export const SPOT_OPACITY = '0.5';

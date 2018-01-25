@@ -4,6 +4,7 @@
 
 import Codes from './keycodes';
 import Vec2 from './vec2';
+import { Spot } from './spots';
 
 const SpotAdjuster = (function() {
     var self;
@@ -89,13 +90,13 @@ const SpotAdjuster = (function() {
             adjustedPosition = Vec2.clamp(adjustedPosition, 0);
             var newArrayPosition = Vec2.add(Vec2.divide(adjustedPosition, self.spots.spacer), Vec2.Vec2(1, 1));
             var arrayPosition = Vec2.round(newArrayPosition);
-            var newSpot = {
+            const newSpot = new Spot({
                 'arrayPosition': arrayPosition,
                 'newArrayPosition': newArrayPosition,
                 'renderPosition': renderPosition,
                 'diameter': self.spots.average.diameter,
                 'selected': false
-            };
+            });
             // inserting the spot in order in the array
             var newSpotOrder = arrayPosition.y * self.calibrator.width + arrayPosition.x;
             for(var i = 0; i < self.spots.spots.length; ++i) {
@@ -120,13 +121,13 @@ const SpotAdjuster = (function() {
         getSpotsCopy: function() {
             var spots = self.spots.getSpots().spots;
             var copy = spots.map(spot => {
-                var newSpot = {
+                var newSpot = new Spot({
                     'arrayPosition': Vec2.copy(spot.arrayPosition),
                     'newArrayPosition': Vec2.copy(spot.newArrayPosition),
                     'renderPosition': Vec2.copy(spot.renderPosition),
                     'diameter': spot.diameter,
                     'selected': spot.selected
-                };
+                });
                 return newSpot;
             });
             return copy;
