@@ -178,18 +178,19 @@ const main = [
 
         $scope.layerManager = new LayerManager();
 
-        function init_state() {
-            $scope.data.state = 'state_start';
+        function openPanel(button, state) {
+            // undisable the button
+            $scope.menuButtonDisabled[button] = false;
+            // click the button
+            $scope.menuButtonClick(button, state);
+        }
 
-            $scope.visible.menuBar = true;
-            $scope.visible.menuBarPanel = true;
-            $scope.visible.zoomBar = false;
+        function init_state() {
+            $scope.visible.menuBarPanel = false;
             $scope.visible.imageToggleBar = false;
-            $scope.visible.spinner = false;
-            $scope.visible.canvas = false;
             $scope.visible.undo.undo = true;
             $scope.visible.undo.redo = true;
-            $scope.visible.panel.button_uploader = true;
+            $scope.visible.panel.button_uploader = false;
             $scope.visible.panel.button_aligner = false;
             $scope.visible.panel.button_detector = false;
             $scope.visible.panel.button_adjuster = false;
@@ -208,6 +209,8 @@ const main = [
             $scope.menuButtonDisabled.button_exporter = true;
             $scope.menuButtonDisabled.button_help = false;
             $scope.menuButtonDisabled.button_info = false;
+
+            openPanel('button_uploader', 'state_start');
         }
 
         var toggleMenuBarPanelVisibility = function(previousButton, thisButton) {
@@ -236,7 +239,10 @@ const main = [
             $scope.data.state = new_state;
 
             if($scope.data.state === 'state_start') {
-                init_state();
+                $scope.visible.menuBar = true;
+                $scope.visible.zoomBar = false;
+                $scope.visible.spinner = false;
+                $scope.visible.canvas = false;
             }
             else if($scope.data.state === 'state_upload') {
                 $scope.visible.menuBar = false;
@@ -289,13 +295,6 @@ const main = [
 
         };
 
-        function openPanel(button, ...args) {
-            // undisable the button
-            $scope.menuButtonDisabled[button] = false;
-            // click the button
-            $scope.menuButtonClick(button, ...args);
-        }
-
         $scope.undoButtonClick = function(direction) {
             $scope.undo(direction); // defined in the viewer directive
         };
@@ -308,8 +307,6 @@ const main = [
             $scope.data.cy3Active = !$scope.data.cy3Active;
             updateVisibility();
         };
-
-        let prevState = null;
 
         $scope.menuButtonClick = function(button, state) {
             // only clickable if not disabled
@@ -324,13 +321,7 @@ const main = [
                 $scope.data.button = button;
 
                 if (state !== undefined) {
-                    if (state !== $scope.data.state) {
-                        prevState = $scope.data.state;
-                        $scope.updateState(state);
-                    }
-                } else if (prevState !== null) {
-                    $scope.updateState(prevState);
-                    prevState = null;
+                    $scope.updateState(state);
                 }
             }
         };
@@ -384,7 +375,7 @@ const main = [
 
         $scope.uploadImage = function() {
             if($scope.data.cy3Image != '') {
-                $scope.updateState('state_start');
+                init_state();
 
                 unwrapRequest($http.get('../session_id')).then((response) => {
                     $scope.data.sessionId = response;
