@@ -10,7 +10,6 @@ import Calibrator from './viewer/calibrator';
 import Camera from './viewer/camera';
 import Codes from './viewer/keycodes';
 import EventHandler from './viewer/event-handler';
-import LayerManager from './viewer/layer-manager';
 import PredetectionLH from './viewer/logic-handler.predetection';
 import RenderingClient, { ReturnCodes } from './viewer/rendering-client';
 import ScaleManager from './viewer/scale-manager';
@@ -41,10 +40,8 @@ function viewer() {
 
             scope.undoStack = new UndoStack(scope.visible.undo);
 
-            const layerManager = new LayerManager(layers);
-
             var tilePosition;
-            var camera = new Camera(fgCtx, layerManager);
+            var camera = new Camera(fgCtx, scope.layerManager);
 
             const calibrator = new Calibrator();
             calibrator.width = 33;
@@ -57,7 +54,7 @@ function viewer() {
             };
 
             var spots = new SpotManager();
-            var spotSelector = new SpotSelector(camera, layerManager, spots);
+            var spotSelector = new SpotSelector(camera, scope.layerManager, spots);
             const spotAdjuster = new SpotAdjuster(camera, spots, calibrator);
 
             scope.eventHandler = new EventHandler(scope.data, fg, camera);
@@ -75,7 +72,7 @@ function viewer() {
                 if (spots.transformMatrix === undefined) {
                     return 'N/A';
                 }
-                const ls = layerManager.getLayers();
+                const ls = scope.layerManager.getLayers();
                 // if HE image was uploaded, transform coordinates to HE space
                 const tmat = 'he' in ls ?
                     math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat) :
@@ -113,8 +110,8 @@ function viewer() {
                 scope.undoStack.push(action);
                 spots.selectTissueSpots(
                     math.multiply(
-                        math.inv(layerManager.getLayer('he').tmat),
-                        layerManager.getLayer('cy3').tmat,
+                        math.inv(scope.layerManager.getLayer('he').tmat),
+                        scope.layerManager.getLayer('cy3').tmat,
                     ),
                     0.5,
                 );
@@ -129,11 +126,11 @@ function viewer() {
                 const [x0, y0, x1, y1] = calibrator.points;
                 return {
                     TL: toLayerCoordinates(
-                        layerManager.getLayer('cy3'),
+                        scope.layerManager.getLayer('cy3'),
                         Vec2.Vec2(x0, y0),
                     ),
                     BR: toLayerCoordinates(
-                        layerManager.getLayer('cy3'),
+                        scope.layerManager.getLayer('cy3'),
                         Vec2.Vec2(x1, y1),
                     ),
                     array_size: Vec2.Vec2(calibrator.width, calibrator.height),
@@ -161,7 +158,7 @@ function viewer() {
             }
 
             function refreshCanvas() {
-                Object.values(layerManager.getLayers()).forEach(
+                Object.values(scope.layerManager.getLayers()).forEach(
                     (layer) => {
                         const level = layer.scaleManager.level(1 / camera.scale);
                         const canvas = layer.canvas;
@@ -314,7 +311,10 @@ function viewer() {
 
             scope.receiveTilemap = function (data) {
                 // delete all current layers and add the ones in data.tiles
-                _.each(Object.keys(layerManager.getLayers()), x => layerManager.deleteLayer(x));
+                _.each(
+                    Object.keys(scope.layerManager.getLayers()),
+                    x => scope.layerManager.deleteLayer(x),
+                );
 
                 let maxWidth = 0;
                 let maxHeight = 0;
@@ -323,7 +323,7 @@ function viewer() {
                 _.each(
                     Object.entries(data),
                     ([layerName, tiles]) => {
-                        const layer = layerManager.addLayer(layerName);
+                        const layer = scope.layerManager.addLayer(layerName);
 
                         const canvas = layer.canvas;
                         canvas.width = fg.width;
@@ -373,7 +373,7 @@ function viewer() {
                             var matrices = action.state;
                             _.each(
                                 _.filter(
-                                    Object.entries(layerManager.getLayers()),
+                                    Object.entries(scope.layerManager.getLayers()),
                                     layer => {
                                         var key = layer[0]; // e.g. 'he' or 'cy3'
                                         var layerObject = layer[1];
@@ -407,7 +407,7 @@ function viewer() {
             scope.exportSpots = function(selection) {
                 // spots are given in Cy3 image coordinates. however, if the user has uploaded an HE
                 // image, export them in HE coordinate space instead.
-                const ls = layerManager.getLayers();
+                const ls = scope.layerManager.getLayers();
                 let spotDataString;
                 if ('he' in ls) {
                     const tmat = math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat);
@@ -451,10 +451,10 @@ function viewer() {
                 }
             };
 
-            layerManager.callback = refreshCanvas;
-
             scope.camera = camera;
-            scope.layerManager = layerManager;
+
+            scope.layerManager.callback = refreshCanvas;
+            scope.layerManager.container = layers;
 
             window.addEventListener(
                 'resize',

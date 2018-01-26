@@ -3,6 +3,7 @@ import _ from 'underscore';
 import imageToggleCy from 'assets/images/imageToggleCy3.png';
 import imageToggleHE from 'assets/images/imageToggleHE.png';
 
+import LayerManager from './viewer/layer-manager';
 import modal from './modal';
 
 function error(message) {
@@ -174,6 +175,8 @@ const main = [
             button_help: Boolean(),
             button_info: Boolean(),
         };
+
+        $scope.layerManager = new LayerManager();
 
         function init_state() {
             $scope.data.state = 'state_start';
