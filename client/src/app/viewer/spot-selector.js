@@ -2,7 +2,12 @@
 
 import Vec2 from './vec2';
 
+import opacityMixin         from './graphics/opacity';
+import { StrokedRectangle } from './graphics/rectangle';
+
 import { fromLayerCoordinates } from '../utils';
+
+const SelectionRectangle = opacityMixin(StrokedRectangle);
 
 const SpotSelector = (function() {
     var self;
@@ -15,10 +20,14 @@ const SpotSelector = (function() {
         self.selected = false;
         self.selectedSpotCounter = 0;
         self.shiftPressed = false;
-        self.renderingRect = {TL: Vec2.Vec2(),
-                              WH: Vec2.Vec2()}
+
         self.selectionRect = {TL: Vec2.Vec2(),
                               BR: Vec2.Vec2()};
+
+        self.renderingRect = new SelectionRectangle(0, 0, 0, 0);
+        self.renderingRect.strokeColor = 'rgba(150, 150, 150, 0.95)';
+        self.renderingRect.strokeDash = [4, 3];
+        self.renderingRect.opacity = 0;
     };
   
     SpotSelector.prototype = {
@@ -30,8 +39,9 @@ const SpotSelector = (function() {
             const cy3layer = self.layerManager.getLayer('cy3');
 
             // first we need to check if the user is only clicking on a single spot
-            if(self.renderingRect.WH.x < 3 && self.renderingRect.WH.x >= 0 &&
-               self.renderingRect.WH.y < 3 && self.renderingRect.WH.y >= 0) // arbitrary 3 values here for a "click"
+            const [x0, y0] = self.renderingRect.topLeft;
+            const [x1, y1] = self.renderingRect.bottomRight;
+            if((x1 - x0) < 3 && (y1 - y0) < 3) // arbitrary 3 values here for a "click"
             {
                 for(var i = 0; i < spots.length; ++i) {
                     const pos = fromLayerCoordinates(cy3layer, spots[i].renderPosition);
@@ -85,23 +95,26 @@ const SpotSelector = (function() {
             }
         },
         beginSelection: function(topLeft) {
-            self.renderingRect.TL = topLeft;
-            self.renderingRect.WH = Vec2.Vec2();
+            self.renderingRect.x0 = topLeft.x;
+            self.renderingRect.y0 = topLeft.y;
+            self.renderingRect.x1 = topLeft.x;
+            self.renderingRect.y1 = topLeft.y;
             topLeft = self.camera.mouseToCameraPosition(topLeft);
             self.selectionRect.TL = topLeft;
             self.selectionRect.BR = topLeft;
+            self.renderingRect.opacity = 1;
         },
         updateSelection: function(bottomRight) {
-            self.renderingRect.WH = Vec2.subtract(bottomRight, self.renderingRect.TL);
+            self.renderingRect.x1 = bottomRight.x;
+            self.renderingRect.y1 = bottomRight.y;
             bottomRight = self.camera.mouseToCameraPosition(bottomRight);
             self.selectionRect.BR = bottomRight;
             self.selectSpots();
         },
         endSelection: function() {
             self.selected = true;
+            self.renderingRect.opacity = 0;
             self.selectSpots();
-            self.renderingRect = {TL: Vec2.Vec2(),
-                                  WH: Vec2.Vec2()};
         },
         toggleShift: function(bool) {
             self.shiftPressed = bool;

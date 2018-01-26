@@ -12,7 +12,6 @@ import Codes from './viewer/keycodes';
 import EventHandler from './viewer/event-handler';
 import LayerManager from './viewer/layer-manager';
 import PredetectionLH from './viewer/logic-handler.predetection';
-import Renderer from './viewer/renderer';
 import RenderingClient, { ReturnCodes } from './viewer/rendering-client';
 import ScaleManager from './viewer/scale-manager';
 import SpotAdjuster from './viewer/spot-adjuster';
@@ -46,7 +45,6 @@ function viewer() {
 
             var tilePosition;
             var camera = new Camera(fgCtx, layerManager);
-            var renderer = new Renderer(fgCtx, camera);
 
             const calibrator = new Calibrator();
             calibrator.width = 33;
@@ -256,8 +254,7 @@ function viewer() {
                         rfnc(spots.spotToAdd);
                     }
                     scope.camera.end();
-
-                    renderer.renderSpotSelection(spotSelector.renderingRect);
+                    rfnc(spotSelector.renderingRect);
                 }
             }
 
