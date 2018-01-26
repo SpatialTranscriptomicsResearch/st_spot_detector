@@ -11,12 +11,6 @@ const Renderer = (function() {
     };
 
     Renderer.prototype = {
-        clearCanvas: function(context = self.ctx) {
-            context.save();
-            context.resetTransform();
-            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-            context.restore();
-        },
         renderSpotSelection: function(rectCoords) {
             self.ctx.save();
             self.ctx.strokeStyle = self.spotSelectionColor;

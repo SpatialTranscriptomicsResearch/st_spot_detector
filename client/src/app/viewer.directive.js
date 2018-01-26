@@ -23,7 +23,7 @@ import UndoStack, { UndoAction } from './viewer/undo';
 
 import { MAX_THREADS } from './config';
 import { mathjsToTransform, toLayerCoordinates, transformToMathjs } from './utils';
-import { render } from './viewer/graphics/functions';
+import { clear, render } from './viewer/graphics/functions';
 
 function viewer() {
     return {
@@ -170,7 +170,7 @@ function viewer() {
                         const context = canvas.getContext('2d');
 
                         if (layer.get('visible') === false) {
-                            renderer.clearCanvas(context);
+                            clear(context);
                             return;
                         }
 
@@ -240,7 +240,7 @@ function viewer() {
                         );
                     });
 
-                renderer.clearCanvas();
+                clear(fgCtx);
                 if(scope.data.state == 'state_predetection') {
                     scope.camera.begin();
                     _.each(calibrator.renderables, rfnc);

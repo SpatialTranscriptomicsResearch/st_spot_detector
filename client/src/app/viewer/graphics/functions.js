@@ -27,3 +27,15 @@ export function collidesNxt() { return jtblCollides.length; }
 export function collides(x, y, obj) {
     return jtblCollides[obj.constructor.ctype()](x, y, obj);
 }
+
+// utility functions
+
+/**
+ * Clears the canvas context
+ */
+export function clear(ctx) {
+    ctx.save();
+    ctx.resetTransform();
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.restore();
+}
