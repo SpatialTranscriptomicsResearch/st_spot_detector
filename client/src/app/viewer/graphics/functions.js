@@ -25,7 +25,14 @@ export function collidesNxt() { return jtblCollides.length; }
  * Checks if a position is colliding with a given graphics object
  */
 export function collides(x, y, obj) {
-    return jtblCollides[obj.constructor.ctype()](x, y, obj);
+    let constructor = obj.constructor;
+    while (constructor.ctype !== undefined) {
+        if (jtblCollides[constructor.ctype()](x, y, obj)) {
+            return true;
+        }
+        constructor = Object.getPrototypeOf(constructor);
+    }
+    return false;
 }
 
 // utility functions
