@@ -1,7 +1,5 @@
 import _ from 'underscore';
-import toastr from 'toastr';
 
-import framealignment from 'assets/images/framealignment.png';
 import imageToggleCy from 'assets/images/imageToggleCy3.png';
 import imageToggleHE from 'assets/images/imageToggleHE.png';
 
@@ -52,7 +50,7 @@ function tryState(scope, state, request) {
     return new Promise(
         (resolve, reject) => {
             request.then(resolve).catch((result) => {
-                scope.updateState(oldState, false);
+                scope.updateState(oldState);
                 reject(result);
             });
         },
@@ -66,8 +64,6 @@ const main = [
     '$compile',
     '$q',
     function($scope, $http, $sce, $compile, $q) {
-        var addSpotsToastsDisplayed = false;
-
         // texts to display in the menu bar panel when clicking the help button
         const helpTexts = {
             state_start:         "Click on the top-most icon to select and upload image(s). The image(s) must be in .jpg format and rotated so that the frame cluster appears at the top left of the image.",
@@ -222,70 +218,6 @@ const main = [
             }
         };
 
-        function displayToasts(toastTexts) {
-            // triggers the chain of recursion
-            chainToast(toastTexts, 0);
-        }
-
-        function chainToast(toastTexts, toastIndex) {
-            // recursive function for displaying several toasts in a row
-            // if last toast in list of toasts
-            if(toastTexts.length == toastIndex) { 
-                // do nothing, end recursion
-            }
-            else {
-                toastr.options.onHidden = function() {
-                    chainToast(toastTexts, toastIndex + 1);
-                };
-                toastr["info"](toastTexts[toastIndex]);
-            }
-        }
-
-        $scope.addSpotsToasts = function() {
-            if(!addSpotsToastsDisplayed) {
-                addSpotsToastsDisplayed = true;
-                toastr.options.timeOut = "10000";
-                var toasts = [
-                    "Left click to add spots.",
-                    "Right click or Ctrl+click to navigate the canvas.",
-                    "Click FINISH ADDING SPOTS to return to selection mode."
-                ];
-                //displayToasts(toasts);
-            }
-        };
-
-        function toast() {
-            if($scope.data.state === 'state_start') {
-            }
-            else if($scope.data.state === 'state_upload') {
-                toastr.clear();
-            }
-            else if($scope.data.state === 'state_predetection') {
-                toastr["info"](
-                    "Adjust the lines to frame the spots, as shown:<br>" + 
-                    `<img src='${framealignment}'/><br>` +
-                    "Click DETECT SPOTS to begin automatic spot detection."
-                );
-            }
-            else if($scope.data.state === 'state_detection') {
-                toastr.clear();
-            }
-            else if($scope.data.state === 'state_adjustment') {
-                toastr.options.timeOut = "10000";
-                var toasts = [
-                    "Detected spots are shown in red.",
-                    "Left click to select spots.<br>Holding in Shift adds to the selection.",
-                    "Right click or Ctrl+click to move selected spots or navigate the canvas.",
-                    "Click DELETE SPOTS to deleted selected spots.<br>" + 
-                    "Click ADD SPOTS to add additional spots."
-                ];
-                //displayToasts(toasts);
-            }
-            else if($scope.data.state === 'state_error') {
-                toastr.clear();
-            }
-        }
-
         function updateVisibility() {
             $scope.layerManager.getLayer('cy3')
                 .set('visible', $scope.data.cy3Active)
@@ -297,7 +229,7 @@ const main = [
             }
         }
 
-        $scope.updateState = function(new_state, show_toast = true) {
+        $scope.updateState = function(new_state) {
             $scope.data.state = new_state;
 
             if($scope.data.state === 'state_start') {
@@ -352,8 +284,6 @@ const main = [
                 $scope.visible.imageToggleBar = false;
             }
 
-            if(show_toast)
-                toast();
         };
 
         function openPanel(button, ...args) {
@@ -423,10 +353,6 @@ const main = [
             }, _.noop);
         };
 
-        $scope.reshowToasts = function(state) {
-            console.log("Implement me!");
-        };
-
         $scope.getPanelTitle = function(button) {
             return panelTitles[button];
         };
@@ -455,7 +381,7 @@ const main = [
 
         $scope.uploadImage = function() {
             if($scope.data.cy3Image != '') {
-                $scope.updateState('state_start', false);
+                $scope.updateState('state_start');
 
                 unwrapRequest($http.get('../session_id')).then((response) => {
                     $scope.data.sessionId = response;
@@ -478,11 +404,11 @@ const main = [
                         if (result.he !== undefined) {
                             $scope.visible.spotAdjuster.div_insideTissue = true;
                             $scope.menuButtonDisabled.button_detector = false;
-                            $scope.updateState('state_predetection', false);
+                            $scope.updateState('state_predetection');
                             openPanel('button_aligner', 'state_alignment');
                         } else {
                             $scope.visible.spotAdjuster.div_insideTissue = false;
-                            $scope.updateState('state_predetection', true);
+                            $scope.updateState('state_predetection');
                             openPanel('button_detector');
                         }
                     }, _.noop);
@@ -491,25 +417,6 @@ const main = [
         };
 
         init_state();
-
-        toastr.options = {
-            "closeButton": false,
-            "debug": false,
-            "newestOnTop": true,
-            "progressBar": false,
-            "positionClass": "toast-top-center",
-            "preventDuplicates": true,
-            "onclick": null,
-            "showDuration": "300",
-            "hideDuration": "1000",
-            "timeOut": "0",
-            "extendedTimeOut": "10000",
-            "showEasing": "swing",
-            "hideEasing": "linear",
-            "showMethod": "fadeIn",
-            "hideMethod": "fadeOut"
-        };
-        toastr["info"]("Welcome to the Spatial Transcriptomics Spot Detection Tool. Begin by uploading a Cy3 fluorescence image.", "");
     }
 ];
 

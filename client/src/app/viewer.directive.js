@@ -263,7 +263,6 @@ function viewer() {
                 scope.visible.spotAdjuster.button_addSpots       = false;
                 scope.visible.spotAdjuster.button_finishAddSpots = true;
                 scope.visible.spotAdjuster.button_deleteSpots    = false;
-                scope.addSpotsToasts(); // in the main controller
                 refreshCanvas();
             };
 

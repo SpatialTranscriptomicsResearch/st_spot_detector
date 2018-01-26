@@ -101,7 +101,6 @@ function configBuilder(deploy = false) {
                     'jquery',
                     'mathjs',
                     'sortablejs',
-                    'toastr',
                     'underscore',
                 ],
             }),

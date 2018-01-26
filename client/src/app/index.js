@@ -1,7 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
 import 'spinkit/css/spinners/10-fading-circle.css';
-import 'toastr/build/toastr.min.css';
 
 import 'assets/css/stylesheet.css';
 import 'assets/html/index.html';
