@@ -342,8 +342,13 @@ function viewer() {
 
                 // center camera
                 camera.position = Vec2.Vec2(maxWidth / 2, maxHeight / 2);
-                camera.scale = 1 / maxLevel;
+                camera.scale = 2 / maxLevel;
                 camera.updateViewport();
+
+                // update camera boundaries
+                camera.positionBoundaries.maxX = maxWidth;
+                camera.positionBoundaries.maxY = maxHeight;
+                camera.minScale = 1 / maxLevel;
 
                 // reset calibrator points
                 calibrator.points = [0, 0, maxWidth, maxHeight];
