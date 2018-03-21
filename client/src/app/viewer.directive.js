@@ -77,17 +77,7 @@ function viewer() {
                 const tmat = 'he' in ls ?
                     math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat) :
                     math.eye(3);
-                const resultMat = _.compose(
-                    _.partial(
-                        math.multiply,
-                        math.matrix([
-                            [spots.scalingFactor, 0, 0],
-                            [0, spots.scalingFactor, 0],
-                            [0, 0, 1],
-                        ]),
-                    ),
-                    _.partial(math.multiply, tmat),
-                )(spots.transformMatrix);
+                const resultMat = math.multiply(tmat, spots.transformMatrix);
                 const matString = ""
                     + math.subset(resultMat, math.index(0, 0)) + " "
                     + math.subset(resultMat, math.index(1, 0)) + " "
