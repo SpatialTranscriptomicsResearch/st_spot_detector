@@ -10,24 +10,16 @@ const Vec2 = (function() {
             return this.Vec2(vec2.x, vec2.y);
         },
         clampX: function(vec2, lowerLimit, upperLimit) {
-            var newVec = this.copy(vec2);
-            if(lowerLimit != undefined) {
-                newVec.x = Math.max(vec2.x, lowerLimit);
-            }
-            if(upperLimit != undefined) {
-                newVec.x = Math.min(vec2.x, upperLimit);
-            }
-            return newVec;
+            return Vec2.Vec2(
+              Math.max(lowerLimit, Math.min(upperLimit, vec2.x)),
+              vec2.y,
+            );
         },
         clampY: function(vec2, lowerLimit, upperLimit) {
-            var newVec = this.copy(vec2);
-            if(lowerLimit != undefined) {
-                newVec.y = Math.max(vec2.y, lowerLimit);
-            }
-            if(upperLimit != undefined) {
-                newVec.y = Math.min(vec2.y, upperLimit);
-            }
-            return newVec;
+            return Vec2.Vec2(
+              vec2.x,
+              Math.max(lowerLimit, Math.min(upperLimit, vec2.y)),
+            );
         },
         clamp: function(vec2, lowerLimit, upperLimit) {
             var newVec = this.clampX(vec2, lowerLimit, upperLimit);
