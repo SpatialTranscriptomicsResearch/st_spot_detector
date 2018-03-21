@@ -112,7 +112,11 @@ def get_spots():
     HE_image = session_cache.tissue_image
     if HE_image is not None:
         logger.log(session_id[:20] + ": Running tissue recognition.")
-        mask = get_tissue_mask(HE_image)
+        mask = dict(
+            data=get_tissue_mask(HE_image),
+            shape=HE_image.size,
+            scale=1 / session_cache.tissue_scaling_factor,
+        )
     else:
         mask = None
 
@@ -123,17 +127,6 @@ def get_spots():
     return {'spots': spots.wrap_spots(), 'tissue_mask': mask}
 
 def get_tissue_mask(image):
-    # Downsample to max 500x500
-    max_size = np.array([500] * 2, dtype=float)
-    ratio = min(min(max_size / image.size), 1)
-    new_size = [ratio * s for s in image.size]
-
-    # hack for now whilst spots are based on 20k x 20k image
-    ratio = float(500) / float(20000)
-
-    image = image.copy()
-    image.thumbnail(new_size, Image.ANTIALIAS)
-
     # Convert image to numpy matrix and preallocate the mask matrix
     image = np.array(image, dtype=np.uint8)
     mask = np.zeros(image.shape[0:2], dtype=np.uint8)
@@ -147,7 +140,7 @@ def get_tissue_mask(image):
 
     free(mask)
 
-    return {'data': bit_string, 'shape': new_size, 'scale': ratio}
+    return bit_string
 
 @app.post('/tiles')
 @return_decorator
@@ -191,8 +184,9 @@ def get_tiles():
 
         if(key == 'he'):
             # also save a scaled down version of the tissue image
-            tissue_img = ip.resize_image(image, [500, 500])[0]
+            tissue_img, tissue_sf = ip.resize_image(image, [500, 500])
             session_cache.tissue_image = tissue_img
+            session_cache.tissue_scaling_factor = tissue_sf
 
         tiles.update({
             key: {
