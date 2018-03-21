@@ -377,12 +377,12 @@ const main = [
             if($scope.data.cy3Image != '') {
                 init_state();
 
-                unwrapRequest($http.get('../session_id')).then((response) => {
-                    $scope.data.sessionId = response;
-                    $q.when(tryState(
-                        $scope,
-                        'state_upload',
-                        unwrapRequest(
+                $q.when(tryState(
+                    $scope,
+                    'state_upload',
+                    unwrapRequest($http.get('../session_id')).then((response) => {
+                        $scope.data.sessionId = response;
+                        return unwrapRequest(
                             $http.post(
                                 '../tiles',
                                 {
@@ -391,22 +391,22 @@ const main = [
                                     session_id: $scope.data.sessionId,
                                 },
                             ),
-                        ),
-                    )).then((result) => {
-                        $scope.receiveTilemap(result); // defined in the viewer directive
-                        $scope.data.cy3Active = true;
-                        if (result.he !== undefined) {
-                            $scope.visible.spotAdjuster.div_insideTissue = true;
-                            $scope.menuButtonDisabled.button_detector = false;
-                            $scope.updateState('state_predetection');
-                            openPanel('button_aligner', 'state_alignment');
-                        } else {
-                            $scope.visible.spotAdjuster.div_insideTissue = false;
-                            $scope.updateState('state_predetection');
-                            openPanel('button_detector');
-                        }
-                    }, _.noop);
-                }, _.noop);
+                        );
+                    }),
+                )).then((result) => {
+                    $scope.receiveTilemap(result);
+                    $scope.data.cy3Active = true;
+                    if (result.he !== undefined) {
+                        $scope.visible.spotAdjuster.div_insideTissue = true;
+                        $scope.menuButtonDisabled.button_detector = false;
+                        $scope.updateState('state_predetection');
+                        openPanel('button_aligner', 'state_alignment');
+                    } else {
+                        $scope.visible.spotAdjuster.div_insideTissue = false;
+                        $scope.updateState('state_predetection');
+                        openPanel('button_detector');
+                    }
+                }).catch(_.noop);
             }
         };
 
