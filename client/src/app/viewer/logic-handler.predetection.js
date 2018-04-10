@@ -2,6 +2,7 @@ import _ from 'underscore';
 import Codes from './keycodes';
 import LogicHandler from '../logic-handler';
 import { UndoAction } from '../viewer/undo';
+import { setCursor } from '../utils';
 
 function checkCalibrationCursor(selection) {
     switch (selection) {
@@ -18,16 +19,15 @@ function checkCalibrationCursor(selection) {
     case 'rt':
         return 'nesw-resize';
     default:
-        return 'grabbable';
+        return 'grab';
     }
 }
 
 class PredetectionLH extends LogicHandler {
-    constructor(camera, calibrator, setCanvasCursor, refreshCanvas, undoStack) {
+    constructor(camera, calibrator, refreshCanvas, undoStack) {
         super();
         this.camera = camera;
         this.calibrator = calibrator;
-        this.setCanvasCursor = setCanvasCursor;
         this.refreshCanvas = refreshCanvas;
         this.undoStack = undoStack;
     }
@@ -55,7 +55,7 @@ class PredetectionLH extends LogicHandler {
             } else {
                 // maybe this should take the position rather than the difference
                 this.camera.pan(eventData.difference);
-                this.setCanvasCursor('grabbed');
+                setCursor('grabbing');
             }
             break;
         case Codes.mouseEvent.wheel:
@@ -64,7 +64,7 @@ class PredetectionLH extends LogicHandler {
         case Codes.mouseEvent.move: {
             const p = this.camera.mouseToCameraPosition(eventData.position);
             this.calibrator.setSelection(p.x, p.y);
-            this.setCanvasCursor(checkCalibrationCursor(this.calibrator.selection));
+            setCursor(checkCalibrationCursor(this.calibrator.selection));
         } break;
         case Codes.mouseEvent.down:
             if (this.calibrator.selection.length > 0) {

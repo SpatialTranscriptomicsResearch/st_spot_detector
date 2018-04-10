@@ -45,12 +45,6 @@ function viewer() {
             calibrator.width = 33;
             calibrator.height = 35;
 
-            scope.setCanvasCursor = function(cursor) {
-                scope.$apply(function() {
-                    scope.classes.canvas = cursor;
-                });
-            };
-
             var spots = new SpotManager();
             var spotSelector = new SpotSelector(camera, scope.layerManager, spots);
             const spotAdjuster = new SpotAdjuster(camera, spots, calibrator);
@@ -58,9 +52,9 @@ function viewer() {
             scope.eventHandler = new EventHandler(scope.data, fg, camera);
 
             scope.predetectionLH = new PredetectionLH(
-                camera, calibrator, scope.setCanvasCursor, refreshCanvas, scope.undoStack);
+                camera, calibrator, refreshCanvas, scope.undoStack);
             scope.adjustmentLH = new AdjustmentLH(
-                camera, spotAdjuster, spotSelector, scope.setCanvasCursor, refreshCanvas, scope.undoStack);
+                camera, spotAdjuster, spotSelector, refreshCanvas, scope.undoStack);
 
             scope.loadSpots = function(spotData) {
                 spots.loadSpots(spotData);

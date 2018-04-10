@@ -2,14 +2,14 @@ import _ from 'underscore';
 import Codes from './keycodes';
 import LogicHandler from '../logic-handler';
 import { UndoAction } from '../viewer/undo';
+import { setCursor } from '../utils';
 
 class AdjustmentLH extends LogicHandler {
-    constructor(camera, spotAdjuster, spotSelector, setCanvasCursor, refreshCanvas, undoStack) {
+    constructor(camera, spotAdjuster, spotSelector, refreshCanvas, undoStack) {
         super();
         this.camera = camera;
         this.spotAdjuster = spotAdjuster;
         this.spotSelector = spotSelector;
-        this.setCanvasCursor = setCanvasCursor;
         this.refreshCanvas = refreshCanvas;
         this.undoStack = undoStack;
 
@@ -38,7 +38,7 @@ class AdjustmentLH extends LogicHandler {
         }
         // check for ctrl key down to change cursor
         if(keyEvent == Codes.keyEvent.ctrl) {
-            this.setCanvasCursor('grabbable');
+            setCursor('grab');
         }
         this.refreshCanvas();
     }
@@ -59,7 +59,7 @@ class AdjustmentLH extends LogicHandler {
                 this.spotAdjuster.setSpots(action.state);
             }
         } else if(keyEvent == Codes.keyEvent.ctrl) {
-            this.setCanvasCursor('crosshair');
+            setCursor('crosshair');
         }
         this.refreshCanvas();
     }
@@ -96,7 +96,7 @@ class AdjustmentLH extends LogicHandler {
                 cursor = 'grabbed';
             }
             else if(mouseEvent == Codes.mouseEvent.move) {
-                cursor = 'grabbable';
+                cursor = 'grab';
             }
         }
         else if(mouseEvent == Codes.mouseEvent.move) {
@@ -158,7 +158,7 @@ class AdjustmentLH extends LogicHandler {
                 this.undoStack.pushTemp();
             }
         }
-        this.setCanvasCursor(cursor);
+        setCursor(cursor);
         this.refreshCanvas();
     }
 }

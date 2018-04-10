@@ -33,60 +33,6 @@ canvas:active {
     height: 100%;
 }
 
-.crosshair {
-    cursor: -webkit-crosshair;
-    cursor:    -moz-crosshair;
-    cursor:         crosshair;
-}
-
-.ew-resize {
-    cursor: -webkit-ew-resize;
-    cursor:    -moz-ew-resize;
-    cursor:         ew-resize;
-}
-
-.ns-resize {
-    cursor: -webkit-ns-resize;
-    cursor:    -moz-ns-resize;
-    cursor:         ns-resize;
-}
-
-.nesw-resize {
-    cursor: -webkit-nesw-resize;
-    cursor:    -moz-nesw-resize;
-    cursor:         nesw-resize;
-}
-
-.nwse-resize {
-    cursor: -webkit-nwse-resize;
-    cursor:    -moz-nwse-resize;
-    cursor:         nwse-resize;
-}
-
-.grabbable {
-    cursor: -webkit-grab;
-    cursor:    -moz-grab;
-    cursor:         grab;
-}
-
-.grabbed {
-    cursor: -webkit-grabbing;
-    cursor:    -moz-grabbing;
-    cursor:         grabbing;
-}
-
-.clickable {
-    cursor: -webkit-pointer;
-    cursor:    -moz-pointer;
-    cursor:         pointer;
-}
-
-.move {
-    cursor: -webkit-move;
-    cursor:    -moz-move;
-    cursor:         move;
-}
-
 .menu-wrapper {
     position: fixed;
     top: 20px;

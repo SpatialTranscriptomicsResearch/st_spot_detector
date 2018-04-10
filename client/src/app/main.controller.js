@@ -115,10 +115,6 @@ const main = [
             cy3Filename: '',
         };
 
-        $scope.classes = {
-            canvas: "grabbable"
-        };
-
         $scope.exportForm = {
             selection: 'selection',
             includeImageSize: false,

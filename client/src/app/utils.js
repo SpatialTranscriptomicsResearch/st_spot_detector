@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import _ from 'underscore';
 import math from 'mathjs';
 
@@ -85,4 +86,28 @@ export function chunksOf(n, a) {
     const ret = [_.take(a, n)];
     ret.push(...chunksOf(n, _.drop(a, n)));
     return ret;
+}
+
+/**
+ * Sets the current cursor.
+ */
+export function setCursor(name) {
+    // FIXME: remove when there's wider support for unprefixed names
+    const tryAdd = ([prefix, ...rest]) => {
+        if (prefix === undefined) {
+            throw new Error(`Unable to set cursor '${name}'`);
+        }
+        const prefixName = `${prefix}${name}`;
+        $('body').css('cursor', prefixName);
+        if ($('body').css('cursor') !== prefixName) {
+            tryAdd(rest);
+        }
+    };
+    tryAdd([
+        '',
+        '-webkit-',
+        '-moz-',
+        '-ms-',
+        '-o-',
+    ]);
 }

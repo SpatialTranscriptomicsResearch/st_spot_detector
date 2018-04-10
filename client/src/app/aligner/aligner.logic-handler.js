@@ -9,6 +9,7 @@ import Codes from '../viewer/keycodes';
 import LogicHandler from '../logic-handler';
 import Vec2 from '../viewer/vec2';
 import { UndoAction } from '../viewer/undo';
+import { setCursor } from '../utils';
 
 // private members
 const curs = Symbol('Current state');
@@ -22,7 +23,6 @@ class AlignerLHDefault extends LogicHandler {
         this.camera = camera;
         this.layerManager = layerManager;
         this.refresh = refreshFunc;
-        this.cursor = cursorFunc;
         this.undoStack = undoStack;
         this.recordKeyStates();
     }
@@ -136,9 +136,9 @@ class AlignerLHDefault extends LogicHandler {
 
     refreshCursor() {
         if (this.keystates.mouseLeft) {
-            this.cursor('grabbed');
+            setCursor('grabbing');
         } else {
-            this.cursor('grabbable');
+            setCursor('grab');
         }
     }
 }
@@ -185,9 +185,9 @@ class AlignerLHMove extends AlignerLHDefault {
             return;
         }
         if (this.keystates.mouseLeft || this.keystates.mouseRight) {
-            this.cursor('crosshair');
+            setCursor('crosshair');
         } else {
-            this.cursor('move');
+            setCursor('move');
         }
     }
 }
@@ -302,17 +302,17 @@ class AlignerLHRotate extends AlignerLHDefault {
         }
         switch (this[curs]) {
         case 'dragRP':
-            this.cursor('grabbed');
+            setCursor('grabbing');
             break;
         case 'hoverRP':
-            this.cursor('grabbable');
+            setCursor('grab');
             break;
         case 'rotate':
-            this.cursor('crosshair');
+            setCursor('crosshair');
             break;
         case 'def':
         default:
-            this.cursor('move');
+            setCursor('move');
             break;
         }
     }
