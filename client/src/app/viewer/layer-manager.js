@@ -5,10 +5,10 @@
 
 import math from 'mathjs';
 import $ from 'jquery';
+import _ from 'underscore';
 
 const DEF_MODIFIERS = {
     visible: true,
-    active: true,
 };
 const DEF_TEMPLATE = '<canvas id="layer-{name}" />';
 
@@ -17,6 +17,7 @@ const cb = Symbol('Callback');
 const dm = Symbol('Default modifiers');
 const layers = Symbol('Layers');
 const mod = Symbol('Modifiers');
+const adj = Symbol('Adjustments');
 
 // (Re-)appends the layers in the order given by self.layerOrder.
 function refreshLayerOrder(layerManager) {
@@ -38,6 +39,7 @@ class Layer {
         this[dm] = defaultModifiers;
         this[cb] = callback;
         this[mod] = Object.assign({}, defaultModifiers);
+        this[adj] = [];
 
         /**
          * The canvas element of the layer.
@@ -90,6 +92,29 @@ class Layer {
         this[cb](...args);
         return this;
     }
+
+    /**
+     * Getter for layer adjustments.
+     *
+     * @returns {Array} Array of (Name, Value) tuples representing the current
+     * adjustments on the layer.
+     */
+    get adjustments() {
+        return _.clone(this[adj]);
+    }
+
+    /**
+     * Setter for layer adjustments.
+     *
+     * @param {Array} - Array of (Name, Value) tuples representing the
+     * adjustments that should be applied upon rendering.
+     * @returns {Layer} The layer object that the function was called on.
+     */
+    set adjustments(adjustments) {
+        this[adj] = _.clone(adjustments);
+        return this;
+    }
+
     /**
      * Getter for the layer transformation matrix.
      *

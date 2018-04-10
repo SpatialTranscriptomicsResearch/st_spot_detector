@@ -8,6 +8,8 @@ import math from 'mathjs';
 import Codes from '../viewer/keycodes';
 import LogicHandler from '../logic-handler';
 import Vec2 from '../viewer/vec2';
+
+import { collides } from '../viewer/graphics/functions';
 import { UndoAction } from '../viewer/undo';
 import { setCursor } from '../utils';
 
@@ -18,10 +20,10 @@ const curs = Symbol('Current state');
  * Default logic handler for the alignment view.
  */
 class AlignerLHDefault extends LogicHandler {
-    constructor(camera, layerManager, refreshFunc, cursorFunc, undoStack) {
+    constructor(camera, getActive, refreshFunc, undoStack) {
         super();
         this.camera = camera;
-        this.layerManager = layerManager;
+        this.getActive = getActive;
         this.refresh = refreshFunc;
         this.undoStack = undoStack;
         this.recordKeyStates();
@@ -37,22 +39,8 @@ class AlignerLHDefault extends LogicHandler {
         } else if (e === Codes.keyEvent.undo) {
             if(this.undoStack.lastTab() == "state_alignment") {
                 var action = this.undoStack.pop();
-                var matrices = action.state;
-                _.each(
-                    _.filter(
-                        Object.entries(this.layerManager.getLayers()),
-                        layer => {
-                            var key = layer[0]; // e.g. 'he' or 'cy3'
-                            var layerObject = layer[1];
-                            return key in matrices;
-                        },
-                    ),
-                    layer => {
-                        var key = layer[0]; // e.g. 'he' or 'cy3'
-                        var layerObject = layer[1];
-                        layerObject.setTransform(matrices[key]);
-                    }
-                );
+                const { layer, matrix } = action.state;
+                layer.setTransform(matrix);
                 this.refresh();
             }
         }
@@ -60,59 +48,25 @@ class AlignerLHDefault extends LogicHandler {
 
     processMouseEvent(e, data) {
         switch (e) {
-        case Codes.mouseEvent.down:
-            var action = new UndoAction(
+        case Codes.mouseEvent.down: {
+            const layer = this.getActive();
+            const action = new UndoAction(
                 'state_alignment',
                 'layerTransform',
-                {}
-            );
-
-            _.each(
-                _.filter(
-                    Object.entries(this.layerManager.getLayers()),
-                    layer => layer[1].get('active'),
-                ),
-                layer => {
-                    var key = layer[0]; // e.g. 'he' or 'cy3'
-                    var layerObject = layer[1];
-                    action.state[key] = layerObject.getTransform();
-                }
+                { layer, matrix: layer.getTransform() },
             );
             this.undoStack.setTemp(action);
-            break;
+        } break;
         case Codes.mouseEvent.up:
             if(this.undoStack.temp) {
-                var state = {};
-                _.each(
-                    _.filter(
-                        Object.entries(this.layerManager.getLayers()),
-                        layer => layer[1].get('active'),
-                    ),
-                    layer => {
-                        var key = layer[0]; // e.g. 'he' or 'cy3'
-                        var layerObject = layer[1];
-                        state[key] = layerObject.getTransform();
-                    }
-                );
-                var tempState = this.undoStack.temp.state;
-                // check to see if the actions differ when the mouse button was clicked down and when it was released
-                if(_.isEqual(Object.keys(state), Object.keys(tempState))) { // check that the keys are equal in the action
-                    let equal = Object.keys(state).every(
-                        key => {
-                            return math.deepEqual(state[key], tempState[key]);
-                        }
-                    )
-                    if(!equal) {
-                        // push action if it differs from when mouse button was pressed down
-                        this.undoStack.pushTemp();
-                    }
-                    else {
-                        // ignore and clear the temporary action if it is the same as when mouse button was pressed down
-                        this.undoStack.clearTemp();
-                    }
-                }
-                else {
+                const layer = this.getActive();
+                const matrix = layer.getTransform();
+                const { layer: prevLayer, matrix: prevMatrix } =
+                    this.undoStack.temp.state;
+                if (layer === prevLayer && !math.deepEqual(matrix, prevMatrix)) {
                     this.undoStack.pushTemp();
+                } else {
+                    this.undoStack.clearTemp();
                 }
             }
             this.refresh();
@@ -159,17 +113,11 @@ class AlignerLHMove extends AlignerLHDefault {
             return;
         }
         if (e === Codes.mouseEvent.drag) {
-            _.each(
-                _.filter(
-                    Object.values(this.layerManager.getLayers()),
-                    x => x.get('active'),
-                ),
-                x => x.translate(
-                    math.matrix([
-                        [data.difference.x / this.camera.scale],
-                        [data.difference.y / this.camera.scale],
-                    ]),
-                ),
+            this.getActive().translate(
+                math.matrix([
+                    [data.difference.x / this.camera.scale],
+                    [data.difference.y / this.camera.scale],
+                ]),
             );
         } else if (e === Codes.mouseEvent.up) {
             super.processMouseEvent(e, data);
@@ -196,10 +144,10 @@ class AlignerLHMove extends AlignerLHDefault {
  * Logic handler for the rotation tool in the alignment view.
  */
 class AlignerLHRotate extends AlignerLHDefault {
-    constructor(camera, layerManager, refreshFunc, cursorFunc, undoStack, rp, hovering) {
-        super(camera, layerManager, refreshFunc, cursorFunc, undoStack);
-        this.rp = rp;
-        this.hovering = hovering;
+    constructor(camera, layerManager, refreshFunc, undoStack, rotationPoint) {
+        super(camera, layerManager, refreshFunc, undoStack);
+        this.rp = rotationPoint;
+        this.rpHoverState = false;
         this[curs] = 'def';
         this.recordMousePosition();
         this.recordKeyStates();
@@ -236,19 +184,13 @@ class AlignerLHRotate extends AlignerLHDefault {
                 const difference = this.camera.mouseToCameraScale(data.difference);
                 const to = Vec2.subtract(position, this.rp);
                 const from = Vec2.subtract(to, difference);
-                _.each(
-                    _.filter(
-                        Object.values(this.layerManager.getLayers()),
-                        x => x.get('active'),
-                    ),
-                    x => x.rotate(
-                        Vec2.angleBetween(from, to),
-                        math.matrix([
-                            [this.rp.x],
-                            [this.rp.y],
-                            [1],
-                        ]),
-                    ),
+                this.getActive().rotate(
+                    Vec2.angleBetween(from, to),
+                    math.matrix([
+                        [this.rp.x],
+                        [this.rp.y],
+                        [1],
+                    ]),
                 );
             } else if (this[curs] === 'dragRP') {
                 const rpNew = Vec2.subtract(
@@ -281,16 +223,27 @@ class AlignerLHRotate extends AlignerLHDefault {
     }
 
     refreshState() {
-        if (this.hovering(this.camera.mouseToCameraPosition(this.mousePosition))) {
+        const { x, y } = this.camera.mouseToCameraPosition(this.mousePosition);
+        if (this.rp.isHovering(x, y)) {
             if (this.keystates.mouseLeft !== true) {
                 this[curs] = 'hoverRP';
             } else if (this[curs] !== 'rotate') {
                 this[curs] = 'dragRP';
             }
-        } else if (this.keystates.mouseLeft === true) {
-            this[curs] = 'rotate';
+            if (!this.rpHoverState) {
+                this.rpHoverState = true;
+                this.refresh();
+            }
         } else {
-            this[curs] = 'def';
+            if (this.keystates.mouseLeft === true) {
+                this[curs] = 'rotate';
+            } else {
+                this[curs] = 'def';
+            }
+            if (this.rpHoverState) {
+                this.rpHoverState = false;
+                this.refresh();
+            }
         }
         this.refreshCursor();
     }

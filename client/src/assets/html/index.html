@@ -88,7 +88,14 @@
                     </div>
                     <!-- Aligner Panel -->
                     <div ng-show='visible.panel.button_aligner'>
-                        <aligner layerManager="MainController.layerManager" />
+                        <aligner layers="layerManager"
+                                 init="initAlignment"
+                                 exit="exitAlignment"
+                                 logic-handler="alignerLH"
+                                 camera="camera"
+                                 undo-stack="undoStack"
+                                 renderables="getAlignerRenderables"
+                                 />
                     </div>
                     <!-- Detector Panel -->
                     <div ng-show='visible.panel.button_detector' style='margin-top: auto'>

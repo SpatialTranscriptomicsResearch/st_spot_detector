@@ -132,6 +132,11 @@ canvas:active {
     font-weight: bold;
 }
 
+.menu-bar-panel h3 {
+    font-size: 14px;
+    font-weight: bold;
+}
+
 .menu-bar-panel .btn-group {
     display: flex;
     flex-direction: row;

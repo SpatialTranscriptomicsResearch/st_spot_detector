@@ -151,10 +151,13 @@ function viewer() {
                             return;
                         }
 
-                        // Would be more consistent to set this attribute in the rendering worker
-                        // (i.e., setting the alpha value on each pixel) but this should be a lot
-                        // faster.
-                        $(layer.canvas).css('opacity', layer.get('alpha'));
+                        const adjustments = layer.adjustments;
+
+                        $(layer.canvas).css('opacity', _.reduce(
+                            _.filter(adjustments, ([x]) => x === 'opacity'),
+                            (a, [, x]) => a * x,
+                            1.0,
+                        ));
 
                         const tmat = math.multiply(camera.getTransform(), layer.tmat);
 
@@ -202,7 +205,7 @@ function viewer() {
                             ...math.min(range, 0),
                             ...math.max(range, 0),
                             level,
-                            layer.getAll(),
+                            adjustments,
                         );
                         const tsz = _.map(layer.tdim, x => x * level);
                         Array.from(it).forEach(
@@ -230,7 +233,7 @@ function viewer() {
                     scope.camera.end();
                 } else if (scope.data.state === 'state_alignment') {
                     scope.camera.begin();
-                    scope.aligner.renderFG(fgCtx);
+                    _.each(scope.getAlignerRenderables(), rfncScale);
                     scope.camera.end();
                 } else if(scope.data.state == 'state_adjustment') {
                     scope.camera.begin();
@@ -369,22 +372,8 @@ function viewer() {
                     if(lastState == scope.data.state) {
                         var action = scope.undoStack.pop();
                         if(lastState == "state_alignment") {
-                            var matrices = action.state;
-                            _.each(
-                                _.filter(
-                                    Object.entries(scope.layerManager.getLayers()),
-                                    layer => {
-                                        var key = layer[0]; // e.g. 'he' or 'cy3'
-                                        var layerObject = layer[1];
-                                        return key in matrices;
-                                    },
-                                ),
-                                layer => {
-                                    var key = layer[0]; // e.g. 'he' or 'cy3'
-                                    var layerObject = layer[1];
-                                    layerObject.setTransform(matrices[key]);
-                                }
-                            );
+                            const { layer, matrix } = action.state;
+                            layer.setTransform(matrix);
                         }
                         else if(lastState == "state_predetection") {
                             calibrator.points = action.state;

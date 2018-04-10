@@ -1,3 +1,4 @@
+import 'bootstrap/dist/js/bootstrap.bundle.min';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
 import 'spinkit/css/spinners/10-fading-circle.css';

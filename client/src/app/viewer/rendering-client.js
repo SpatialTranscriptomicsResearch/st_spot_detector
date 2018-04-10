@@ -24,7 +24,7 @@ const ReturnCodes = Object.freeze({
 
 // private members
 const cache = Symbol('Tile cache');
-const cmod = Symbol('Current modifiers');
+const cmod = Symbol('Current filters');
 const data = Symbol('Tile data');
 const fltr = Symbol('Filters');
 const mthrd = Symbol('Maximum number of threads');
@@ -199,7 +199,7 @@ class RenderingClient {
      * @returns {string} The appropriate return code from {@link
      * module:rendering-client~ReturnCodes}.
      */
-    request(x, y, z, modifiers) {
+    request(x, y, z, filters) {
         if (!(
             z in this[tn] &&
             x >= 0 && x < this[tn][z][0] &&
@@ -208,8 +208,8 @@ class RenderingClient {
             return ReturnCodes.OOB;
         }
 
-        const id = serializeId(x, y, z, modifiers);
-        const modFilter = _.filter(Object.entries(modifiers), e => e[0] in this[fltr]);
+        const id = serializeId(x, y, z, filters);
+        const modFilter = _.filter(filters, ([name]) => name in this[fltr]);
 
         if (!_.isEqual(modFilter, this[cmod])) {
             // all previous requests are out of date, so we clear the cache and the queue
@@ -248,10 +248,10 @@ class RenderingClient {
      * the bounding box, where (x, y, z) is the coordinates of the tile and returnCode is the
      * appropriate return code from {@link module:rendering-client~ReturnCodes}.
      */
-    * requestAll(xmin, ymin, xmax, ymax, z, modifiers) {
+    * requestAll(xmin, ymin, xmax, ymax, z, filters) {
         for (let x = xmin; x <= xmax; x += 1) {
             for (let y = ymin; y <= ymax; y += 1) {
-                yield [x, y, z, this.request(x, y, z, modifiers)];
+                yield [x, y, z, this.request(x, y, z, filters)];
             }
         }
     }

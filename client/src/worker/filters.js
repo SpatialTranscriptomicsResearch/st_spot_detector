@@ -25,7 +25,7 @@ class Brightness extends Filter {
         if (p === 0) {
             return;
         }
-        const brightness = p * 2.55;
+        const brightness = p * 255;
         for (let i = 0; i < d.length;) {
             d[i] = d[i++] + brightness;
             d[i] = d[i++] + brightness;
@@ -41,7 +41,7 @@ class Contrast extends Filter {
         if (p === 0) {
             return;
         }
-        const contrast = ((p / 100) + 1) ** 6;
+        const contrast = (p + 1) ** 6;
         const intercept = 127.5 * (1 - contrast);
         for (let i = 0; i < d.length;) {
             d[i] = intercept + (contrast * d[i++]);

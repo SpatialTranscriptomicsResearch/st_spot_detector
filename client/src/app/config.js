@@ -5,8 +5,10 @@ export const MAX_THREADS = 4;
 export const WORKER_PATH = 'worker.js';
 
 // Options for the aligner
-export const ROT_POINT_COLOR = 'rgba(100, 100, 255, 1.0)';
-export const ROT_POINT_RADIUS = 128;
+export const ROT_POINT_COLOR_DEF = 'hsla(0,  80%, 50%, 0.6)';
+export const ROT_POINT_COLOR_HLT = 'hsla(0, 100%, 80%, 1.0)';
+export const ROT_POINT_LINE_WGHT = 7;
+export const ROT_POINT_RADIUS = 10;
 
 // Options for the calibrator
 export const CALIBRATOR_LINE_COL_DEF = 'hsla(0, 0%, 100%, 0.3)';

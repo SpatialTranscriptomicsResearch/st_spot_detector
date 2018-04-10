@@ -11,9 +11,9 @@ import { Messages, Responses } from './return-codes';
 
 let histogram;
 
-function applyFilters(tile, modifiers, ...args) {
+function applyFilters(tile, filters, ...args) {
     _.each(
-        _.filter(modifiers, _.compose(k => k in Filters, _.first)),
+        _.filter(filters, _.compose(k => k in Filters, _.first)),
         ([k, v]) => { Filters[k].apply(tile.data, histogram, v); },
     );
     postMessage([Responses.SUCCESS, [tile, ...args]], [tile.data.buffer]);

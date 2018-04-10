@@ -221,17 +221,20 @@ const main = [
         };
 
         function updateVisibility() {
-            $scope.layerManager.getLayer('cy3')
-                .set('visible', $scope.data.cy3Active)
-                .set('alpha', 1.0);
-            if ('he' in $scope.layerManager.getLayers()) {
-                $scope.layerManager.getLayer('he')
-                    .set('visible', !$scope.data.cy3Active)
-                    .set('alpha', 1.0);
+            if ($scope.data.state === 'state_alignment') {
+                $scope.layerManager.getLayer('cy3').set('visible', true);
+                $scope.layerManager.getLayer('he').set('visible', true);
+            } else {
+                $scope.layerManager.getLayer('cy3').set('visible', $scope.data.cy3Active);
+                $scope.layerManager.getLayer('he').set('visible', !$scope.data.cy3Active);
             }
         }
 
         $scope.updateState = function(new_state) {
+            if ($scope.data.state === 'state_alignment') {
+                $scope.exitAlignment();
+            }
+
             $scope.data.state = new_state;
 
             if($scope.data.state === 'state_start') {
@@ -261,9 +264,11 @@ const main = [
                 $scope.visible.canvas = true;
                 $scope.visible.imageToggleBar = false;
 
-                $scope.aligner.initialize();
+                $scope.initAlignment();
 
-                $scope.data.logicHandler = $scope.aligner.logicHandler;
+                updateVisibility();
+
+                $scope.data.logicHandler = $scope.alignerLH;
             }
             else if($scope.data.state === 'state_detection') {
                 $scope.visible.menuBar = false;
