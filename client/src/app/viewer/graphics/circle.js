@@ -29,13 +29,15 @@ const circleMixin = s => class extends s {
         this[sr] = r;
     }
 
-    get sx() { return this[sx]; }
-    get sy() { return this[sy]; }
-    get sr() { return this[sr]; }
+    get x() { return this[sx]; }
+    get y() { return this[sy]; }
+    get r() { return this[sr]; }
 
-    set sx(value) { this[sx] = value; }
-    set sy(value) { this[sy] = value; }
-    set sr(value) { this[sr] = value; }
+    set x(value) { this[sx] = value; }
+    set y(value) { this[sy] = value; }
+    set r(value) { this[sr] = value; }
+
+    get scale() { return this[sscale]; }
 };
 
 renderAdd(

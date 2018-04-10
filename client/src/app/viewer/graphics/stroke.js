@@ -13,9 +13,9 @@ const strokeMixin = s => class extends s {
     static rtype() { return srType; }
     constructor(...args) {
         super(...args);
-        this.strokeDash = [];
-        this.strokeColor = 'black';
-        this.strokeWidth = 1;
+        this.lineDash = [];
+        this.lineColor = 'black';
+        this.lineWidth = 1;
     }
     get lineColor() { return this[sscolor]; }
     get lineWidth() { return this[sswidth]; }
@@ -28,9 +28,9 @@ const strokeMixin = s => class extends s {
 renderAdd(
     srType,
     (ctx, x) => {
-        ctx.strokeStyle = x.strokeColor;
-        ctx.lineWidth = x.strokeWidth;
-        ctx.setLineDash(x.strokeDash);
+        ctx.strokeStyle = x.lineColor;
+        ctx.lineWidth = x.scale * x.lineWidth;
+        ctx.setLineDash(x.lineDash.map(a => a * x.scale));
         ctx.stroke();
     },
 );

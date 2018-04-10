@@ -87,11 +87,11 @@ class Calibrator {
         // set annotation scale
         const scale        = ((this[sx1] + this[sy1]) - this[sx0] - this[sy0]);
 
-        const strokeWeight = Math.max(1, scale * CALIBRATOR_LINE_WGHT);
-        const strokeDash   = _.map(CALIBRATOR_LINE_DASH, x => Math.max(1, scale * x));
+        const lineWeight = Math.max(1, scale * CALIBRATOR_LINE_WGHT);
+        const lineDash   = _.map(CALIBRATOR_LINE_DASH, x => Math.max(1, scale * x));
         _.each(this[slines], (l) => {
-            l.strokeWidth = strokeWeight;
-            l.strokeDash = strokeDash;
+            l.lineWidth = lineWeight;
+            l.lineDash = lineDash;
         });
 
         const circleWeight = Math.max(1, scale * CALIBRATOR_CORNER_WGHT);
@@ -134,7 +134,7 @@ class Calibrator {
         _.each(
             _.zip(this[ssel], this[slines]),
             ([s, l]) => {
-                l.strokeColor = s ? CALIBRATOR_LINE_COL_HLT : CALIBRATOR_LINE_COL_DEF;
+                l.lineColor = s ? CALIBRATOR_LINE_COL_HLT : CALIBRATOR_LINE_COL_DEF;
             },
         );
     }
