@@ -120,9 +120,10 @@ class Layer {
      *
      * @returns {mathjs#matrix} The transformation matrix.
      */
-    getTransform(transMatrix) {
+    getTransform() {
         return this.tmat;
     }
+
     /**
      * Sets the layer's transform to the given transformation matrix.
      *
