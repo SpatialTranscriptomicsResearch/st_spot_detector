@@ -147,10 +147,6 @@ canvas:active {
     justify-content: space-between;
 }
 
-.panel-content-wrapper > div {
-    margin-top: auto;
-}
-
 .panel-content-wrapper div * + * {
     margin-top: 0.5rem;
 }
