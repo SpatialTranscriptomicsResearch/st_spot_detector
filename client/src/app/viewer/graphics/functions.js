@@ -35,6 +35,25 @@ export function collides(x, y, obj) {
     return false;
 }
 
+// scaler
+const jtblScale = [];
+export function scaleAdd(type, sfnc) { jtblScale[type] = sfnc; }
+export function scaleNxt() { return jtblScale.length; }
+
+/**
+ * Rescales the graphics object and returns it
+ */
+export function scale(value, obj) {
+    let constructor = obj.constructor;
+    while (constructor) {
+        if (constructor.stype !== undefined) {
+            jtblScale[constructor.stype()](value, obj);
+        }
+        constructor = Object.getPrototypeOf(constructor);
+    }
+    return obj;
+}
+
 // utility functions
 
 /**

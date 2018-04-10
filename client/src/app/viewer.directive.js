@@ -21,7 +21,7 @@ import UndoStack, { UndoAction } from './viewer/undo';
 
 import { MAX_THREADS } from './config';
 import { mathjsToTransform, toLayerCoordinates, transformToMathjs } from './utils';
-import { clear, render } from './viewer/graphics/functions';
+import { clear, render, scale } from './viewer/graphics/functions';
 
 function viewer() {
     return {
@@ -32,8 +32,6 @@ function viewer() {
             const fgCtx = fg.getContext('2d');
 
             const layers = element[0].querySelector('#layers');
-
-            const rfnc = _.partial(render, fgCtx);
 
             // prevents the context menu from appearing on right click
             fg.oncontextmenu = function(e) { e.preventDefault(); }
@@ -225,10 +223,16 @@ function viewer() {
                         );
                     });
 
+                const rfnc = _.partial(render, fgCtx);
+                const rfncScale = _.compose(
+                    rfnc,
+                    _.partial(scale, 1 / camera.scale),
+                );
+
                 clear(fgCtx);
                 if(scope.data.state == 'state_predetection') {
                     scope.camera.begin();
-                    _.each(calibrator.renderables, rfnc);
+                    _.each(calibrator.renderables, rfncScale);
                     scope.camera.end();
                 } else if (scope.data.state === 'state_alignment') {
                     scope.camera.begin();

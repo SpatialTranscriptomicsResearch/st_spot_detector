@@ -56,7 +56,14 @@ class Calibrator {
             (x, y) => { this[sy1] = y; },
         ];
 
-        this[slines] = _.times(4, () => new Line());
+        this[slines] = _.times(
+            4,
+            () => new Line(0, 0, 0, 0, {
+                lineDash: CALIBRATOR_LINE_DASH,
+                lineWidth: CALIBRATOR_LINE_WGHT,
+                lineColor: CALIBRATOR_LINE_COL_DEF,
+            }),
+        );
 
         this[slineSelSetters] = [
             () => { this[ssel][0] = true; },
@@ -66,10 +73,13 @@ class Calibrator {
         ];
 
         this[scircles] = _.times(4, () => {
-            const c = new FilledCircle();
-            c.fillColor = CALIBRATOR_CORNER_COL;
-            c.lineColor = CALIBRATOR_CORNER_COL;
-            c.lineWidth = 0;
+            const c = new FilledCircle(
+                0, 0,
+                CALIBRATOR_CORNER_WGHT,
+                {
+                    fillColor: CALIBRATOR_CORNER_COL,
+                },
+            );
             return c;
         });
 
@@ -84,19 +94,6 @@ class Calibrator {
     }
 
     updateGraphics() {
-        // set annotation scale
-        const scale        = ((this[sx1] + this[sy1]) - this[sx0] - this[sy0]);
-
-        const lineWeight = Math.max(1, scale * CALIBRATOR_LINE_WGHT);
-        const lineDash   = _.map(CALIBRATOR_LINE_DASH, x => Math.max(1, scale * x));
-        _.each(this[slines], (l) => {
-            l.lineWidth = lineWeight;
-            l.lineDash = lineDash;
-        });
-
-        const circleWeight = Math.max(1, scale * CALIBRATOR_CORNER_WGHT);
-        _.each(this[scircles], (c) => { c.r = circleWeight; });
-
         // update line positions
         this[slines][0].x0 = this[sx0]; this[slines][0].y0 = this[sy0];
         this[slines][0].x1 = this[sx0]; this[slines][0].y1 = this[sy1];

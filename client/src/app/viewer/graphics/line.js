@@ -22,8 +22,8 @@ const lineMixin = s => class extends strokeMixin(s) {
     static ctype() { return cType; }
     static rtype() { return rType; }
 
-    constructor(x0, y0, x1, y1) {
-        super();
+    constructor(x0, y0, x1, y1, kwargs) {
+        super(kwargs);
         this.x0 = x0;
         this.y0 = y0;
         this.x1 = x1;
@@ -63,7 +63,8 @@ collidesAdd(
             [line.x0, line.y0],
         );
         const n = math.multiply([[0, 1], [-1, 0]], v0);
-        return Math.abs(math.dot(v1, n) / math.sqrt(math.dot(n, n))) < line.strokeWidth;
+        return Math.abs(math.dot(v1, n) / math.sqrt(math.dot(n, n))) <
+            (line.scale * line.lineWidth);
     },
 );
 
