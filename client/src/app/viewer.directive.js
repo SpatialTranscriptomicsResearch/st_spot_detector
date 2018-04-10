@@ -304,6 +304,9 @@ function viewer() {
             }
 
             scope.receiveTilemap = function (data) {
+                // avoid calls to refreshCanvas before tiles have been loaded.
+                scope.layerManager.callback = _.noop;
+
                 // delete all current layers and add the ones in data.tiles
                 _.each(
                     Object.keys(scope.layerManager.getLayers()),
@@ -340,7 +343,10 @@ function viewer() {
                         layer.renderingClient.loadTileData(
                             tiles.tiles,
                             tiles.histogram,
-                        ).then(refreshCanvas);
+                        ).then(() => {
+                            scope.layerManager.callback = refreshCanvas;
+                            refreshCanvas();
+                        });
                     },
                 );
 
@@ -452,7 +458,6 @@ function viewer() {
 
             scope.camera = camera;
 
-            scope.layerManager.callback = refreshCanvas;
             scope.layerManager.container = layers;
 
             window.addEventListener(
