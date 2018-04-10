@@ -6,15 +6,12 @@
 // (filters need to be applied in-place for efficiency.)
 
 class Filter {
-    /**
-     * FIXME: disable constructor for the time being, as new.target not currently supported by
-     * uglify-js yet
-     */
-    // constructor() {
-    //     if (new.target === Filter)
-    //       throw new TypeError(
-    //         "Call of new on abstract class Filter not allowed.");
-    // }
+    constructor() {
+        if (new.target === Filter) {
+            throw new TypeError(
+                'Call of new on abstract class Filter not allowed.');
+        }
+    }
 
     /* eslint-disable class-methods-use-this */
     apply(/* data,  histogram,  parameters */) {
