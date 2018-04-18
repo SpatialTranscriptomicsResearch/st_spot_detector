@@ -40,7 +40,7 @@ def Image_to_jpeg_URI(image):
     """Take a PIL Image object and return a jpeg base64-encoded URI."""
     # save the image to a byte stream encoded as jpeg
     jpeg_data = io.BytesIO()
-    image.save(jpeg_data, 'JPEG')
+    image.save(jpeg_data, 'JPEG', quality=100)
 
     # encode the data into a URI with the header added
     jpeg_string = base64.b64encode(jpeg_data.getvalue())
