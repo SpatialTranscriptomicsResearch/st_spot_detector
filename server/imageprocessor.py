@@ -141,15 +141,6 @@ def detect_keypoints(image):
 
     return keypoints
 
-def transform_original_image(image):
-    """Here we take an original fluorescently stained image (~30k x 30k) and
-    scale it down to maximum 20k x 20k.
-    """
-    # resize image
-    image, scaling_factor = resize_image(image, [20000, 20000])
-
-    return image, scaling_factor
-
 def resize_image(image, max_size):
     """Resize and return an image and the scaling factor, defined as the
     original image size / resultant image size.
