@@ -108,6 +108,10 @@ function aligner() {
                         xs,
                         ({ name, value }) => {
                             switch (name) {
+                            case 'brightness':
+                                return [name, 2 * value];
+                            case 'contrast':
+                                return [name, value / 2];
                             default:
                                 return [name, value];
                             }

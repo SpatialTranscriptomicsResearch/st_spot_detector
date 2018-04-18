@@ -25,11 +25,12 @@ class Brightness extends Filter {
         if (p === 0) {
             return;
         }
-        const brightness = p * 255;
+        const k = Math.exp(-p);
+        const brightness = v => 255 / (1 + (((255 / v) - 1) * k));
         for (let i = 0; i < d.length;) {
-            d[i] = d[i++] + brightness;
-            d[i] = d[i++] + brightness;
-            d[i] = d[i++] + brightness;
+            d[i] = brightness(d[i++]);
+            d[i] = brightness(d[i++]);
+            d[i] = brightness(d[i++]);
             i++; // ignore alpha channel
         }
     }
@@ -41,12 +42,12 @@ class Contrast extends Filter {
         if (p === 0) {
             return;
         }
-        const contrast = (p + 1) ** 6;
-        const intercept = 127.5 * (1 - contrast);
+        const k = Math.exp(p);
+        const contrast = v => 255 / (1 + (((255 / v) - 1) ** k));
         for (let i = 0; i < d.length;) {
-            d[i] = intercept + (contrast * d[i++]);
-            d[i] = intercept + (contrast * d[i++]);
-            d[i] = intercept + (contrast * d[i++]);
+            d[i] = contrast(d[i++]);
+            d[i] = contrast(d[i++]);
+            d[i] = contrast(d[i++]);
             i++; // ignore alpha channel
         }
     }
