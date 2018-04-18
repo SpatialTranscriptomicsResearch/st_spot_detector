@@ -12,7 +12,7 @@ class Tilemap:
         self.tile_width, self.tile_height = tile_width, tile_height
 
         level = 1
-        width, height = image.width, image.height
+        width, height = image.size
         while True:
             self.tilemaps[level] = tile_image(image, tile_width, tile_height)
             width /= 2
