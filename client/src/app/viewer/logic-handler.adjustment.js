@@ -74,7 +74,7 @@ class AdjustmentLH extends LogicHandler {
             eventData.ctrl == true) {
             if(mouseEvent == Codes.mouseEvent.down) {
                 this.spotAdjuster.moving = this.spotAdjuster.atSelectedSpots(eventData.position);
-                cursor = 'grabbed';
+                cursor = 'grabbing';
                 if(this.spotAdjuster.moving) {
                     action = new UndoAction(
                         'state_adjustment',
@@ -93,7 +93,7 @@ class AdjustmentLH extends LogicHandler {
                 else {
                     this.camera.pan(eventData.difference);
                 }
-                cursor = 'grabbed';
+                cursor = 'grabbing';
             }
             else if(mouseEvent == Codes.mouseEvent.move) {
                 cursor = 'grab';
