@@ -347,15 +347,15 @@ function viewer() {
                     refreshCanvas();
                 });
 
-                // center camera
-                camera.position = Vec2.Vec2(maxWidth / 2, maxHeight / 2);
-                camera.scale = 2 / maxLevel;
-                camera.updateViewport();
-
                 // update camera boundaries
                 camera.positionBoundaries.maxX = maxWidth;
                 camera.positionBoundaries.maxY = maxHeight;
                 camera.minScale = 1 / maxLevel;
+
+                // center camera
+                camera.position = Vec2.Vec2(maxWidth / 2, maxHeight / 2);
+                camera.scale = 2 / maxLevel;
+                camera.updateViewport();
 
                 // reset calibrator points
                 calibrator.points = [0, 0, maxWidth, maxHeight];
