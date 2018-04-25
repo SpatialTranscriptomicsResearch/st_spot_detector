@@ -14,15 +14,6 @@ Image.MAX_IMAGE_PIXELS=None
 
 URI_HEADER = b'data:image/jpeg;base64,'
 
-def PIL_to_CV2_image(PIL_image):
-    CV2_image = cv2.cvtColor(numpy.array(PIL_image), cv2.COLOR_RGB2GRAY)
-    return CV2_image
-
-def CV2_to_PIL_image(CV2_image):
-    CV2_image = cv2.cvtColor(numpy.array(CV2_image), cv2.COLOR_GRAY2RGB)
-    PIL_image = Image.fromarray(CV2_image)
-    return PIL_image
-
 def validate_jpeg_URI(jpeg_URI):
     """Checks that it is a valid base64-encoded jpeg URI."""
     valid = (jpeg_URI.find(URI_HEADER) == 0)
@@ -93,29 +84,25 @@ def apply_BCT(image, apply_thresholding=True):
     # the image is inverted to colour the features darkest
     image = ImageOps.invert(image)
 
-    # convert the image into a grayscale cv2 formatted image
-    cv2_image = PIL_to_CV2_image(image)
+    # convert the image into a grayscale
+    image = numpy.array(image.convert('L'))
 
     # create a CLAHE object
     clahe = cv2.createCLAHE(clipLimit=20.0, tileGridSize=(1,1))
 
-    cv2_image = clahe.apply(cv2_image)
+    image = clahe.apply(image)
 
-    if(not apply_thresholding):
-        image = CV2_to_PIL_image(cv2_image)
-        return image
+    if apply_thresholding:
+        # Mean adaptive threshold has been chosen here because Gaussian
+        # adaptive thresholding is very slow, takes about 15 minutes for a
+        # 20k x 20k image and does not yield significantly better results
+        image = cv2.adaptiveThreshold(image, 255,
+                                      cv2.ADAPTIVE_THRESH_MEAN_C,
+                                      cv2.THRESH_BINARY,
+                                      103, 20)
 
-    # Mean adaptive threshold has been chosen here because Gaussian
-    # adaptive thresholding is very slow, takes about 15 minutes for a
-    # 20k x 20k image and does not yield significantly better results
-    thresholded_image = cv2.adaptiveThreshold(cv2_image, 255,
-                                              cv2.ADAPTIVE_THRESH_MEAN_C,
-                                              cv2.THRESH_BINARY,
-                                              103, 20)
+    return Image.fromarray(image).convert('RGB')
 
-    # convert the image back into a PIL image
-    image = CV2_to_PIL_image(thresholded_image)
-    return image
 
 def detect_keypoints(image):
     """This function uses OpenCV to threshold an image and do some simple,
@@ -123,10 +110,9 @@ def detect_keypoints(image):
     The parameters for min and max area are roughly based on an image
     of size 4k x 4k.
     """
-    # convert the image to an OpenCV image for blob detection
-    cv2_image = PIL_to_CV2_image(image)
+    image = numpy.array(image.convert('L'))
 
-    width, height = image.size
+    height, width = image.shape
 
     params = cv2.SimpleBlobDetector_Params()
     params.thresholdStep = 5.0
@@ -137,7 +123,7 @@ def detect_keypoints(image):
     params.maxArea = 5000
 
     detector = cv2.SimpleBlobDetector_create(params)
-    keypoints = detector.detect(cv2_image)
+    keypoints = detector.detect(image)
 
     return keypoints
 
