@@ -82,12 +82,8 @@ const SpotAdjuster = (function() {
         addSpot: function(position) {
             var renderPosition = self.camera.mouseToCameraPosition(position, 'cy3');
             renderPosition = Vec2.truncate(renderPosition);
-            var adjustedPosition = Vec2.subtract(
-                renderPosition,
-                Vec2.Vec2(self.calibrator.x0, self.calibrator.y0),
-            );
-            // we don't want negative array coordinates
-            adjustedPosition = Vec2.clamp(adjustedPosition, 0);
+            const [x0, y0] = self.calibrator.points;
+            const adjustedPosition = Vec2.subtract(renderPosition, Vec2.Vec2(x0, y0));
             var newArrayPosition = Vec2.add(Vec2.divide(adjustedPosition, self.spots.spacer), Vec2.Vec2(1, 1));
             var arrayPosition = Vec2.round(newArrayPosition);
             const newSpot = new Spot({
