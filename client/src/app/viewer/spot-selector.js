@@ -25,8 +25,8 @@ const SpotSelector = (function() {
                               BR: Vec2.Vec2()};
 
         self.renderingRect = new SelectionRectangle(0, 0, 0, 0);
-        self.renderingRect.strokeColor = 'rgba(150, 150, 150, 0.95)';
-        self.renderingRect.strokeDash = [4, 3];
+        self.renderingRect.lineColor = 'rgba(150, 150, 150, 0.95)';
+        self.renderingRect.lineDash = [4, 3];
         self.renderingRect.opacity = 0;
     };
   
