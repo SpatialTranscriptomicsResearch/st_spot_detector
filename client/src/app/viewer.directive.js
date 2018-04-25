@@ -314,7 +314,7 @@ function viewer() {
                 let maxHeight = 0;
                 let maxLevel = 1;
 
-                _.each(
+                Promise.all(_.map(
                     Object.entries(data),
                     ([layerName, tiles]) => {
                         const layer = scope.layerManager.addLayer(layerName);
@@ -337,15 +337,15 @@ function viewer() {
                             Math.max(1, nThreads),
                             constructTileCallback(layer, tiles.tile_size),
                         );
-                        layer.renderingClient.loadTileData(
+                        return layer.renderingClient.loadTileData(
                             tiles.tiles,
                             tiles.histogram,
-                        ).then(() => {
-                            scope.layerManager.callback = refreshCanvas;
-                            refreshCanvas();
-                        });
+                        );
                     },
-                );
+                )).then(() => {
+                    scope.layerManager.callback = refreshCanvas;
+                    refreshCanvas();
+                });
 
                 // center camera
                 camera.position = Vec2.Vec2(maxWidth / 2, maxHeight / 2);
