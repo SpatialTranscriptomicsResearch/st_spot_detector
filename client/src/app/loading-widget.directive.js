@@ -140,7 +140,7 @@ function getAnimators(state) {
                 default: {
                     const n = Math.trunc((Date.now() / 500)) % 20;
                     const m = n > 10 ? 20 - n : n;
-                    return `[${' '.repeat(m)}*${' '.repeat(10 - m)}]`;
+                    return `[${' '.repeat(m)}○${' '.repeat(10 - m)}]`;
                 }
                 }
             })();
