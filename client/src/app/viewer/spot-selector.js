@@ -27,6 +27,7 @@ const SpotSelector = (function() {
         self.renderingRect = new SelectionRectangle(0, 0, 0, 0);
         self.renderingRect.lineColor = 'rgba(150, 150, 150, 0.95)';
         self.renderingRect.lineDash = [4, 3];
+        self.renderingRect.lineWidth = 2;
         self.renderingRect.opacity = 0;
     };
   
