@@ -12,19 +12,13 @@ import Vec2 from './viewer/vec2';
 /* eslint-disable no-unused-vars, class-methods-use-this */
 // (makes sense to disable these, since this class is abstract */
 class LogicHandler {
-    /**
-     * FIXME: Have to disable the below for the time being, since new.target
-     *        is not supported in uglify-js yet, see
-     *        https://github.com/mishoo/UglifyJS2/issues/938 for the bug
-     *        tracker issue.
-     */
-    // constructor() {
-    //     if (new.target === LogicHandler) {
-    //         throw new TypeError(
-    //             "Call of new on abstract class LogicHandler not allowed."
-    //         );
-    //     }
-    // }
+    constructor() {
+        if (new.target === LogicHandler) {
+            throw new TypeError(
+                "Call of new on abstract class LogicHandler not allowed."
+            );
+        }
+    }
 
     /**
      * Abstract method for handling key down events.
