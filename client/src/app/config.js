@@ -22,3 +22,7 @@ export const CALIBRATOR_CORNER_WGHT  = 0.9 * CALIBRATOR_LINE_WGHT;
 export const SPOT_COL_DEF = 'hsl(  6, 78%, 57%)';
 export const SPOT_COL_HLT = 'hsl(140, 63%, 42%)';
 export const SPOT_OPACITY = '0.5';
+
+// Options for the loading widget
+export const LOADING_FPS = 60;
+export const LOADING_TWEEN_TIME = 1000;

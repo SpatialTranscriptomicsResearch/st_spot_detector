@@ -6,6 +6,8 @@ import imageToggleHE from 'assets/images/imageToggleHE.png';
 import LayerManager from './viewer/layer-manager';
 import modal from './modal';
 
+import { LOAD_STAGE } from './loading-widget.directive';
+
 function error(message) {
     modal(
         'Error',
@@ -81,16 +83,6 @@ const main = [
             state_error:         "An error occured. Please try again."
         };
 
-        // texts to display underneath the spinner while loading
-        const spinnerTexts = {
-            state_start:         "",
-            state_upload:        "Processing image(s). This may take a few minutes.",
-            state_predetection:  "",
-            state_detection:     "Detecting spots.",
-            state_adjustment:     "",
-            state_error:         ""
-        };
-
         // texts to display as a title on the menu bar panel
         const panelTitles = {
             button_uploader: 'Uploader',
@@ -138,7 +130,7 @@ const main = [
             menuBarPanel: Boolean(),
             zoomBar: Boolean(),
             imageToggleBar: Boolean(),
-            spinner: Boolean(),
+            loadingWidget: Boolean(),
             canvas: Boolean(),
             undo: {
                 undo: Boolean(),
@@ -240,19 +232,19 @@ const main = [
             if($scope.data.state === 'state_start') {
                 $scope.visible.menuBar = true;
                 $scope.visible.zoomBar = false;
-                $scope.visible.spinner = false;
+                $scope.visible.loadingWidget = false;
                 $scope.visible.canvas = false;
             }
             else if($scope.data.state === 'state_upload') {
                 $scope.visible.menuBar = false;
                 $scope.visible.zoomBar = false;
-                $scope.visible.spinner = true;
+                $scope.visible.loadingWidget = true;
                 $scope.visible.canvas = false;
             }
             else if($scope.data.state === 'state_predetection') {
                 $scope.visible.menuBar = true;
                 $scope.visible.zoomBar = true;
-                $scope.visible.spinner = false;
+                $scope.visible.loadingWidget = false;
                 $scope.visible.canvas = true;
 
                 $scope.data.logicHandler = $scope.predetectionLH;
@@ -260,7 +252,7 @@ const main = [
             else if($scope.data.state === 'state_alignment') {
                 $scope.visible.menuBar = true;
                 $scope.visible.zoomBar = true;
-                $scope.visible.spinner = false;
+                $scope.visible.loadingWidget = false;
                 $scope.visible.canvas = true;
                 $scope.visible.imageToggleBar = false;
 
@@ -273,13 +265,13 @@ const main = [
             else if($scope.data.state === 'state_detection') {
                 $scope.visible.menuBar = false;
                 $scope.visible.zoomBar = false;
-                $scope.visible.spinner = true;
+                $scope.visible.loadingWidget = true;
                 $scope.visible.canvas = false;
             }
             else if($scope.data.state === 'state_adjustment') {
                 $scope.visible.menuBar = true;
                 $scope.visible.zoomBar = true;
-                $scope.visible.spinner = false;
+                $scope.visible.loadingWidget = false;
                 $scope.visible.canvas = true;
 
                 $scope.data.logicHandler = $scope.adjustmentLH;
@@ -335,17 +327,39 @@ const main = [
             // who we are
             calibrationData.session_id = $scope.data.sessionId;
 
+            let loadingState = $scope.initLoading(LOAD_STAGE.WAIT);
+
             $q.when(tryState(
                 $scope,
                 'state_detection',
-                unwrapRequest($http.get('../detect_spots', { params: calibrationData })),
+                unwrapRequest($http({
+                    method: 'GET',
+                    url: '../detect_spots',
+                    params: calibrationData,
+                    eventHandlers: {
+                        progress(e) {
+                            loadingState = $scope.updateLoading(
+                                loadingState,
+                                {
+                                    stage: LOAD_STAGE.DOWNLOAD,
+                                    loaded: e.loaded,
+                                    total: e.total,
+                                },
+                            );
+                        },
+                    },
+                })),
             )).then((result) => {
                 $scope.updateState('state_adjustment');
                 openPanel('button_exporter');
                 openPanel('button_adjuster');
                 $scope.loadSpots(result); // defined in the viewer directive
                 $scope.data.spotTransformMatrx = result.transform_matrix;
-            }, _.noop);
+            }).catch(
+                _.noop,
+            ).finally(() => {
+                $scope.exitLoading(loadingState);
+            });
         };
 
         $scope.getPanelTitle = function(button) {
@@ -354,10 +368,6 @@ const main = [
 
         $scope.getHelpTexts = function(state) {
             return helpTexts[state];
-        };
-
-        $scope.getSpinnerText = function(state) {
-            return spinnerTexts[state];
         };
 
         $scope.getImageToggleImage = function() {
@@ -378,21 +388,52 @@ const main = [
             if($scope.data.cy3Image != '') {
                 init_state();
 
+                let loadingState = $scope.initLoading();
+
                 $q.when(tryState(
                     $scope,
                     'state_upload',
                     unwrapRequest($http.get('../session_id')).then((response) => {
                         $scope.data.sessionId = response;
-                        return unwrapRequest(
-                            $http.post(
-                                '../tiles',
-                                {
-                                    cy3_image: $scope.data.cy3Image,
-                                    he_image: $scope.data.heImage,
-                                    session_id: $scope.data.sessionId,
+                        return unwrapRequest($http({
+                            method: 'POST',
+                            url: '../tiles',
+                            uploadEventHandlers: {
+                                progress(e) {
+                                    loadingState = $scope.updateLoading(
+                                        loadingState,
+                                        {
+                                            stage: LOAD_STAGE.UPLOAD,
+                                            loaded: e.loaded,
+                                            total: e.total,
+                                        },
+                                    );
                                 },
-                            ),
-                        );
+                                load() {
+                                    loadingState = $scope.updateLoading(
+                                        loadingState,
+                                        { stage: LOAD_STAGE.WAIT },
+                                    );
+                                },
+                            },
+                            eventHandlers: {
+                                progress(e) {
+                                    loadingState = $scope.updateLoading(
+                                        loadingState,
+                                        {
+                                            stage: LOAD_STAGE.DOWNLOAD,
+                                            loaded: e.loaded,
+                                            total: e.total,
+                                        },
+                                    );
+                                },
+                            },
+                            data: {
+                                cy3_image: $scope.data.cy3Image,
+                                he_image: $scope.data.heImage,
+                                session_id: $scope.data.sessionId,
+                            },
+                        }));
                     }),
                 )).then((result) => {
                     $scope.receiveTilemap(result);
@@ -407,7 +448,11 @@ const main = [
                         $scope.updateState('state_predetection');
                         openPanel('button_detector');
                     }
-                }).catch(_.noop);
+                }).catch(
+                    _.noop,
+                ).finally(() => {
+                    $scope.exitLoading(loadingState);
+                });
             }
         };
 

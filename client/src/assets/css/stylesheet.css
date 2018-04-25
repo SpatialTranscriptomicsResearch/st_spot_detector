@@ -278,3 +278,17 @@ hr {
     /* 0 */
     background-color: #000000;
 }
+
+#loading-widget {
+    position: absolute;
+    width: 70%;
+    height: 10%;
+    top: 25%;
+    left: 15%;
+}
+
+#loading-widget > canvas {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
