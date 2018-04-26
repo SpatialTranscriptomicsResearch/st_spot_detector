@@ -27,6 +27,12 @@ body {
 canvas:active {
 }
 
+.clickable {
+    cursor: -webkit-pointer;
+    cursor:    -moz-pointer;
+    cursor:         pointer;
+}
+
 .fullscreen {
     position: absolute;
     width: 100%;
