@@ -213,12 +213,17 @@ const main = [
         };
 
         function updateVisibility() {
+            const setVisibility = (layer, value) => {
+                if (layer in $scope.layerManager.getLayers()) {
+                    $scope.layerManager.getLayer(layer).set('visible', value);
+                }
+            };
             if ($scope.data.state === 'state_alignment') {
-                $scope.layerManager.getLayer('cy3').set('visible', true);
-                $scope.layerManager.getLayer('he').set('visible', true);
+                setVisibility('cy3', true);
+                setVisibility('he', true);
             } else {
-                $scope.layerManager.getLayer('cy3').set('visible', $scope.data.cy3Active);
-                $scope.layerManager.getLayer('he').set('visible', !$scope.data.cy3Active);
+                setVisibility('cy3', $scope.data.cy3Active);
+                setVisibility('he', !$scope.data.cy3Active);
             }
         }
 
@@ -258,8 +263,6 @@ const main = [
 
                 $scope.initAlignment();
 
-                updateVisibility();
-
                 $scope.data.logicHandler = $scope.alignerLH;
             }
             else if($scope.data.state === 'state_detection') {
@@ -281,11 +284,11 @@ const main = [
                 // toggle bar should have the same visibility as the zoom bar if HE tiles
                 // uploaded and we're not in the alignment view
                 $scope.visible.imageToggleBar = $scope.visible.zoomBar;
-                updateVisibility();
             } else {
                 $scope.visible.imageToggleBar = false;
             }
 
+            updateVisibility();
         };
 
         $scope.undoButtonClick = function(direction) {
