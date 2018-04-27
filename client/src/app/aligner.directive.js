@@ -238,9 +238,10 @@ function aligner() {
 
                 initialState = scope.state.clone();
 
-                _.each(_.tail(scope.layers.layerOrder), (x) => {
+                const n = scope.layers.layerOrder.length;
+                _.each(_.zip(scope.layers.layerOrder, _.range(n)), ([x, i]) => {
                     scope.setActive(x);
-                    scope.addAdjustment('opacity', 0.5);
+                    scope.addAdjustment('opacity', (n - i) / n);
                 });
 
                 scope.setCurrentTool('move');
