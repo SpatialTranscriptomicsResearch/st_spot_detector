@@ -1,8 +1,10 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import ast
 import copy
 from functools import reduce
+import json
 import time
 import traceback
 
@@ -152,7 +154,7 @@ def get_tiles():
     A Cy3 image of approximately 3k x 3k is saved on the server for further
     spot detection later on.
     """
-    data = ast.literal_eval(request.body.read())
+    data = json.loads(request.body.read())
     session_id = data['session_id']
     session_cache = session_cacher.get_session_cache(session_id, logger)
 
