@@ -44,12 +44,6 @@
                 <button ng-click='menuButtonClick("button_help")' type='button' ng-class='{active: data.button=="button_help"}'class='btn btn-secondary'>
                     <span class='fa fa-question-circle'></span>
                 </button>
-                <!-- Info -->
-                <!-- This opens in a new tab to avoid an in-progress application being aborted -->
-                <a target='_blank'
-                    href='https://github.com/SpatialTranscriptomicsResearch/st_spot_detector/blob/master/README.md' class='btn btn-secondary' ng-style="{'border-bottom-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
-                    <span class='fa fa-info-circle'></span>
-                </a>
             </div>
             <!-- Menu Bar Panel -->
             <div ng-show='visible.menuBarPanel' class='menu-bar-panel'>
