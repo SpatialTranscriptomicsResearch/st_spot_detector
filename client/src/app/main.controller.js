@@ -353,11 +353,11 @@ const main = [
                     },
                 })),
             )).then((result) => {
+                $scope.loadSpots(result); // defined in the viewer directive
+                $scope.data.spotTransformMatrx = result.transform_matrix;
                 $scope.updateState('state_adjustment');
                 openPanel('button_exporter');
                 openPanel('button_adjuster');
-                $scope.loadSpots(result); // defined in the viewer directive
-                $scope.data.spotTransformMatrx = result.transform_matrix;
             }).catch(
                 _.noop,
             ).finally(() => {
