@@ -4,8 +4,9 @@ from PIL import Image
 import math
 import numpy as np
 import random
-from circle_detector import CircleDetector, DetectionType
 import warnings
+
+from .circle_detector import CircleDetector, DetectionType
 
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS=None

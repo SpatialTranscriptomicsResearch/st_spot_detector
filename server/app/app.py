@@ -1,37 +1,30 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import ast
-import copy
 from functools import reduce
 import json
-import time
 import traceback
+import warnings
 
 import numpy as np
-
-import bottle
-from bottle import BaseRequest, error, get, post, response, request, route, \
-    run, static_file
-
-import imageprocessor as ip
-from logger import log, INFO, WARNING
-from sessioncacher import SessionCacher
-from spots import Spots
-from tilemap import Tilemap
 from PIL import Image
+from tissue_recognition import recognize_tissue, get_binary_mask, free
 
-import warnings
+from .bottle import Bottle, request, static_file
+
+from . import imageprocessor as ip
+from .logger import log, INFO, WARNING
+from .sessioncacher import SessionCacher
+from .spots import Spots
+from .tilemap import Tilemap
+from .utils import bits_to_ascii
+
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS=None
 
-from tissue_recognition import recognize_tissue, get_binary_mask, free
-
-from utils import bits_to_ascii, equal
-
 session_cacher = SessionCacher()
 
-app = application = bottle.Bottle()
+app = application = Bottle()
 
 class ClientError(RuntimeError):
     # pylint:disable=missing-docstring
@@ -211,6 +204,3 @@ def serve_site(filepath='index.html'):
 @app.error(404)
 def error404(error):
     return "404 Not Found"
-
-if(__name__ == "__main__"): # if this file is run from the terminal
-    app.run(host='0.0.0.0', port=8080, debug=True, reloader=True)

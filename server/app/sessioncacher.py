@@ -3,7 +3,7 @@
 import time
 import os
 
-from logger import log, INFO
+from .logger import log, INFO
 
 class SessionCache:
     def __init__(self, session_id):
