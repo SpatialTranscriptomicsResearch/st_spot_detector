@@ -3,6 +3,8 @@
 import time
 import os
 
+from logger import log, INFO
+
 class SessionCache:
     def __init__(self, session_id):
         self.session_id = session_id
@@ -45,10 +47,9 @@ class SessionCacher:
         new_session_id = self.create_new_session_id()
         new_session_cache = SessionCache(new_session_id)
         SessionCacher.session_caches.append(new_session_cache)
-        return new_session_id
+        return new_session_cache
 
-    def get_session_cache(self, session_id, logger):
-        logger.log(session_id[:20] + ": Retrieving session cache.")
+    def get_session_cache(self, session_id):
         my_session_cache = None
         for session_cache in SessionCacher.session_caches:
             if(session_cache.session_id == session_id):
@@ -56,21 +57,19 @@ class SessionCacher:
                 break
         return my_session_cache
 
-    def remove_session_cache(self, session_id, logger):
+    def remove_session_cache(self, session_id):
         for session_cache in SessionCacher.session_caches:
             if(session_cache.session_id == session_id):
                 SessionCacher.session_caches.remove(session_cache)
-                logger.log(session_id[:20] + ": Removing session cache.")
-                logger.log("Remaining session caches: ")
-                for cache in SessionCacher.session_caches:
-                    logger.log(cache.session_id[:20])
+                log(INFO, f'Removing session {session_id}')
                 break
     
-    def clear_old_sessions(self, logger):
+    def clear_old_sessions(self):
+        log(INFO, 'Pruning session caches')
         for session_cache in SessionCacher.session_caches:
             lifetime = time.time() - session_cache.creation_time
             if(lifetime > self.max_session_lifetime):
-                logger.log((session_cache.session_id[:20] + ": Session timed out ("
-                   + str(lifetime) + " seconds)."))
                 SessionCacher.session_caches.remove(session_cache)
                 break
+        log(INFO, 'Active sessions: '
+            f'{", ".join([x.session_id[:7] for x in self.session_caches])}')
