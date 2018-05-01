@@ -15,7 +15,7 @@ from bottle import BaseRequest, error, get, post, response, request, route, \
     run, static_file
 
 import imageprocessor as ip
-from logger import Logger
+from logger import log, INFO, WARNING
 from sessioncacher import SessionCacher
 from spots import Spots
 from tilemap import Tilemap
@@ -32,8 +32,6 @@ from utils import bits_to_ascii, equal
 session_cacher = SessionCacher()
 
 app = application = bottle.Bottle()
-
-logger = Logger("st_aligner.log", toFile=False)
 
 class ClientError(RuntimeError):
     # pylint:disable=missing-docstring
@@ -58,14 +56,14 @@ def return_decorator(fnc):
                     if warning.category == ClientWarning:
                         _warnings.append(message)
                     else:
-                        logger.log('Non-user warning: ' + message)
+                        log(WARNING, f'Non-user warning: {message}')
                 return _warnings
             try:
                 return dict(result=fnc(*args, **kwargs), success=True, warnings=pack_warnings())
             except ClientError as err:
                 return dict(result=str(err), success=False, warnings=pack_warnings())
             except Exception as err:
-                logger.log('Non-user exception: ' + str(err))
+                log(WARNING, f'Non-user exception: {str(err)}')
                 traceback.print_exc()
                 return dict(
                     result='Unknown error. Please report this to the administrator.',
@@ -76,24 +74,19 @@ def return_decorator(fnc):
 @app.get('/session_id')
 @return_decorator
 def create_session_cache():
-    session_cacher.clear_old_sessions(logger) # can be here for now
-    new_session_id = session_cacher.create_session_cache()
-    logger.log(new_session_id[:20] + ": New session created.")
-    logger.log("Current session caches: ")
-    for cache in session_cacher.session_caches:
-        logger.log(cache.session_id[:20])
-    return new_session_id
+    session_cacher.clear_old_sessions() # can be here for now
+    return session_cacher.create_session_cache().session_id
 
 @app.get('/detect_spots')
 @return_decorator
 def get_spots():
     session_id = request.query['session_id']
-    session_cache = session_cacher.get_session_cache(session_id, logger)
+    session_cache = session_cacher.get_session_cache(session_id)
 
     if session_cache is None:
         raise ClientError('Session ID expired. Please try again.')
 
-    logger.log(session_id[:20] + ": Detecting spots.")
+    log(INFO, 'Detecting spots', session=session_cache)
     # ast converts the query strings into python dictionaries
     TL_coords = ast.literal_eval(request.query['TL'])
     BR_coords = ast.literal_eval(request.query['BR'])
@@ -109,11 +102,11 @@ def get_spots():
     spots.create_spots_from_keypoints(keypoints, BCT_image,
         session_cache.spot_scaling_factor)
 
-    logger.log(session_id[:20] + ": Spot detection finished.")
+    log(INFO, 'Spot detection finished', session=session_cache)
 
     HE_image = session_cache.tissue_image
     if HE_image is not None:
-        logger.log(session_id[:20] + ": Running tissue recognition.")
+        log(INFO, 'Running tissue recognition', session=session_cache)
         mask = dict(
             data=get_tissue_mask(HE_image),
             shape=HE_image.size,
@@ -122,7 +115,7 @@ def get_spots():
     else:
         mask = None
 
-    session_cacher.remove_session_cache(session_id, logger)
+    session_cacher.remove_session_cache(session_id)
 
     spots.calculate_matrix_from_spots()
 
@@ -156,7 +149,7 @@ def get_tiles():
     """
     data = json.loads(request.body.read())
     session_id = data['session_id']
-    session_cache = session_cacher.get_session_cache(session_id, logger)
+    session_cache = session_cacher.get_session_cache(session_id)
 
     if session_cache is None:
         raise ClientError('Session ID expired. Please try again.')
@@ -171,10 +164,10 @@ def get_tiles():
 
     tiles = dict()
     for key, image in image_string.items():
-        logger.log(session_id[:20] + ": Transforming " + key + " image.")
+        log(INFO, f'Transforming {key} image', session=session_cache)
         image = ip.jpeg_URI_to_Image(image)
 
-        logger.log(session_id[:20] + ": Tiling " + key + " images.")
+        log(INFO, f'Tiling {key} image', session=session_cache)
         tiles_ = Tilemap(image)
 
         if(key == 'cy3'):
@@ -199,7 +192,7 @@ def get_tiles():
             },
         })
 
-    logger.log(session_id[:20] + ": Image tiling complete.")
+    log(INFO, 'Image tiling complete', session=session_cache)
     #TODO: make sure the large images get cleared out of the memory
 
     sss = list(map(lambda x: x.get('image_size'), tiles.values()))

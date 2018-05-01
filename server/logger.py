@@ -1,16 +1,44 @@
-from datetime import datetime
+import logging as L
+from logging.config import dictConfig
 
-class Logger:
-    """Logs messages to a text file"""
+import sys
 
-    def __init__(self, filename, toFile=True):
-        self.filename = filename
-        self.to_file = toFile
+WARNING = L.WARNING
+INFO = L.INFO
 
-    def log(self, message):
-        prefix = datetime.now().strftime("[%Y-%m-%d %H:%M:%S] ")
-        if(self.to_file):
-            with open(self.filename, 'a') as log_file:
-                log_file.write(prefix + message + "\n")
-        else:
-            print(prefix + message)
+dictConfig(dict(
+    version=1,
+    disable_existing_loggers=False,
+    loggers={
+        'server': {
+            'level': 'INFO',
+            'handlers': ['console']
+        },
+    },
+    handlers={
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+            'stream': sys.stderr
+        },
+    },
+    formatters={
+        'default': {
+            'format': '%(asctime)s %(levelname)s (%(session)s) %(message)s',
+            'datefmt': '[%Y-%m-%d %H:%M:%S %z]',
+            'class': 'logging.Formatter'
+        },
+    },
+))
+
+LOGGER = L.getLogger('server')
+
+
+def log(*args, session=None, **kwargs):
+    session_str = 'global' if session is None \
+        else session.session_id[:7]
+    if isinstance(kwargs.get('extra'), dict):
+        kwargs.get('extra').update(dict(session=session_str))
+    else:
+        kwargs['extra'] = dict(session=session_str)
+    LOGGER.log(*args, **kwargs)
