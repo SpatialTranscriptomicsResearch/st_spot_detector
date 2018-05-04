@@ -101,7 +101,7 @@ function configBuilder(deploy = false) {
                     'jquery',
                     'mathjs',
                     'sortablejs',
-                    'underscore',
+                    'lodash',
                 ],
             }),
             new UglifyJsPlugin(),

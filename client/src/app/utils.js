@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import _ from 'underscore';
+import _ from 'lodash';
 import math from 'mathjs';
 
 import Vec2 from './viewer/vec2';
@@ -33,7 +33,7 @@ export function transformToMathjs(matrix) {
  * Left-multiply Vec2 vector by mathjs transformation matrix
  */
 export function mulVec2(matrix, vector) {
-    return _.compose(
+    return _.flowRight(
         /* eslint-disable no-underscore-dangle */
         v => Vec2.Vec2(...v._data),
         v => math.subset(v, math.index([0, 1])),

@@ -24,7 +24,7 @@ dictConfig(dict(
     },
     formatters={
         'default': {
-            'format': '%(asctime)s %(levelname)s (%(session)s) %(message)s',
+            'format': '%(asctime)s %(levelname)s %(message)s',
             'datefmt': '[%Y-%m-%d %H:%M:%S %z]',
             'class': 'logging.Formatter'
         },
@@ -33,12 +33,4 @@ dictConfig(dict(
 
 LOGGER = L.getLogger('server')
 
-
-def log(*args, session=None, **kwargs):
-    session_str = 'global' if session is None \
-        else session.session_id[:7]
-    if isinstance(kwargs.get('extra'), dict):
-        kwargs.get('extra').update(dict(session=session_str))
-    else:
-        kwargs['extra'] = dict(session=session_str)
-    LOGGER.log(*args, **kwargs)
+log = LOGGER.log  # pylint: disable=invalid-name

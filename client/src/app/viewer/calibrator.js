@@ -1,6 +1,4 @@
-/** @module graphic */
-
-import _ from 'underscore';
+import _ from 'lodash';
 import math from 'mathjs';
 
 import { FilledCircle } from './graphics/circle';

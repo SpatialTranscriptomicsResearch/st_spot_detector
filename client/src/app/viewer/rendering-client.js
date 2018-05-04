@@ -1,6 +1,6 @@
 /** @module rendering-client */
 
-import _ from 'underscore';
+import _ from 'lodash';
 
 import { Messages, Responses } from 'worker/return-codes';
 

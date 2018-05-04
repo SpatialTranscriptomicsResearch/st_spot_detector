@@ -7,7 +7,7 @@
 import 'assets/css/aligner.css';
 import template from 'assets/html/aligner.html';
 
-import _ from 'underscore';
+import _ from 'lodash';
 import sortable from 'sortablejs';
 
 import {
@@ -158,7 +158,7 @@ function aligner() {
 
 
             /* adjustments */
-            scope.addAdjustment = _.compose(
+            scope.addAdjustment = _.flowRight(
                 scope.applyState,
                 stateful((s, name, value) => {
                     if (s.active !== undefined) {
@@ -171,7 +171,7 @@ function aligner() {
                 }),
             );
 
-            scope.rmAdjustment = _.compose(
+            scope.rmAdjustment = _.flowRight(
                 scope.applyState,
                 stateful((s, aObj) => {
                     s.adjustments.set(
@@ -216,7 +216,7 @@ function aligner() {
 
             scope.isCurrentTool = stateful((s, name) => [s, name === s.tool]);
 
-            scope.setCurrentTool = _.compose(
+            scope.setCurrentTool = _.flowRight(
                 scope.applyState,
                 stateful((s, name) => {
                     if (name === 'rotate') {

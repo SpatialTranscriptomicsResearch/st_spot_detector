@@ -18,6 +18,10 @@ export const CALIBRATOR_LINE_WGHT    = 4;
 export const CALIBRATOR_CORNER_COL   = CALIBRATOR_LINE_COL_HLT;
 export const CALIBRATOR_CORNER_WGHT  = 0.9 * CALIBRATOR_LINE_WGHT;
 
+export const SELECTION_RECT_COL  = 'rgba(150, 150, 150, 0.95)';
+export const SELECTION_RECT_DASH = [4, 3];
+export const SELECTION_RECT_WGHT = 2;
+
 // Options for spot rendering
 export const SPOT_COL_DEF = 'hsl(  6, 78%, 57%)';
 export const SPOT_COL_HLT = 'hsl(140, 63%, 42%)';
