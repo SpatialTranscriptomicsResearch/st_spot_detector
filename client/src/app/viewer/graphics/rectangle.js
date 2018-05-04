@@ -70,7 +70,7 @@ collidesAdd(
     (x, y, r) => {
         const [x0, y0] = r.topLeft;
         const [x1, y1] = r.bottomRight;
-        return x0 <= x <= x1 && y0 <= y <= y1;
+        return x0 <= x && x <= x1 && y0 <= y && y <= y1;
     },
 );
 
