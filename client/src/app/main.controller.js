@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import math from 'mathjs';
 
 import imageToggleCy from 'assets/images/imageToggleCy3.png';
 import imageToggleHE from 'assets/images/imageToggleHE.png';
@@ -208,8 +209,33 @@ const main = [
         }
 
         $scope.updateState = function(new_state) {
+            const transformAnnotations = (tmat) => {
+                const doTransform = _.flow(
+                    xs => [[...xs, 1]],
+                    math.transpose,
+                    _.partial(math.multiply, tmat),
+                    math.flatten,
+                    /* eslint-disable no-underscore-dangle */
+                    xs => xs._data,
+                    _.partial(_.take, _, 2),
+                );
+
+                $scope.calibrator.points = _.map(
+                    $scope.calibrator.points, doTransform);
+                $scope.spotManager.spots = _.map(
+                    $scope.spotManager.spots,
+                    (s) => {
+                        /* eslint-disable no-param-reassign */
+                        [s.x, s.y] = doTransform([s.x, s.y]);
+                        return s;
+                    },
+                );
+            };
+
             if ($scope.data.state === 'state_alignment') {
                 $scope.exitAlignment();
+                transformAnnotations(
+                    $scope.layerManager.getLayer('Cy3').tmat);
             }
 
             $scope.data.state = new_state;
@@ -233,6 +259,8 @@ const main = [
                 $scope.visible.canvas = true;
                 $scope.visible.imageToggleBar = false;
 
+                transformAnnotations(math.inv(
+                    $scope.layerManager.getLayer('Cy3').tmat));
                 $scope.initAlignment();
 
                 $scope.data.logicHandler = $scope.alignerLH;
