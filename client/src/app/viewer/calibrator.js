@@ -154,14 +154,12 @@ class Calibrator {
 
     get points() {
         return [
-            this[sx0],
-            this[sy0],
-            this[sx1],
-            this[sy1],
+            [this[sx0], this[sy0]],
+            [this[sx1], this[sy1]],
         ];
     }
 
-    set points([x0, y0, x1, y1]) {
+    set points([[x0, y0], [x1, y1]]) {
         this[sx0] = x0;
         this[sy0] = y0;
         this[sx1] = x1;

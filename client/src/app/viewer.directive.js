@@ -69,7 +69,7 @@ function viewer() {
 
             scope.loadSpots = function(spotData, tissueMask) {
                 const { positions, tl, br } = spotData;
-                calibrator.points = [...tl, ...br];
+                calibrator.points = [tl, br];
                 spots.loadSpots(positions, tissueMask);
             };
 
@@ -332,9 +332,6 @@ function viewer() {
                 camera.position = Vec2.Vec2(maxWidth / 2, maxHeight / 2);
                 camera.scale = 2 / maxLevel;
                 camera.updateViewport();
-
-                // reset calibrator points
-                calibrator.points = [0, 0, maxWidth, maxHeight];
             };
 
             scope.zoom = function(direction) {
@@ -365,7 +362,7 @@ function viewer() {
             };
 
             scope.exportSpots = function(selection, sep = '\t') {
-                const [x0, y0, x1, y1] = calibrator.points;
+                const [[x0, y0], [x1, y1]] = calibrator.points;
                 const arrayCoordinates = s => [
                     1 + ((calibrator.width - 1) * ((s.x - x0) / (x1 - x0))),
                     1 + ((calibrator.height - 1) * ((s.y - y0) / (y1 - y0))),
@@ -430,7 +427,7 @@ function viewer() {
             };
 
             scope.exportTMat = function() {
-                const [x0, y0, x1, y1] = calibrator.points;
+                const [[x0, y0], [x1, y1]] = calibrator.points;
                 const arr2canvas = _.flowRight(
                     /* eslint-disable array-bracket-spacing, no-multi-spaces */
                     ([[s0], [s1], [d0], [d1]]) => [
