@@ -102,7 +102,7 @@ class AdjustmentLH extends LogicHandler {
         if (this.state & STATES.HOVERING) {
             return setCursor('move');
         }
-        return setCursor('grab');
+        return setCursor('crosshair');
     }
 
     processKeydownEvent(keyEvent) {
