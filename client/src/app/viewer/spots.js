@@ -47,6 +47,11 @@ class Spot extends opacityMixin(FilledCircle) {
         this.y = value.y;
     }
 
+    set x(v) { this[srpos].x = v; super.x = v; }
+    get x() { return super.x; }
+    set y(v) { this[srpos].y = v; super.y = v; }
+    get y() { return super.y; }
+
     get fillColor() { return this.selected ? SPOT_COL_HLT : this.color; }
     set fillColor(value) { this.color = value; }
 
