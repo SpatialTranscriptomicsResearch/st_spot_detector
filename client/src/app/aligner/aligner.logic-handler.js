@@ -2,7 +2,7 @@
  * @module aligner.logic-handler
  */
 
-import _ from 'underscore';
+import _ from 'lodash';
 import math from 'mathjs';
 
 import Codes from '../viewer/keycodes';

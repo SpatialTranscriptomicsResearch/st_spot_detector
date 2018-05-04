@@ -2,25 +2,22 @@
 // used for viewing the image and spots.
 
 import $ from 'jquery';
-import _ from 'underscore';
+import _ from 'lodash';
 import math from 'mathjs';
 
-import AdjustmentLH from './viewer/logic-handler.adjustment';
+import AdjustmentLH, { STATES as alhs } from './viewer/logic-handler.adjustment';
 import Calibrator from './viewer/calibrator';
 import Camera from './viewer/camera';
 import Codes from './viewer/keycodes';
 import EventHandler from './viewer/event-handler';
-import PredetectionLH from './viewer/logic-handler.predetection';
 import RenderingClient, { ReturnCodes } from './viewer/rendering-client';
 import ScaleManager from './viewer/scale-manager';
-import SpotAdjuster from './viewer/spot-adjuster';
 import SpotManager from './viewer/spots';
-import SpotSelector from './viewer/spot-selector';
 import Vec2 from './viewer/vec2';
 import UndoStack, { UndoAction } from './viewer/undo';
 
 import { MAX_THREADS } from './config';
-import { mathjsToTransform, toLayerCoordinates, transformToMathjs } from './utils';
+import { mathjsToTransform, mulVec2 } from './utils';
 import { clear, render, scale } from './viewer/graphics/functions';
 
 function viewer() {
@@ -32,11 +29,24 @@ function viewer() {
             const fgCtx = fg.getContext('2d');
 
             const layers = element[0].querySelector('#layers');
+            const renderableLayers = [];
 
             // prevents the context menu from appearing on right click
             fg.oncontextmenu = function(e) { e.preventDefault(); }
 
-            scope.undoStack = new UndoStack(scope.visible.undo);
+            scope.undoStack = new UndoStack(
+                new Proxy(scope.visible.undo, {
+                    set(obj, prop, val) {
+                        /* eslint-disable no-param-reassign */
+                        obj[prop] = val;
+                        const phase = scope.$root.$$phase;
+                        if (phase !== '$apply' && phase !== '$digest') {
+                            scope.$apply();
+                        }
+                        return obj;
+                    },
+                }),
+            );
 
             var tilePosition;
             var camera = new Camera(fgCtx, scope.layerManager);
@@ -46,54 +56,34 @@ function viewer() {
             calibrator.height = 35;
 
             var spots = new SpotManager();
-            var spotSelector = new SpotSelector(camera, scope.layerManager, spots);
-            const spotAdjuster = new SpotAdjuster(camera, spots, calibrator);
 
             scope.eventHandler = new EventHandler(scope.data, fg, camera);
 
-            scope.predetectionLH = new PredetectionLH(
-                camera, calibrator, refreshCanvas, scope.undoStack);
             scope.adjustmentLH = new AdjustmentLH(
-                camera, spotAdjuster, spotSelector, refreshCanvas, scope.undoStack);
+                camera,
+                calibrator,
+                spots,
+                refreshCanvas,
+                scope.undoStack,
+            );
 
-            scope.loadSpots = function(spotData) {
-                spots.loadSpots(spotData);
-            };
-
-            scope.getTransformationMatrix = function() {
-                if (spots.transformMatrix === undefined) {
-                    return 'N/A';
-                }
-                const ls = scope.layerManager.getLayers();
-                // if HE image was uploaded, transform coordinates to HE space
-                const tmat = 'he' in ls ?
-                    math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat) :
-                    math.eye(3);
-                const resultMat = math.multiply(tmat, spots.transformMatrix);
-                const matString = ""
-                    + math.subset(resultMat, math.index(0, 0)) + " "
-                    + math.subset(resultMat, math.index(1, 0)) + " "
-                    + math.subset(resultMat, math.index(2, 0)) + " "
-                    + math.subset(resultMat, math.index(0, 1)) + " "
-                    + math.subset(resultMat, math.index(1, 1)) + " "
-                    + math.subset(resultMat, math.index(2, 1)) + " "
-                    + math.subset(resultMat, math.index(0, 2)) + " "
-                    + math.subset(resultMat, math.index(1, 2)) + " "
-                    + math.subset(resultMat, math.index(2, 2));
-                return matString;
+            scope.loadSpots = function(spotData, tissueMask) {
+                const { positions, tl, br } = spotData;
+                calibrator.points = [...tl, ...br];
+                spots.loadSpots(positions, tissueMask);
             };
 
             scope.selectInsideTissue = function() {
-                var action = new UndoAction(
+                const action = new UndoAction(
                     'state_adjustment',
-                    'selectSpots',
-                    spotAdjuster.getSpotsCopy()
+                    'spotAdjustment',
+                    spots.spots,
                 );
                 scope.undoStack.push(action);
                 spots.selectTissueSpots(
                     math.multiply(
-                        math.inv(scope.layerManager.getLayer('he').tmat),
-                        scope.layerManager.getLayer('cy3').tmat,
+                        math.inv(scope.layerManager.getLayer('HE').tmat),
+                        scope.layerManager.getLayer('Cy3').tmat,
                     ),
                     0.5,
                 );
@@ -102,21 +92,6 @@ function viewer() {
 
             scope.getSpots = function() {
                 return spots.getSpots();
-            };
-
-            scope.getCalibrationData = function() {
-                const [x0, y0, x1, y1] = calibrator.points;
-                return {
-                    TL: toLayerCoordinates(
-                        scope.layerManager.getLayer('cy3'),
-                        Vec2.Vec2(x0, y0),
-                    ),
-                    BR: toLayerCoordinates(
-                        scope.layerManager.getLayer('cy3'),
-                        Vec2.Vec2(x1, y1),
-                    ),
-                    array_size: Vec2.Vec2(calibrator.width, calibrator.height),
-                };
             };
 
             scope.setSpotColor = function(value) {
@@ -140,7 +115,8 @@ function viewer() {
             }
 
             function refreshCanvas() {
-                Object.values(scope.layerManager.getLayers()).forEach(
+                _.each(
+                    _.map(renderableLayers, x => scope.layerManager.getLayer(x)),
                     (layer) => {
                         const level = layer.scaleManager.level(1 / camera.scale);
                         const canvas = layer.canvas;
@@ -188,7 +164,7 @@ function viewer() {
                                 [0, canvas.height, 1],
                                 [canvas.width, canvas.height, 1],
                             ],
-                            _.compose(
+                            _.flowRight(
                                 /* eslint-disable no-underscore-dangle */
                                 v => v._data,
                                 v => math.floor(v),
@@ -218,36 +194,34 @@ function viewer() {
                                 }
                             },
                         );
-                    });
+                    },
+                );
 
                 const rfnc = _.partial(render, fgCtx);
-                const rfncScale = _.compose(
+                const rfncScale = _.flowRight(
                     rfnc,
                     _.partial(scale, 1 / camera.scale),
                 );
 
                 clear(fgCtx);
-                if(scope.data.state == 'state_predetection') {
-                    scope.camera.begin();
-                    _.each(calibrator.renderables, rfncScale);
-                    scope.camera.end();
-                } else if (scope.data.state === 'state_alignment') {
+                if (scope.data.state === 'state_alignment') {
                     scope.camera.begin();
                     _.each(scope.getAlignerRenderables(), rfncScale);
                     scope.camera.end();
                 } else if(scope.data.state == 'state_adjustment') {
                     scope.camera.begin();
-                    _.each(spots.spots, rfnc);
-                    if (scope.adjustmentLH.addingSpots) {
+                    _.each(spots.spotsMutable, rfnc);
+                    _.each(calibrator.renderables, rfncScale);
+                    _.each(scope.adjustmentLH.renderables, rfncScale);
+                    if (scope.adjustmentLH.state & alhs.ADDING) {
                         rfnc(spots.spotToAdd);
                     }
                     scope.camera.end();
-                    rfnc(spotSelector.renderingRect);
                 }
             }
 
             scope.addSpots = function() {
-                scope.adjustmentLH.addingSpots = true;
+                scope.adjustmentLH.state |= alhs.ADDING;
                 scope.visible.spotAdjuster.button_addSpots       = false;
                 scope.visible.spotAdjuster.button_finishAddSpots = true;
                 scope.visible.spotAdjuster.button_deleteSpots    = false;
@@ -255,7 +229,7 @@ function viewer() {
             };
 
             scope.finishAddSpots = function() {
-                scope.adjustmentLH.addingSpots = false;
+                scope.adjustmentLH.state = 0;
                 scope.visible.spotAdjuster.button_addSpots       = true;
                 scope.visible.spotAdjuster.button_finishAddSpots = false;
                 scope.visible.spotAdjuster.button_deleteSpots    = true;
@@ -265,11 +239,14 @@ function viewer() {
             scope.deleteSpots = function() {
                 var action = new UndoAction(
                     'state_adjustment',
-                    'deleteSpots',
-                    spotAdjuster.getSpotsCopy()
+                    'spotAdjustment',
+                    spots.spots,
                 );
                 scope.undoStack.push(action);
-                spotAdjuster.deleteSelectedSpots();
+                spots.spots = _.filter(
+                    spots.spotsMutable,
+                    s => !(spots.selected.has(s)),
+                );
                 refreshCanvas();
             };
 
@@ -301,14 +278,12 @@ function viewer() {
             }
 
             scope.receiveTilemap = function (data) {
-                // avoid calls to refreshCanvas before tiles have been loaded.
-                scope.layerManager.callback = _.noop;
-
                 // delete all current layers and add the ones in data.tiles
                 _.each(
                     Object.keys(scope.layerManager.getLayers()),
                     x => scope.layerManager.deleteLayer(x),
                 );
+                renderableLayers.length = 0;
 
                 let maxWidth = 0;
                 let maxHeight = 0;
@@ -340,10 +315,11 @@ function viewer() {
                         return layer.renderingClient.loadTileData(
                             tiles.tiles,
                             tiles.histogram,
-                        );
+                        ).then(() => {
+                            renderableLayers.push(layerName);
+                        });
                     },
                 )).then(() => {
-                    scope.layerManager.callback = refreshCanvas;
                     refreshCanvas();
                 });
 
@@ -375,11 +351,8 @@ function viewer() {
                             const { layer, matrix } = action.state;
                             layer.setTransform(matrix);
                         }
-                        else if(lastState == "state_predetection") {
-                            calibrator.points = action.state;
-                        }
                         if(lastState == "state_adjustment") {
-                            spotAdjuster.setSpots(action.state);
+                            scope.adjustmentLH.undo(action);
                         }
                     }
                 }
@@ -391,31 +364,108 @@ function viewer() {
                 refreshCanvas();
             };
 
+            scope.exportSpots = function(selection, sep = '\t') {
+                const [x0, y0, x1, y1] = calibrator.points;
+                const arrayCoordinates = s => [
+                    1 + ((calibrator.width - 1) * ((s.x - x0) / (x1 - x0))),
+                    1 + ((calibrator.height - 1) * ((s.y - y0) / (y1 - y0))),
+                ];
 
-            scope.exportSpots = function(selection) {
-                // spots are given in Cy3 image coordinates. however, if the user has uploaded an HE
-                // image, export them in HE coordinate space instead.
+                const headers = [
+                    'x', 'y',
+                    'new_x', 'new_y',
+                    'pixel_x', 'pixel_y',
+                    ...(selection === 'all' ? ['selected'] : []),
+                ];
+
                 const ls = scope.layerManager.getLayers();
-                let spotDataString;
-                if ('he' in ls) {
-                    const tmat = math.multiply(math.inv(ls.he.tmat), ls.cy3.tmat);
-                    spotDataString = spots.exportSpots(selection, tmat);
-                } else {
-                    spotDataString = spots.exportSpots(selection);
-                }
+                const canvas2image = math.inv('HE' in ls ? ls.HE.tmat : ls.Cy3.tmat);
+                const spotData = _.map(
+                    _.filter(
+                        spots.spots,
+                        s => selection === 'all' || s.selected,
+                    ),
+                    (s) => {
+                        const [x, y] = arrayCoordinates(s);
+                        const { x: px_x, y: px_y } = mulVec2(canvas2image, s.position);
+                        return {
+                            x: Math.max(Math.min(Math.round(x), calibrator.width), 0),
+                            y: Math.max(Math.min(Math.round(y), calibrator.height), 0),
+                            new_x: x.toFixed(2),
+                            new_y: y.toFixed(2),
+                            pixel_x: px_x.toFixed(1),
+                            pixel_y: px_y.toFixed(1),
+                            selected: s.selected ? '1' : '0',
+                        };
+                    },
+                );
 
-                var blob = new Blob([spotDataString]);
-                var filetype = selection.slice(0, 3) + "-";
-                var filename = "spot_data-" + filetype + scope.data.cy3Filename.slice(0, -3) + "tsv";
+                const sortOrder = [
+                    'x', 'y',
+                    'selected',
+                    'new_x', 'new_y',
+                ];
+                const spotOutput = _.map(
+                    spotData.sort((a, b) => {
+                        const [p] = _.dropWhile(sortOrder, x => a[x] === b[x]);
+                        if (p) {
+                            return parseFloat(a[p]) < parseFloat(b[p]) ? -1 : 1;
+                        }
+                        return 0;
+                    }),
+                    s => _.map(headers, h => s[h]),
+                );
 
-                exportFile(blob, filename, "text/tsv");
+                const res = _.map(
+                    [headers, ...spotOutput],
+                    x => x.join(sep),
+                ).join('\n');
+
+                return exportFile(
+                    new Blob([res]),
+                    `spot_data-${selection}-` +
+                        `${`${scope.data.cy3Filename.replace(/\.[^.]*$/, '')}.tsv`}`,
+                    'text/plain',
+                );
             };
 
             scope.exportTMat = function() {
-                const filename = scope.data.cy3Filename.split(/(\.[^.]+$)/)[0];
+                const [x0, y0, x1, y1] = calibrator.points;
+                const arr2canvas = _.flowRight(
+                    /* eslint-disable array-bracket-spacing, no-multi-spaces */
+                    ([[s0], [s1], [d0], [d1]]) => [
+                        [s0,  0, d0],
+                        [ 0, s1, d1],
+                        [ 0,  0,  1],
+                    ],
+                    _.partial(
+                        math.multiply,
+                        math.inv([
+                            [               1,                 0, 1, 0],
+                            [               0,                 1, 0, 1],
+                            [calibrator.width,                 0, 1, 0],
+                            [               0, calibrator.height, 0, 1],
+                        ]),
+                    ),
+                )(
+                    [[x0], [y0], [x1], [y1]],
+                );
+
+                const ls = scope.layerManager.getLayers();
+                const arr2image = math.multiply(
+                    math.inv('HE' in ls ? ls.HE.tmat : ls.Cy3.tmat),
+                    arr2canvas,
+                );
+
+                const res = _.map(
+                    math.transpose(arr2image)._data,
+                    x => x.join(' '),
+                ).join(' ');
+
                 exportFile(
-                    new Blob([scope.getTransformationMatrix()]),
-                    `transformation_matrix-${filename}.txt`,
+                    new Blob([res]),
+                    'transformation_matrix' +
+                        `${`${scope.data.cy3Filename.replace(/\.[^.]*$/, '')}.txt`}`,
                     'text/plain',
                 );
             };
@@ -440,8 +490,9 @@ function viewer() {
             };
 
             scope.camera = camera;
-
+            scope.calibrator = calibrator;
             scope.layerManager.container = layers;
+            scope.layerManager.callback = refreshCanvas;
 
             window.addEventListener(
                 'resize',

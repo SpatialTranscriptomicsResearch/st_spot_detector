@@ -16,6 +16,8 @@ const config = {
                 },
             },
         ],
+        'no-bitwise': 0,
+        'key-spacing': 0,
     },
     settings: {
         'import/resolver': {

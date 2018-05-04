@@ -5,7 +5,7 @@
 
 import math from 'mathjs';
 import $ from 'jquery';
-import _ from 'underscore';
+import _ from 'lodash';
 
 const DEF_MODIFIERS = {
     visible: true,
