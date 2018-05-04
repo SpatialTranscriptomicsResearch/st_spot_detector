@@ -490,6 +490,7 @@ function viewer() {
             scope.calibrator = calibrator;
             scope.layerManager.container = layers;
             scope.layerManager.callback = refreshCanvas;
+            scope.spotManager = spots;
 
             window.addEventListener(
                 'resize',
