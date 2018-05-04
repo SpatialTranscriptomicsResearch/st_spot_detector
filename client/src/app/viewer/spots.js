@@ -160,7 +160,7 @@ class SpotManager {
         // adds to current selection
         _.each(
             // ignore if already selected
-            _.filter(this.spots, s => s.selected === false),
+            _.filter(this.spotsMutable, s => s.selected === false),
             (s) => {
                 // transform coordinates to the basis of the mask
                 const center = _.map(
