@@ -21,8 +21,8 @@ const rectangleMixin = s => class extends s {
     static ctype() { return cType; }
     static rtype() { return rType; }
 
-    constructor(x0, y0, x1, y1, ...args) {
-        super(...args);
+    constructor(x0, y0, x1, y1, kwargs = {}) {
+        super(kwargs);
         this[sx0] = x0;
         this[sy0] = y0;
         this[sx1] = x1;
