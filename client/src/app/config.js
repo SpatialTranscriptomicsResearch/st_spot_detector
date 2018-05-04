@@ -13,8 +13,9 @@ export const ROT_POINT_RADIUS = 10;
 // Options for the calibrator
 export const CALIBRATOR_LINE_COL_DEF = 'hsla(0, 0%, 100%, 0.3)';
 export const CALIBRATOR_LINE_COL_HLT = 'hsla(0, 0%, 100%, 1.0)';
-export const CALIBRATOR_LINE_DASH    = [];
 export const CALIBRATOR_LINE_WGHT    = 4;
+export const CALIBRATOR_GRID_COL     = 'hsla(0, 0%, 100%, 0.2)';
+export const CALIBRATOR_GRID_WGHT    = 3;
 export const CALIBRATOR_CORNER_COL   = CALIBRATOR_LINE_COL_HLT;
 export const CALIBRATOR_CORNER_WGHT  = 0.9 * CALIBRATOR_LINE_WGHT;
 

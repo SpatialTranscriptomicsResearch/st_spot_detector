@@ -8,6 +8,7 @@ import {
 import LogicHandler from '../logic-handler';
 import { UndoAction } from '../viewer/undo';
 import { setCursor } from '../utils';
+import { SEL } from './calibrator';
 import { collides } from './graphics/functions';
 import { StrokedRectangle } from './graphics/rectangle';
 import Codes from './keycodes';
@@ -76,17 +77,17 @@ class AdjustmentLH extends LogicHandler {
         }
         if (this.state & STATES.CALIBRATING) {
             switch (this.calibrator.selection) {
-            case 'l':
-            case 'r':
+            case SEL.L:
+            case SEL.R:
                 return setCursor('ew-resize');
-            case 't':
-            case 'b':
+            case SEL.T:
+            case SEL.B:
                 return setCursor('ns-resize');
-            case 'lt':
-            case 'rb':
+            case SEL.L | SEL.T:
+            case SEL.R | SEL.B:
                 return setCursor('nwse-resize');
-            case 'lb':
-            case 'rt':
+            case SEL.L | SEL.B:
+            case SEL.R | SEL.T:
                 return setCursor('nesw-resize');
             default:
                 return setCursor('grab');
@@ -200,10 +201,10 @@ class AdjustmentLH extends LogicHandler {
                 if (this.calibrator.selection !== oldSelection) {
                     this.refreshCanvas();
                 }
-                if (this.calibrator.selection !== '' &&
+                if (this.calibrator.selection !== 0 &&
                         !(this.state & STATES.CALIBRATING)) {
                     this.state |= STATES.CALIBRATING;
-                } else if (this.calibrator.selection === '' &&
+                } else if (this.calibrator.selection === 0 &&
                         (this.state & STATES.CALIBRATING)) {
                     this.state &= ~STATES.CALIBRATING;
                 }
