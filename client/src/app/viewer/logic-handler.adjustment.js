@@ -195,15 +195,17 @@ class AdjustmentLH extends LogicHandler {
                 this.spotManager.spotToAdd.position = { x, y };
                 this.refreshCanvas();
             } else {
+                const oldSelection = this.calibrator.selection;
                 this.calibrator.setSelection(x, y);
+                if (this.calibrator.selection !== oldSelection) {
+                    this.refreshCanvas();
+                }
                 if (this.calibrator.selection !== '' &&
                         !(this.state & STATES.CALIBRATING)) {
                     this.state |= STATES.CALIBRATING;
-                    this.refreshCanvas();
                 } else if (this.calibrator.selection === '' &&
                         (this.state & STATES.CALIBRATING)) {
                     this.state &= ~STATES.CALIBRATING;
-                    this.refreshCanvas();
                 }
             }
             break;
