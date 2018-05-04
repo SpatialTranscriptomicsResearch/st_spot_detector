@@ -142,22 +142,22 @@
                     <div ng-show='visible.panel.button_exporter'>
                         <form class="card card-default" ng-submit='exportSpots(exportForm.selection)'>
                             <div class="card-title grid2">
-                                <h2>Spot data</h2>
+                                <h2>Spots</h2>
                                 <button class='btn btn-primary btn-sm submit-button' type='submit'>
                                     <span class='fa fa-download'></span>
                                 </button>
                             </div>
                             <div class="card-text">
-                                Include spots:
-                                <div class="btn-group" data-toggle="buttons">
+                                <div class="btn-group">
                                     <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-light">
                                         <input type="radio" value='all' ng-model='exportForm.selection'>All
                                     </label>
                                     <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-light radio-button">
-                                        <input type="radio" value='selection' ng-model='exportForm.selection' checked>Selected
+                                        <input type="radio" value='selection' ng-model='exportForm.selection'>Selected
                                     </label>
                                 </div>
                             </div>
+
                         </form>
                         <form class="card card-default" ng-submit='exportTMat()'>
                             <div class="card-title grid2">
