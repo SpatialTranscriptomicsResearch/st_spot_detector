@@ -332,6 +332,10 @@ function viewer() {
                 camera.position = Vec2.Vec2(maxWidth / 2, maxHeight / 2);
                 camera.scale = 2 / maxLevel;
                 camera.updateViewport();
+
+                // reset undo stack
+                scope.undoStack.stack.length = 0;
+                scope.undoStack.redoStack.length = 0;
             };
 
             scope.zoom = function(direction) {
