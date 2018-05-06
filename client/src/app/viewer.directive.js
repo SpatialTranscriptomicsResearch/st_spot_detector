@@ -374,6 +374,13 @@ function viewer() {
                     'pixel_x', 'pixel_y',
                     ...(selection === 'all' ? ['selected'] : []),
                 ];
+                const sortOrder = [
+                    ['x', 1],
+                    ['y', 1],
+                    ['selected', -1],
+                    ['new_x', 1],
+                    ['new_y', 1],
+                ];
 
                 const ls = scope.layerManager.getLayers();
                 const canvas2image = math.inv('HE' in ls ? ls.HE.tmat : ls.Cy3.tmat);
@@ -397,16 +404,16 @@ function viewer() {
                     },
                 );
 
-                const sortOrder = [
-                    'x', 'y',
-                    'selected',
-                    'new_x', 'new_y',
-                ];
                 const spotOutput = _.map(
                     spotData.sort((a, b) => {
-                        const [p] = _.dropWhile(sortOrder, x => a[x] === b[x]);
-                        if (p) {
-                            return parseFloat(a[p]) < parseFloat(b[p]) ? -1 : 1;
+                        const [v] = _.dropWhile(sortOrder, ([k]) => a[k] === b[k]);
+                        if (v) {
+                            const [k, asc] = v;
+                            return asc * (
+                                parseFloat(a[k]) < parseFloat(b[k])
+                                    ? -1
+                                    : 1
+                            );
                         }
                         return 0;
                     }),
