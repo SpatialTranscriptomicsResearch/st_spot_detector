@@ -6,7 +6,11 @@ import _ from 'lodash';
 import math from 'mathjs';
 
 import AdjustmentLH, { STATES as alhs } from './viewer/logic-handler.adjustment';
-import Calibrator from './viewer/calibrator';
+import Calibrator, {
+    arr2pxMatrix,
+    px2arr,
+    px2assignment,
+} from './viewer/calibrator';
 import Camera from './viewer/camera';
 import Codes from './viewer/keycodes';
 import CollisionTracker from './viewer/collision-tracker';
@@ -370,12 +374,6 @@ function viewer() {
             };
 
             scope.exportSpots = function(selection, sep = '\t') {
-                const [[x0, y0], [x1, y1]] = calibrator.points;
-                const arrayCoordinates = s => [
-                    1 + ((calibrator.width - 1) * ((s.x - x0) / (x1 - x0))),
-                    1 + ((calibrator.height - 1) * ((s.y - y0) / (y1 - y0))),
-                ];
-
                 const headers = [
                     'x', 'y',
                     'new_x', 'new_y',
@@ -391,13 +389,14 @@ function viewer() {
                         s => selection === 'all' || s.selected,
                     ),
                     (s) => {
-                        const [x, y] = arrayCoordinates(s);
+                        const [[arrx, arry]] = px2arr(calibrator, [[s.x, s.y]]);
+                        const [[assx, assy]] = px2assignment(calibrator, [[s.x, s.y]]);
                         const { x: px_x, y: px_y } = mulVec2(canvas2image, s.position);
                         return {
-                            x: Math.max(Math.min(Math.round(x), calibrator.width), 0),
-                            y: Math.max(Math.min(Math.round(y), calibrator.height), 0),
-                            new_x: x.toFixed(2),
-                            new_y: y.toFixed(2),
+                            x: assx,
+                            y: assy,
+                            new_x: arrx.toFixed(2),
+                            new_y: arry.toFixed(2),
                             pixel_x: px_x.toFixed(1),
                             pixel_y: px_y.toFixed(1),
                             selected: s.selected ? '1' : '0',
@@ -435,31 +434,10 @@ function viewer() {
             };
 
             scope.exportTMat = function() {
-                const [[x0, y0], [x1, y1]] = calibrator.points;
-                const arr2canvas = _.flowRight(
-                    /* eslint-disable array-bracket-spacing, no-multi-spaces */
-                    ([[s0], [s1], [d0], [d1]]) => [
-                        [s0,  0, d0],
-                        [ 0, s1, d1],
-                        [ 0,  0,  1],
-                    ],
-                    _.partial(
-                        math.multiply,
-                        math.inv([
-                            [               1,                 0, 1, 0],
-                            [               0,                 1, 0, 1],
-                            [calibrator.width,                 0, 1, 0],
-                            [               0, calibrator.height, 0, 1],
-                        ]),
-                    ),
-                )(
-                    [[x0], [y0], [x1], [y1]],
-                );
-
                 const ls = scope.layerManager.getLayers();
                 const arr2image = math.multiply(
                     math.inv('HE' in ls ? ls.HE.tmat : ls.Cy3.tmat),
-                    arr2canvas,
+                    arr2pxMatrix(calibrator),
                 );
 
                 const res = _.map(
