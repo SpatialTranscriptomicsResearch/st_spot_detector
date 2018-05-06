@@ -152,43 +152,42 @@ class AdjustmentLH extends LogicHandler {
         case Codes.mouseEvent.drag:
             if (this.state & STATES.PANNING) {
                 this.camera.pan(eventData.difference);
-            } else {
-                switch (this.state & (~(STATES.PANNING | STATES.HOVERING))) {
-                case STATES.CALIBRATING:
-                    this.calibrator.setSelectionCoordinates(x, y);
-                    break;
-                case STATES.SELECTING:
-                    this.selectionRectangle.x1 = x;
-                    this.selectionRectangle.y1 = y;
-                    _.each(
-                        this.spotManager.spotsMutable,
-                        (s) => {
-                            /* eslint-disable no-param-reassign */
-                            const v = eventData.button === Codes.mouseButton.left;
-                            if (collides(s.x, s.y, this.selectionRectangle)) {
-                                if (s.selected !== v) {
-                                    s.selected = v;
-                                    this.modifiedSelection.add(s);
-                                }
-                            } else if (this.modifiedSelection.has(s)) {
-                                s.selected = !v;
-                                this.modifiedSelection.delete(s);
-                            }
-                        },
-                    );
-                    break;
-                case STATES.MOVING:
-                    this.spotManager.selected.forEach((s) => {
-                        const { x: dx, y: dy } =
-                            this.camera.mouseToCameraScale(eventData.difference);
+            }
+            switch (this.state & (~STATES.HOVERING)) {
+            case STATES.CALIBRATING:
+                this.calibrator.setSelectionCoordinates(x, y);
+                break;
+            case STATES.SELECTING:
+                this.selectionRectangle.x1 = x;
+                this.selectionRectangle.y1 = y;
+                _.each(
+                    this.spotManager.spotsMutable,
+                    (s) => {
                         /* eslint-disable no-param-reassign */
-                        s.x -= dx;
-                        s.y -= dy;
-                    });
-                    break;
-                default:
-                    // ignore
-                }
+                        const v = eventData.button === Codes.mouseButton.left;
+                        if (collides(s.x, s.y, this.selectionRectangle)) {
+                            if (s.selected !== v) {
+                                s.selected = v;
+                                this.modifiedSelection.add(s);
+                            }
+                        } else if (this.modifiedSelection.has(s)) {
+                            s.selected = !v;
+                            this.modifiedSelection.delete(s);
+                        }
+                    },
+                );
+                break;
+            case STATES.MOVING:
+                this.spotManager.selected.forEach((s) => {
+                    const { x: dx, y: dy } =
+                        this.camera.mouseToCameraScale(eventData.difference);
+                    /* eslint-disable no-param-reassign */
+                    s.x -= dx;
+                    s.y -= dy;
+                });
+                break;
+            default:
+                // ignore
             }
             this.refreshCanvas();
             break;
@@ -223,46 +222,45 @@ class AdjustmentLH extends LogicHandler {
                 this.state |= STATES.MOVING;
                 break;
             }
-            switch (this.state) {
-            case STATES.ADDING:
+            if (this.state & STATES.ADDING) {
                 this.spotManager.spotsMutable.push(
                     this.spotManager.createSpot(x, y));
                 break;
-            case STATES.CALIBRATING:
+            }
+            if (this.state & STATES.CALIBRATING) {
                 this.undoStack.setTemp(new UndoAction(
                     'state_adjustment',
                     'frameAdjustment',
                     this.calibrator.points,
                 ));
                 break;
-            default:
-                this.undoStack.setTemp(new UndoAction(
-                    'state_adjustment',
-                    'spotAdjustment',
-                    this.spotManager.spots,
-                ));
-                if (this.state & STATES.HOVERING) {
-                    this.state |= STATES.MOVING;
-                } else {
-                    if (!this.keystates.shift && eventData.button === Codes.mouseButton.left) {
-                        this.spotManager.selected.forEach((s) => {
-                            /* eslint-disable no-param-reassign */
-                            s.selected = false;
-                        });
-                    }
-                    this.modifiedSelection.clear();
-                    this.selectionRectangle = new StrokedRectangle(
-                        x, y, x, y,
-                        {
-                            lineColor: SELECTION_RECT_COL,
-                            lineDash:  SELECTION_RECT_DASH,
-                            lineWidth: SELECTION_RECT_WGHT,
-                        },
-                    );
-                    this.state |= STATES.SELECTING;
-                }
-                this.refreshCanvas();
             }
+            this.undoStack.setTemp(new UndoAction(
+                'state_adjustment',
+                'spotAdjustment',
+                this.spotManager.spots,
+            ));
+            if (this.state & STATES.HOVERING) {
+                this.state |= STATES.MOVING;
+            } else {
+                if (!this.keystates.shift && eventData.button === Codes.mouseButton.left) {
+                    this.spotManager.selected.forEach((s) => {
+                        /* eslint-disable no-param-reassign */
+                        s.selected = false;
+                    });
+                }
+                this.modifiedSelection.clear();
+                this.selectionRectangle = new StrokedRectangle(
+                    x, y, x, y,
+                    {
+                        lineColor: SELECTION_RECT_COL,
+                        lineDash:  SELECTION_RECT_DASH,
+                        lineWidth: SELECTION_RECT_WGHT,
+                    },
+                );
+                this.state |= STATES.SELECTING;
+            }
+            this.refreshCanvas();
             break;
 
         case Codes.mouseEvent.up:
