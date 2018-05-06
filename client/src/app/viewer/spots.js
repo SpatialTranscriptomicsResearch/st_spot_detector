@@ -86,7 +86,7 @@ class SpotManager {
     get spotsMutable() { return this[sspots]; }
     get spots() { return _.cloneDeep(this[sspots]); }
     set spots(xs) {
-        this[sspots] = xs;
+        this[sspots].splice(0, this[sspots].length, ...xs);
         this.selected.clear();
         _.each(xs, (x) => {
             if (x.selected) {

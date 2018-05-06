@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import math from 'mathjs';
 
 import { FilledCircle } from './graphics/circle';
 import { Line } from './graphics/line';
@@ -12,6 +13,7 @@ import {
     CALIBRATOR_CORNER_COL,
     CALIBRATOR_CORNER_WGHT,
 } from '../config';
+
 
 export const SEL = Object.freeze({
     L: 1 << 0, // left
@@ -198,5 +200,77 @@ class Calibrator {
         this.updateGraphics();
     }
 }
+
+export function arr2pxMatrix(calibrator) {
+    const [[x0, y0], [x1, y1]] = calibrator.points;
+    return _.flowRight(
+        /* eslint-disable array-bracket-spacing, no-multi-spaces */
+        ([[s0], [s1], [d0], [d1]]) => [
+            [s0,  0, d0],
+            [ 0, s1, d1],
+            [ 0,  0,  1],
+        ],
+        _.partial(
+            math.multiply,
+            math.inv([
+                [               1,                 0, 1, 0],
+                [               0,                 1, 0, 1],
+                [calibrator.width,                 0, 1, 0],
+                [               0, calibrator.height, 0, 1],
+            ]),
+        ),
+    )(
+        [[x0], [y0], [x1], [y1]],
+    );
+}
+
+export function arr2px(calibrator, pts) {
+    if (pts.length === 0) { return []; }
+    return _.flowRight(
+        as => _.zip(...as),
+        _.partial(_.take, _, 2),
+        _.partial(math.multiply, arr2pxMatrix(calibrator)),
+    )([
+        ..._.zip(...pts),
+        (new Array(pts.length)).fill(1),
+    ]);
+}
+
+export function px2arr(calibrator, pts) {
+    if (pts.length === 0) { return []; }
+    const T = (() => {
+        try {
+            return math.inv(arr2pxMatrix(calibrator));
+        } catch (e) {
+            return math.zeros(3, 3);
+        }
+    })();
+    return _.flowRight(
+        as => _.zip(...as),
+        _.partial(_.take, _, 2),
+        _.partial(math.multiply, T),
+    )([
+        ..._.zip(...pts),
+        (new Array(pts.length)).fill(1),
+    ]);
+}
+
+export function arr2assignment(calibrator, pts) {
+    const [assignX, assignY] = _.map(
+        [calibrator.width, calibrator.height],
+        max => _.flowRight(
+            Math.round,
+            _.partial(Math.max, 1),
+            _.partial(Math.min, max),
+        ),
+    );
+    return _.map(pts, ([x, y]) => [assignX(x), assignY(y)]);
+}
+
+export const px2assignment = (calibrator, ...args) =>
+    _.flowRight(
+        _.partial(arr2assignment, calibrator),
+        _.partial(px2arr, calibrator),
+    )(...args);
 
 export default Calibrator;

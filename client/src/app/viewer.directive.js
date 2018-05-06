@@ -9,6 +9,7 @@ import AdjustmentLH, { STATES as alhs } from './viewer/logic-handler.adjustment'
 import Calibrator from './viewer/calibrator';
 import Camera from './viewer/camera';
 import Codes from './viewer/keycodes';
+import CollisionTracker from './viewer/collision-tracker';
 import EventHandler from './viewer/event-handler';
 import RenderingClient, { ReturnCodes } from './viewer/rendering-client';
 import ScaleManager from './viewer/scale-manager';
@@ -57,12 +58,15 @@ function viewer() {
 
             var spots = new SpotManager();
 
+            const collisionTracker = new CollisionTracker(calibrator, spots.spotsMutable);
+
             scope.eventHandler = new EventHandler(scope.data, fg, camera);
 
             scope.adjustmentLH = new AdjustmentLH(
                 camera,
                 calibrator,
                 spots,
+                collisionTracker,
                 refreshCanvas,
                 scope.undoStack,
             );
@@ -71,6 +75,7 @@ function viewer() {
                 const { positions, tl, br } = spotData;
                 calibrator.points = [tl, br];
                 spots.loadSpots(positions, tissueMask);
+                collisionTracker.update();
             };
 
             scope.selectInsideTissue = function() {
@@ -212,6 +217,7 @@ function viewer() {
                     scope.camera.begin();
                     _.each(spots.spotsMutable, rfnc);
                     _.each(calibrator.renderables, rfncScale);
+                    _.each(collisionTracker.renderables, rfncScale);
                     _.each(scope.adjustmentLH.renderables, rfncScale);
                     scope.camera.end();
                 }
@@ -230,6 +236,7 @@ function viewer() {
             scope.finishAddSpots = function() {
                 scope.adjustmentLH.state = 0;
                 scope.spotManager.spotsMutable.pop();
+                collisionTracker.update();
                 scope.visible.spotAdjuster.button_addSpots       = true;
                 scope.visible.spotAdjuster.button_finishAddSpots = false;
                 scope.visible.spotAdjuster.button_deleteSpots    = true;
@@ -247,6 +254,7 @@ function viewer() {
                     spots.spotsMutable,
                     s => !(spots.selected.has(s)),
                 );
+                collisionTracker.update();
                 refreshCanvas();
             };
 

@@ -25,11 +25,19 @@ export const STATES = Object.freeze({
 
 
 class AdjustmentLH extends LogicHandler {
-    constructor(camera, calibrator, spotManager, refreshCanvas, undoStack) {
+    constructor(
+        camera,
+        calibrator,
+        spotManager,
+        collisionTracker,
+        refreshCanvas,
+        undoStack,
+    ) {
         super();
         this.camera = camera;
         this.calibrator = calibrator;
         this.spotManager = spotManager;
+        this.collisionTracker = collisionTracker;
         this.refreshCanvas = refreshCanvas;
         this.undoStack = undoStack;
 
@@ -59,6 +67,8 @@ class AdjustmentLH extends LogicHandler {
         default:
             throw new Error(`Unknown undo action ${action.action}`);
         }
+        this.collisionTracker.update();
+        this.refreshCanvas();
     }
 
     get renderables() {
@@ -156,6 +166,7 @@ class AdjustmentLH extends LogicHandler {
             switch (this.state & (~STATES.HOVERING)) {
             case STATES.CALIBRATING:
                 this.calibrator.setSelectionCoordinates(x, y);
+                this.collisionTracker.update();
                 break;
             case STATES.SELECTING:
                 this.selectionRectangle.x1 = x;
@@ -185,6 +196,7 @@ class AdjustmentLH extends LogicHandler {
                     s.x -= dx;
                     s.y -= dy;
                 });
+                this.collisionTracker.update();
                 break;
             default:
                 // ignore
@@ -200,6 +212,7 @@ class AdjustmentLH extends LogicHandler {
         case Codes.mouseEvent.move:
             if (this.state & STATES.ADDING) {
                 _.last(this.spotManager.spotsMutable).position = { x, y };
+                this.collisionTracker.update();
                 this.refreshCanvas();
             } else {
                 const oldSelection = this.calibrator.selection;
@@ -225,6 +238,7 @@ class AdjustmentLH extends LogicHandler {
             if (this.state & STATES.ADDING) {
                 this.spotManager.spotsMutable.push(
                     this.spotManager.createSpot(x, y));
+                this.collisionTracker.update();
                 break;
             }
             if (this.state & STATES.CALIBRATING) {
