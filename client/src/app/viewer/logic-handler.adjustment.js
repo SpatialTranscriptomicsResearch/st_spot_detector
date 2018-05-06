@@ -39,12 +39,19 @@ class AdjustmentLH extends LogicHandler {
         this.modifiedSelection = new Set();
 
         this.recordKeyStates();
+        this.recordMousePosition();
     }
 
     undo(action) {
         switch (action.action) {
         case 'spotAdjustment':
             this.spotManager.spots = action.state;
+            if (this.state & STATES.ADDING) {
+                const { x, y } = this.camera.mouseToCameraPosition(
+                    this.mousePosition);
+                this.spotManager.spotsMutable.push(
+                    this.spotManager.createSpot(x, y));
+            }
             break;
         case 'frameAdjustment':
             this.calibrator.points = action.state;
@@ -193,7 +200,7 @@ class AdjustmentLH extends LogicHandler {
 
         case Codes.mouseEvent.move:
             if (this.state & STATES.ADDING) {
-                this.spotManager.spotToAdd.position = { x, y };
+                _.last(this.spotManager.spotsMutable).position = { x, y };
                 this.refreshCanvas();
             } else {
                 const oldSelection = this.calibrator.selection;
@@ -219,8 +226,7 @@ class AdjustmentLH extends LogicHandler {
             switch (this.state) {
             case STATES.ADDING:
                 this.spotManager.spotsMutable.push(
-                    _.cloneDeep(this.spotManager.spotToAdd),
-                );
+                    this.spotManager.createSpot(x, y));
                 break;
             case STATES.CALIBRATING:
                 this.undoStack.setTemp(new UndoAction(

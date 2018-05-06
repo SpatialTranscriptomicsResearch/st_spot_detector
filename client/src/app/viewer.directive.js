@@ -213,15 +213,14 @@ function viewer() {
                     _.each(spots.spotsMutable, rfnc);
                     _.each(calibrator.renderables, rfncScale);
                     _.each(scope.adjustmentLH.renderables, rfncScale);
-                    if (scope.adjustmentLH.state & alhs.ADDING) {
-                        rfnc(spots.spotToAdd);
-                    }
                     scope.camera.end();
                 }
             }
 
             scope.addSpots = function() {
                 scope.adjustmentLH.state |= alhs.ADDING;
+                scope.spotManager.spotsMutable.push(
+                    scope.spotManager.createSpot());
                 scope.visible.spotAdjuster.button_addSpots       = false;
                 scope.visible.spotAdjuster.button_finishAddSpots = true;
                 scope.visible.spotAdjuster.button_deleteSpots    = false;
@@ -230,6 +229,7 @@ function viewer() {
 
             scope.finishAddSpots = function() {
                 scope.adjustmentLH.state = 0;
+                scope.spotManager.spotsMutable.pop();
                 scope.visible.spotAdjuster.button_addSpots       = true;
                 scope.visible.spotAdjuster.button_finishAddSpots = false;
                 scope.visible.spotAdjuster.button_deleteSpots    = true;
