@@ -236,6 +236,11 @@ class AdjustmentLH extends LogicHandler {
                 break;
             }
             if (this.state & STATES.ADDING) {
+                this.undoStack.push(new UndoAction(
+                    'state_adjustment',
+                    'spotAdjustment',
+                    _.initial(this.spotManager.spots),
+                ));
                 this.spotManager.spotsMutable.push(
                     this.spotManager.createSpot(x, y));
                 this.collisionTracker.update();
