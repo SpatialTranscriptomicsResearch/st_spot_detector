@@ -81,17 +81,12 @@ class SpotManager {
             }
         };
         this[sspots] = [];
-        this.spotToAdd = new Spot({
-            diameter: 0,
-            position: { x: 0, y: 0 },
-            selectcb: this.selectcb,
-        });
     }
 
     get spotsMutable() { return this[sspots]; }
     get spots() { return _.cloneDeep(this[sspots]); }
     set spots(xs) {
-        this[sspots] = xs;
+        this[sspots].splice(0, this[sspots].length, ...xs);
         this.selected.clear();
         _.each(xs, (x) => {
             if (x.selected) {
@@ -100,23 +95,22 @@ class SpotManager {
         });
     }
 
+    createSpot(x = 0, y = 0, d = 0) {
+        return new Spot({
+            diameter: d > 0 ? d : this.avgDiameter,
+            position: { x, y },
+            selectcb: this.selectcb,
+        });
+    }
+
     loadSpots(spots, tissueMask) {
-        const avgDiameter = math.sum(
+        this.avgDiameter = math.sum(
             _.filter(_.map(spots, _.last), x => x > 0),
         ) / spots.length;
-        this.spots = _.map(
-            spots,
-            ([x, y, d]) => new Spot({
-                position: { x, y },
-                diameter: d > 0 ? d : avgDiameter,
-                selectcb: this.selectcb,
-            }),
-        );
+        this.spots = _.map(spots, props => this.createSpot(...props));
         if (tissueMask !== null) {
             this.loadMask(tissueMask);
         }
-        this.avgDiameter = avgDiameter;
-        this.spotToAdd.diameter = avgDiameter;
     }
 
     setSpots(spots) {

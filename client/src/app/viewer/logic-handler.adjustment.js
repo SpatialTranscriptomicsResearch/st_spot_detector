@@ -25,11 +25,19 @@ export const STATES = Object.freeze({
 
 
 class AdjustmentLH extends LogicHandler {
-    constructor(camera, calibrator, spotManager, refreshCanvas, undoStack) {
+    constructor(
+        camera,
+        calibrator,
+        spotManager,
+        collisionTracker,
+        refreshCanvas,
+        undoStack,
+    ) {
         super();
         this.camera = camera;
         this.calibrator = calibrator;
         this.spotManager = spotManager;
+        this.collisionTracker = collisionTracker;
         this.refreshCanvas = refreshCanvas;
         this.undoStack = undoStack;
 
@@ -39,12 +47,19 @@ class AdjustmentLH extends LogicHandler {
         this.modifiedSelection = new Set();
 
         this.recordKeyStates();
+        this.recordMousePosition();
     }
 
     undo(action) {
         switch (action.action) {
         case 'spotAdjustment':
             this.spotManager.spots = action.state;
+            if (this.state & STATES.ADDING) {
+                const { x, y } = this.camera.mouseToCameraPosition(
+                    this.mousePosition);
+                this.spotManager.spotsMutable.push(
+                    this.spotManager.createSpot(x, y));
+            }
             break;
         case 'frameAdjustment':
             this.calibrator.points = action.state;
@@ -52,6 +67,8 @@ class AdjustmentLH extends LogicHandler {
         default:
             throw new Error(`Unknown undo action ${action.action}`);
         }
+        this.collisionTracker.update();
+        this.refreshCanvas();
     }
 
     get renderables() {
@@ -145,43 +162,44 @@ class AdjustmentLH extends LogicHandler {
         case Codes.mouseEvent.drag:
             if (this.state & STATES.PANNING) {
                 this.camera.pan(eventData.difference);
-            } else {
-                switch (this.state & (~(STATES.PANNING | STATES.HOVERING))) {
-                case STATES.CALIBRATING:
-                    this.calibrator.setSelectionCoordinates(x, y);
-                    break;
-                case STATES.SELECTING:
-                    this.selectionRectangle.x1 = x;
-                    this.selectionRectangle.y1 = y;
-                    _.each(
-                        this.spotManager.spotsMutable,
-                        (s) => {
-                            /* eslint-disable no-param-reassign */
-                            const v = eventData.button === Codes.mouseButton.left;
-                            if (collides(s.x, s.y, this.selectionRectangle)) {
-                                if (s.selected !== v) {
-                                    s.selected = v;
-                                    this.modifiedSelection.add(s);
-                                }
-                            } else if (this.modifiedSelection.has(s)) {
-                                s.selected = !v;
-                                this.modifiedSelection.delete(s);
-                            }
-                        },
-                    );
-                    break;
-                case STATES.MOVING:
-                    this.spotManager.selected.forEach((s) => {
-                        const { x: dx, y: dy } =
-                            this.camera.mouseToCameraScale(eventData.difference);
+            }
+            switch (this.state & (~STATES.HOVERING)) {
+            case STATES.CALIBRATING:
+                this.calibrator.setSelectionCoordinates(x, y);
+                this.collisionTracker.update();
+                break;
+            case STATES.SELECTING:
+                this.selectionRectangle.x1 = x;
+                this.selectionRectangle.y1 = y;
+                _.each(
+                    this.spotManager.spotsMutable,
+                    (s) => {
                         /* eslint-disable no-param-reassign */
-                        s.x -= dx;
-                        s.y -= dy;
-                    });
-                    break;
-                default:
-                    // ignore
-                }
+                        const v = eventData.button === Codes.mouseButton.left;
+                        if (collides(s.x, s.y, this.selectionRectangle)) {
+                            if (s.selected !== v) {
+                                s.selected = v;
+                                this.modifiedSelection.add(s);
+                            }
+                        } else if (this.modifiedSelection.has(s)) {
+                            s.selected = !v;
+                            this.modifiedSelection.delete(s);
+                        }
+                    },
+                );
+                break;
+            case STATES.MOVING:
+                this.spotManager.selected.forEach((s) => {
+                    const { x: dx, y: dy } =
+                        this.camera.mouseToCameraScale(eventData.difference);
+                    /* eslint-disable no-param-reassign */
+                    s.x -= dx;
+                    s.y -= dy;
+                });
+                this.collisionTracker.update();
+                break;
+            default:
+                // ignore
             }
             this.refreshCanvas();
             break;
@@ -193,7 +211,8 @@ class AdjustmentLH extends LogicHandler {
 
         case Codes.mouseEvent.move:
             if (this.state & STATES.ADDING) {
-                this.spotManager.spotToAdd.position = { x, y };
+                _.last(this.spotManager.spotsMutable).position = { x, y };
+                this.collisionTracker.update();
                 this.refreshCanvas();
             } else {
                 const oldSelection = this.calibrator.selection;
@@ -216,47 +235,46 @@ class AdjustmentLH extends LogicHandler {
                 this.state |= STATES.MOVING;
                 break;
             }
-            switch (this.state) {
-            case STATES.ADDING:
+            if (this.state & STATES.ADDING) {
                 this.spotManager.spotsMutable.push(
-                    _.cloneDeep(this.spotManager.spotToAdd),
-                );
+                    this.spotManager.createSpot(x, y));
+                this.collisionTracker.update();
                 break;
-            case STATES.CALIBRATING:
+            }
+            if (this.state & STATES.CALIBRATING) {
                 this.undoStack.setTemp(new UndoAction(
                     'state_adjustment',
                     'frameAdjustment',
                     this.calibrator.points,
                 ));
                 break;
-            default:
-                this.undoStack.setTemp(new UndoAction(
-                    'state_adjustment',
-                    'spotAdjustment',
-                    this.spotManager.spots,
-                ));
-                if (this.state & STATES.HOVERING) {
-                    this.state |= STATES.MOVING;
-                } else {
-                    if (!this.keystates.shift && eventData.button === Codes.mouseButton.left) {
-                        this.spotManager.selected.forEach((s) => {
-                            /* eslint-disable no-param-reassign */
-                            s.selected = false;
-                        });
-                    }
-                    this.modifiedSelection.clear();
-                    this.selectionRectangle = new StrokedRectangle(
-                        x, y, x, y,
-                        {
-                            lineColor: SELECTION_RECT_COL,
-                            lineDash:  SELECTION_RECT_DASH,
-                            lineWidth: SELECTION_RECT_WGHT,
-                        },
-                    );
-                    this.state |= STATES.SELECTING;
-                }
-                this.refreshCanvas();
             }
+            this.undoStack.setTemp(new UndoAction(
+                'state_adjustment',
+                'spotAdjustment',
+                this.spotManager.spots,
+            ));
+            if (this.state & STATES.HOVERING) {
+                this.state |= STATES.MOVING;
+            } else {
+                if (!this.keystates.shift && eventData.button === Codes.mouseButton.left) {
+                    this.spotManager.selected.forEach((s) => {
+                        /* eslint-disable no-param-reassign */
+                        s.selected = false;
+                    });
+                }
+                this.modifiedSelection.clear();
+                this.selectionRectangle = new StrokedRectangle(
+                    x, y, x, y,
+                    {
+                        lineColor: SELECTION_RECT_COL,
+                        lineDash:  SELECTION_RECT_DASH,
+                        lineWidth: SELECTION_RECT_WGHT,
+                    },
+                );
+                this.state |= STATES.SELECTING;
+            }
+            this.refreshCanvas();
             break;
 
         case Codes.mouseEvent.up:

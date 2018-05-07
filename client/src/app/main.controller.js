@@ -5,23 +5,9 @@ import imageToggleCy from 'assets/images/imageToggleCy3.png';
 import imageToggleHE from 'assets/images/imageToggleHE.png';
 
 import LayerManager from './viewer/layer-manager';
-import modal from './modal';
+import { error, warning } from './modal';
 
 import { LOAD_STAGE } from './loading-widget.directive';
-
-function error(message) {
-    modal(
-        'Error',
-        `<b>Error</b>: ${message === null ? 'Unkown error' : message}`,
-    );
-}
-
-function warning(message) {
-    modal(
-        'Warning',
-        `<b>Warning</b>: ${message === null ? 'Unkown warning' : message}`,
-    );
-}
 
 function unwrapRequest(request) {
     return new Promise(
