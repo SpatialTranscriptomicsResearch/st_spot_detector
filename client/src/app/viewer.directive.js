@@ -384,6 +384,11 @@ function viewer() {
                     s => selection === 'all' || s.selected,
                 );
 
+                if (selectedSpots.length === 0) {
+                    error('No spots have been selected');
+                    return;
+                }
+
                 if (checkCollisions) {
                     const collisions = (
                         new CollisionTracker(calibrator, selectedSpots)).collisions;
