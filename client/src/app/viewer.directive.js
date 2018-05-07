@@ -22,6 +22,7 @@ import Vec2 from './viewer/vec2';
 import UndoStack, { UndoAction } from './viewer/undo';
 
 import { MAX_THREADS } from './config';
+import { error, warning } from './modal';
 import { mathjsToTransform, mulVec2 } from './utils';
 import { clear, render, scale } from './viewer/graphics/functions';
 
@@ -373,7 +374,28 @@ function viewer() {
                 refreshCanvas();
             };
 
-            scope.exportSpots = function(selection, sep = '\t') {
+            scope.exportSpots = function(selection, sep = '\t', checkCollisions = true) {
+                const selectedSpots = _.filter(
+                    spots.spots,
+                    s => selection === 'all' || s.selected,
+                );
+
+                if (checkCollisions) {
+                    const collisions = (
+                        new CollisionTracker(calibrator, selectedSpots)).collisions;
+                    if (collisions.length > 0) {
+                        warning(
+                            `The following array positions have collisions:
+                            ${_.map(collisions, x => `(${x})`).join(', ')}`,
+                            { buttons: [
+                                ['Cancel', _.noop],
+                                ['Continue anyway', () => scope.exportSpots(selection, sep, false)],
+                            ] },
+                        );
+                        return;
+                    }
+                }
+
                 const headers = [
                     'x', 'y',
                     'new_x', 'new_y',
@@ -384,10 +406,7 @@ function viewer() {
                 const ls = scope.layerManager.getLayers();
                 const canvas2image = math.inv('HE' in ls ? ls.HE.tmat : ls.Cy3.tmat);
                 const spotData = _.map(
-                    _.filter(
-                        spots.spots,
-                        s => selection === 'all' || s.selected,
-                    ),
+                    selectedSpots,
                     (s) => {
                         const [[arrx, arry]] = px2arr(calibrator, [[s.x, s.y]]);
                         const [[assx, assy]] = px2assignment(calibrator, [[s.x, s.y]]);
