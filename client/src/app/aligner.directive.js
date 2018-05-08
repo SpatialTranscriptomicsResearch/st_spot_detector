@@ -263,17 +263,6 @@ function aligner() {
 
 
             /* other */
-            scope.layerName = (x) => {
-                switch (x) {
-                case 'cy3':
-                    return 'Cy3';
-                case 'he':
-                    return 'HE';
-                default:
-                    return x;
-                }
-            };
-
             scope.renderables = () => {
                 const ret = [];
                 if (scope.state.tool === 'rotate') {
