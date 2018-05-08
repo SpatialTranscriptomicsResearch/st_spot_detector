@@ -19,14 +19,13 @@ function unwrapRequest(request) {
                     const result = response.data.result;
                     _.each(warnings, warning);
                     if (!success) {
-                        error(result);
-                        return reject(result);
+                        reject(result);
+                    } else {
+                        resolve(result);
                     }
-                    return resolve(result);
                 })
                 .catch((response) => {
                     const result = response.data;
-                    error(result);
                     reject(result);
                 })
             ;
@@ -398,7 +397,7 @@ const main = [
                         }
                     }),
                 )).catch(
-                    _.noop,
+                    error,
                 ).finally(() => {
                     $scope.exitLoading(loadingState);
                 });
