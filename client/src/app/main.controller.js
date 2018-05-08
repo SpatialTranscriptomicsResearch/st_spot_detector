@@ -92,6 +92,14 @@ const main = [
 
         $scope.exportForm = {
             selection: 'selection',
+            selectionFlag(v) {
+                if (arguments.length) {
+                    this.selectionFlagValue = v;
+                    return v;
+                }
+                return this.selection === 'all' && this.selectionFlagValue;
+            },
+            selectionFlagValue: true,
         };
 
         // bools which control the visibilty of various elements on the page

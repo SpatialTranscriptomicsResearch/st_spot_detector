@@ -372,7 +372,16 @@ function viewer() {
                 refreshCanvas();
             };
 
-            scope.exportSpots = function(selection, sep = '\t', checkCollisions = true) {
+            scope.exportSpots = function(selection, options = {}) {
+                const { checkCollisions, selectionFlag, sep } = Object.assign(
+                    {
+                        checkCollisions: true,
+                        selectionFlag: false,
+                        sep: '\t',
+                    },
+                    options,
+                );
+
                 const selectedSpots = _.filter(
                     spots.spots,
                     s => selection === 'all' || s.selected,
@@ -392,7 +401,10 @@ function viewer() {
                             ${_.map(collisions, x => `(${x})`).join(', ')}`,
                             { buttons: [
                                 ['Cancel', _.noop],
-                                ['Continue anyway', () => scope.exportSpots(selection, sep, false)],
+                                ['Continue anyway', () => scope.exportSpots(
+                                    selection,
+                                    Object.assign(options, { checkCollisions: false }),
+                                )],
                             ] },
                         );
                         return;
@@ -403,12 +415,12 @@ function viewer() {
                     'x', 'y',
                     'new_x', 'new_y',
                     'pixel_x', 'pixel_y',
-                    ...(selection === 'all' ? ['selected'] : []),
+                    ...(selectionFlag ? ['selected'] : []),
                 ];
                 const sortOrder = [
                     ['x', 1],
                     ['y', 1],
-                    ['selected', -1],
+                    ...(selectionFlag ? [['selected', -1]] : []),
                     ['new_x', 1],
                     ['new_y', 1],
                 ];

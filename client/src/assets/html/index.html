@@ -161,7 +161,7 @@
                     </div>
                     <!-- Exporter Panel -->
                     <div ng-show='visible.panel.button_exporter'>
-                        <form class="card card-default" ng-submit='exportSpots(exportForm.selection)'>
+                        <form class="card card-default" ng-submit='exportSpots(exportForm.selection, { selectionFlag: exportForm.selectionFlag() })'>
                             <div class="card-title grid2">
                                 <h2>Spots</h2>
                                 <button class='btn btn-primary btn-sm submit-button' type='submit'>
@@ -170,13 +170,22 @@
                             </div>
                             <div class="card-text">
                                 <div class="btn-group">
-                                    <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-light">
+                                    <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-light btn-sm radio-button">
                                         <input type="radio" value='all' ng-model='exportForm.selection'>All
                                     </label>
-                                    <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-light radio-button">
+                                    <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-light btn-sm radio-button">
                                         <input type="radio" value='selection' ng-model='exportForm.selection'>Selected
                                     </label>
                                 </div>
+                                <label>
+                                    <input ng-disabled='exportForm.selection != "all"'
+                                           ng-model='exportForm.selectionFlag'
+                                           ng-model-options='{ getterSetter: true }'
+                                           type="checkbox"
+                                           value="value"
+                                           />
+                                    Include selection flag
+                                </label>
                             </div>
                         </form>
                         <form class="card card-default" ng-submit='exportTMat()'>
