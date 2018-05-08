@@ -123,8 +123,8 @@ class AlignerLHMove extends AlignerLHDefault {
             super.processMouseEvent(e, data);
         } else if (e === Codes.mouseEvent.down) {
             super.processMouseEvent(e, data);
-            this.refreshCursor();
         }
+        this.refreshCursor();
     }
 
     refreshCursor() {
