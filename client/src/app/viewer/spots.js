@@ -9,11 +9,13 @@ import { combinations, intBounds, mulVec2 } from '../utils';
 import {
     SPOT_COL_DEF,
     SPOT_COL_HLT,
-    SPOT_OPACITY,
+    SPOT_OPACITY_DEF,
 } from '../config';
 
 
 // private members of Spot
+const scolor    = Symbol('Color getter');
+const sopacity  = Symbol('Opacity getter');
 const sdiameter = Symbol('Spot diameter');
 const srpos     = Symbol('Spot render position');
 const sselected = Symbol('Selected');
@@ -24,14 +26,16 @@ class Spot extends opacityMixin(FilledCircle) {
         position,
         diameter,
         selectcb,
+        getcolor,
+        getopacity,
     }) {
         super();
         this.position = position;
         this.diameter = diameter;
         this[sselectcb] = selectcb;
         this[sselected] = false;
-        this.opacity = SPOT_OPACITY;
-        this.color = SPOT_COL_DEF;
+        this[sopacity] = getopacity;
+        this[scolor] = getcolor;
     }
 
     get diameter() { return this[sdiameter]; }
@@ -51,6 +55,13 @@ class Spot extends opacityMixin(FilledCircle) {
     get x() { return super.x; }
     set y(v) { this[srpos].y = v; super.y = v; }
     get y() { return super.y; }
+
+    get color() { return this[scolor](); }
+    get opacity() { return this[sopacity](); }
+
+    /* eslint-disable class-methods-use-this */
+    set color(v) { /* can't be set */ }
+    set opacity(v) { /* can't be set */ }
 
     get fillColor() { return this.selected ? SPOT_COL_HLT : this.color; }
     set fillColor(value) { this.color = value; }
@@ -81,6 +92,8 @@ class SpotManager {
             }
         };
         this[sspots] = [];
+        this.color = SPOT_COL_DEF;
+        this.opacity = SPOT_OPACITY_DEF;
     }
 
     get spotsMutable() { return this[sspots]; }
@@ -100,6 +113,8 @@ class SpotManager {
             diameter: d > 0 ? d : this.avgDiameter,
             position: { x, y },
             selectcb: this.selectcb,
+            getcolor: () => this.color,
+            getopacity: () => this.opacity,
         });
     }
 
@@ -184,14 +199,6 @@ class SpotManager {
                 s.selected = inside[1] / inside[0] > threshold;
             },
         );
-    }
-
-    setSpotColor(value) {
-        _.each(this.spotsMutable, (x) => { x.color = value; });
-    }
-
-    setSpotOpacity(value) {
-        _.each(this.spotsMutable, (x) => { x.opacity = value; });
     }
 }
 

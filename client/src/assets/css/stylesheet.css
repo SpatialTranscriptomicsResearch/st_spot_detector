@@ -219,14 +219,23 @@ hr {
 
 .panel-content-wrapper .spot-color-bar {
     flex-direction: row;
-    height: 39px;
+    width: 100%;
     border: #000 1px solid;
 }
 
 .panel-content-wrapper .spot-color {
     flex-grow: 1;
     margin: 0;
-    height: 100%;
+    height: 1.2rem;
+    width: 1.2rem;
+}
+
+.panel-content-wrapper .spot-color:hover {
+    border: 1px solid #fff;
+}
+
+.panel-content-wrapper .spot-color.selected {
+    border: 1px solid #fff;
 }
 
 #spot-color-1 {

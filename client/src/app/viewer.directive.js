@@ -21,7 +21,11 @@ import SpotManager from './viewer/spots';
 import Vec2 from './viewer/vec2';
 import UndoStack, { UndoAction } from './viewer/undo';
 
-import { MAX_THREADS } from './config';
+import {
+    MAX_THREADS,
+    SPOT_COLS,
+    SPOT_OPACITIES,
+} from './config';
 import { error, warning } from './modal';
 import { mathjsToTransform, mulVec2 } from './utils';
 import { clear, render, scale } from './viewer/graphics/functions';
@@ -102,16 +106,6 @@ function viewer() {
 
             scope.getSpots = function() {
                 return spots.getSpots();
-            };
-
-            scope.setSpotColor = function(value) {
-                spots.setSpotColor(value);
-                refreshCanvas();
-            };
-
-            scope.setSpotOpacity = function(value) {
-                spots.setSpotOpacity(value);
-                refreshCanvas();
             };
 
             function resizeCanvas() {
@@ -505,6 +499,18 @@ function viewer() {
                     a.click();  // IE: "Access is denied"; see: https://connect.microsoft.com/IE/feedback/details/797361/ie-10-treats-blob-url-as-cross-origin-and-denies-access
                     document.body.removeChild(a);
                 }
+            };
+
+            scope.opacity = {
+                all: SPOT_OPACITIES,
+                current() { return scope.spotManager.opacity; },
+                set(v) { scope.spotManager.opacity = v; refreshCanvas(); },
+            };
+
+            scope.color = {
+                all: SPOT_COLS,
+                current() { return scope.spotManager.color; },
+                set(v) { scope.spotManager.color = v; refreshCanvas(); },
             };
 
             scope.camera = camera;

@@ -114,6 +114,7 @@ const main = [
                 button_exporter: Boolean(),
                 button_help: Boolean(),
                 button_info: Boolean(),
+                button_settings: Boolean(),
             },
             spotAdjuster: {
                 button_addSpots: Boolean(),
@@ -153,6 +154,7 @@ const main = [
             $scope.visible.panel.button_exporter = false;
             $scope.visible.panel.button_help = false;
             $scope.visible.panel.button_info = false;
+            $scope.visible.panel.button_settings = false;
             $scope.visible.spotAdjuster.button_addSpots = true;
             $scope.visible.spotAdjuster.button_finishAddSpots = false;
             $scope.visible.spotAdjuster.button_deleteSpots = true;

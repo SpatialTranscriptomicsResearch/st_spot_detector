@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 /* eslint-disable import/prefer-default-export */
 export const MAX_CACHE_SIZE = 104857600;
 export const MAX_THREADS = 4;
@@ -28,9 +30,15 @@ export const SELECTION_RECT_DASH = [4, 3];
 export const SELECTION_RECT_WGHT = 2;
 
 // Options for spot rendering
-export const SPOT_COL_DEF = 'hsl(  6, 78%, 57%)';
-export const SPOT_COL_HLT = 'hsl(140, 63%, 42%)';
-export const SPOT_OPACITY = '0.5';
+export const SPOT_COLS = _.map(
+    _.range(0, 360, 360 / 8),
+    x => `hsl(${x}, 100%, 50%)`,
+);
+export const SPOT_COL_DEF = _.first(SPOT_COLS);
+export const SPOT_COL_HLT = 'hsl(140, 100%, 50%)';
+export const SPOT_OPACITIES = _.range(0, 1.2, 0.2);
+export const SPOT_OPACITY_DEF = SPOT_OPACITIES[
+    Math.trunc(SPOT_OPACITIES.length / 2)];
 
 // Options for the loading widget
 export const LOADING_FPS = 60;
