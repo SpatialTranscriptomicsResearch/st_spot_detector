@@ -385,14 +385,13 @@ const main = [
                         $scope.loadSpots(result.spots, result.tissue_mask);
                         $scope.data.spotTransformMatrx = result.spots.transform_matrix;
                         $scope.data.cy3Active = true;
+                        $scope.menuButtonDisabled.button_exporter = false;
                         if ('HE' in result.tiles) {
                             $scope.visible.spotAdjuster.div_insideTissue = true;
                             $scope.menuButtonDisabled.button_adjuster = false;
-                            $scope.menuButtonDisabled.button_exporter = false;
                             openPanel('button_aligner', 'state_alignment');
                         } else {
-                            $scope.visible.spotAdjuster.div_insideTissue = false;
-                            $scope.menuButtonDisabled.button_exporter = false;
+                            $scope.menuButtonDisabled.button_aligner = false;
                             openPanel('button_adjuster', 'state_adjustment');
                         }
                     }),
