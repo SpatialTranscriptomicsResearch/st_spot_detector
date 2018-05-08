@@ -124,6 +124,7 @@ canvas:active {
     display: grid;
     grid-template-columns: auto auto;
     grid-column-gap: 0.5rem;
+    grid-row-gap: 0.5rem;
 }
 
 .panel-content-wrapper .grid2 > * {
