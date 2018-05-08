@@ -160,9 +160,12 @@ function aligner() {
             /* adjustments */
             scope.addAdjustment = _.flowRight(
                 scope.applyState,
-                stateful((s, name, value) => {
+                stateful((s, name, value, pos = -1) => {
                     if (s.active !== undefined) {
-                        s.adjustments.get(s.active).push({
+                        const adjs = s.adjustments.get(s.active);
+                        const n = adjs.length + 1;
+                        pos = ((pos % n) + n) % n;
+                        adjs.splice(pos, 0, {
                             name,
                             value: value || ADJUSTMENTS[name],
                         });
@@ -231,24 +234,30 @@ function aligner() {
 
 
             /* init / exit */
-            let initialState;
-
             scope.init = () => {
                 scope.readState();
-
-                initialState = scope.state.clone();
 
                 const n = scope.layers.layerOrder.length;
                 _.each(_.zip(scope.layers.layerOrder, _.range(n)), ([x, i]) => {
                     scope.setActive(x);
-                    scope.addAdjustment('opacity', (n - i) / n);
+                    scope.addAdjustment('opacity', (n - i) / n, 0);
                 });
 
                 scope.setCurrentTool('move');
             };
 
             scope.exit = () => {
-                scope.state = initialState;
+                // remove all opacity adjustments
+                _.each(
+                    Array.from(scope.state.adjustments.entries()),
+                    ([x, ys]) => {
+                        scope.setActive(x);
+                        _.each(
+                            _.filter(ys, y => y.name === 'opacity'),
+                            (y) => { scope.rmAdjustment(y); },
+                        );
+                    },
+                );
                 scope.applyState();
             };
 
