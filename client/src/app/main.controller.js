@@ -121,12 +121,7 @@ const main = [
                 button_help: Boolean(),
                 button_settings: Boolean(),
             },
-            spotAdjuster: {
-                button_addSpots: Boolean(),
-                button_finishAddSpots: Boolean(),
-                button_deleteSpots: Boolean(),
-                div_insideTissue: Boolean(),
-            },
+            spotAdjuster: String(),
         };
 
         // strings which determine the clickable state of the menu bar buttons 
@@ -158,10 +153,7 @@ const main = [
             $scope.visible.panel.button_exporter = false;
             $scope.visible.panel.button_help = false;
             $scope.visible.panel.button_settings = false;
-            $scope.visible.spotAdjuster.button_addSpots = true;
-            $scope.visible.spotAdjuster.button_finishAddSpots = false;
-            $scope.visible.spotAdjuster.button_deleteSpots = true;
-            $scope.visible.spotAdjuster.div_insideTissue = false;
+            $scope.visible.spotAdjuster = 'default';
 
             $scope.menuButtonDisabled.button_uploader = false;
             $scope.menuButtonDisabled.button_aligner = true;
@@ -171,6 +163,10 @@ const main = [
 
             openPanel('button_uploader', 'state_start');
         }
+
+        $scope.hasHE = function() {
+            return 'HE' in $scope.layerManager.getLayers();
+        };
 
         var toggleMenuBarPanelVisibility = function(previousButton, thisButton) {
             // the panel is closed if the same button is pressed again
@@ -264,7 +260,7 @@ const main = [
                 $scope.data.logicHandler = $scope.adjustmentLH;
             }
 
-            if ('HE' in $scope.layerManager.getLayers() && new_state !== 'state_alignment') {
+            if ($scope.hasHE() && new_state !== 'state_alignment') {
                 // toggle bar should have the same visibility as the zoom bar if HE tiles
                 // uploaded and we're not in the alignment view
                 $scope.visible.imageToggleBar = $scope.visible.zoomBar;
@@ -384,8 +380,7 @@ const main = [
                         $scope.data.spotTransformMatrx = result.spots.transform_matrix;
                         $scope.data.cy3Active = true;
                         $scope.menuButtonDisabled.button_exporter = false;
-                        if ('HE' in result.tiles) {
-                            $scope.visible.spotAdjuster.div_insideTissue = true;
+                        if ($scope.hasHE()) {
                             $scope.menuButtonDisabled.button_adjuster = false;
                             openPanel('button_aligner', 'state_alignment');
                         } else {

@@ -226,9 +226,7 @@ function viewer() {
                 scope.adjustmentLH.state |= alhs.ADDING;
                 scope.spotManager.spotsMutable.push(
                     scope.spotManager.createSpot());
-                scope.visible.spotAdjuster.button_addSpots       = false;
-                scope.visible.spotAdjuster.button_finishAddSpots = true;
-                scope.visible.spotAdjuster.button_deleteSpots    = false;
+                scope.visible.spotAdjuster = 'adjust';
                 refreshCanvas();
             };
 
@@ -236,9 +234,7 @@ function viewer() {
                 scope.adjustmentLH.state = 0;
                 scope.spotManager.spotsMutable.pop();
                 collisionTracker.update();
-                scope.visible.spotAdjuster.button_addSpots       = true;
-                scope.visible.spotAdjuster.button_finishAddSpots = false;
-                scope.visible.spotAdjuster.button_deleteSpots    = true;
+                scope.visible.spotAdjuster = 'default';
                 refreshCanvas();
             };
 

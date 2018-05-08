@@ -141,10 +141,14 @@
                     </div>
                     <!-- Adjuster Panel -->
                     <div ng-show='visible.panel.button_adjuster'>
-                        <button ng-click='addSpots()'           ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-light btn-block'>Add spots</button>
-                        <button ng-click='finishAddSpots()'     ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-light btn-block'>Finish adding spots</button>
-                        <button ng-click='deleteSpots()'        ng-show='visible.spotAdjuster.button_deleteSpots'    type='button' class='btn btn-light btn-block'>Delete selected spots</button>
-                        <button ng-click='selectInsideTissue()' ng-show='visible.spotAdjuster.div_insideTissue'      type='button' class='btn btn-light btn-block'>Select spots inside tissue</button>
+                        <div ng-show='visible.spotAdjuster == "default"'>
+                            <button ng-click='addSpots()' type='button' class='btn btn-sm btn-light btn-block'>Add spots</button>
+                            <button ng-click='selectInsideTissue()' ng-show='hasHE() && spotManager.selected.size == 0' type='button' class='btn btn-sm btn-primary btn-block'>Select spots inside tissue</button>
+                            <button ng-click='deleteSpots()' ng-show='spotManager.selected.size > 0' type='button' class='btn btn-sm btn-danger btn-block'>Delete selection</button>
+                        </div>
+                        <div ng-show='visible.spotAdjuster == "adjust"' style='margin-top: 0'>
+                            <button ng-click='finishAddSpots()' type='button' class='btn btn-sm btn-secondary btn-block'>Go back</button>
+                        </div>
                     </div>
                     <!-- Exporter Panel -->
                     <div ng-show='visible.panel.button_exporter'>
