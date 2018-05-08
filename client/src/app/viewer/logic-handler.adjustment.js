@@ -43,6 +43,7 @@ class AdjustmentLH extends LogicHandler {
 
         this.state = STATES.DEFAULT;
         this.hovering = undefined;
+        this.editing = undefined;
         this.selectionRectangle = undefined;
         this.modifiedSelection = new Set();
 
@@ -151,12 +152,12 @@ class AdjustmentLH extends LogicHandler {
 
     processMouseEvent(mouseEvent, eventData) {
         const { x, y } = this.camera.mouseToCameraPosition(eventData.position);
-        this.hovering = _.find(
-            Array.from(this.spotManager.selected),
+        const hovering = _.find(
+            this.spotManager.spotsMutable,
             s => collides(x, y, s),
         );
         this.state ^= (this.state & STATES.HOVERING) ^
-            (this.hovering ? STATES.HOVERING : 0);
+            (hovering ? STATES.HOVERING : 0);
 
         switch (mouseEvent) {
         case Codes.mouseEvent.drag:
@@ -188,16 +189,21 @@ class AdjustmentLH extends LogicHandler {
                     },
                 );
                 break;
-            case STATES.MOVING:
-                this.spotManager.selected.forEach((s) => {
-                    const { x: dx, y: dy } =
-                        this.camera.mouseToCameraScale(eventData.difference);
-                    /* eslint-disable no-param-reassign */
-                    s.x -= dx;
-                    s.y -= dy;
-                });
+            case STATES.MOVING: {
+                const { x: dx, y: dy } =
+                    this.camera.mouseToCameraScale(eventData.difference);
+                if (this.editing.selected) {
+                    this.spotManager.selected.forEach((s) => {
+                        /* eslint-disable no-param-reassign */
+                        s.x -= dx;
+                        s.y -= dy;
+                    });
+                } else {
+                    this.editing.x -= dx;
+                    this.editing.y -= dy;
+                }
                 this.collisionTracker.update();
-                break;
+            } break;
             default:
                 // ignore
             }
@@ -254,6 +260,7 @@ class AdjustmentLH extends LogicHandler {
                 ));
                 break;
             }
+            this.editing = hovering;
             this.undoStack.setTemp(new UndoAction(
                 'state_adjustment',
                 'spotAdjustment',
