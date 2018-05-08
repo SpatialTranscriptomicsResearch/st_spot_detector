@@ -144,6 +144,7 @@
                         <div ng-show='visible.spotAdjuster == "default"'>
                             <button ng-click='addSpots()' type='button' class='btn btn-sm btn-light btn-block'>Add spots</button>
                             <button ng-click='selectInsideTissue()' ng-show='hasHE() && spotManager.selected.size == 0' type='button' class='btn btn-sm btn-primary btn-block'>Select spots inside tissue</button>
+                            <button ng-click='clearSelection()' ng-show='spotManager.selected.size > 0' type='button' class='btn btn-sm btn-secondary btn-block'>Clear selection</button>
                             <button ng-click='deleteSpots()' ng-show='spotManager.selected.size > 0' type='button' class='btn btn-sm btn-danger btn-block'>Delete selection</button>
                         </div>
                         <div ng-show='visible.spotAdjuster == "adjust"' style='margin-top: 0'>
