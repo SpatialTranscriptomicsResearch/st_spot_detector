@@ -12,6 +12,7 @@ html {
 
 body {
     background-color: #eeeeee;
+    font-size: 0.875rem;
 }
 
 input[type="radio"] {
