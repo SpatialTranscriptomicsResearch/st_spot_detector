@@ -89,13 +89,6 @@ class SpotManager {
         this.maskShape = [];
         this.avgDiameter = Number();
         this.selected = new Set();
-        this.selectcb = (s, v) => {
-            if (v) {
-                this.selected.add(s);
-            } else {
-                this.selected.delete(s);
-            }
-        };
         this[sspots] = [];
         this.color = SPOT_COL_DEF;
         this.opacity = SPOT_OPACITY_DEF;
@@ -117,7 +110,13 @@ class SpotManager {
         return new Spot({
             diameter: d > 0 ? d : this.avgDiameter,
             position: { x, y },
-            selectcb: this.selectcb,
+            selectcb: (s, v) => {
+                if (v) {
+                    this.selected.add(s);
+                } else {
+                    this.selected.delete(s);
+                }
+            },
             getcolor: () => this.color,
             getopacity: () => this.opacity,
         });
