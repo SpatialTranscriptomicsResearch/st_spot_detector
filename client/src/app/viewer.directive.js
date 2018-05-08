@@ -421,7 +421,7 @@ function viewer() {
                 );
 
                 if (selectedSpots.length === 0) {
-                    error('No spots have been selected');
+                    error('<p>No spots have been selected.</p>');
                     return;
                 }
 
@@ -430,8 +430,11 @@ function viewer() {
                         new CollisionTracker(calibrator, selectedSpots)).collisions;
                     if (collisions.length > 0) {
                         warning(
-                            `The following array positions have collisions:
-                            ${_.map(collisions, x => `(${x})`).join(', ')}`,
+                            `<p>The exported data contains spots that map to the same array coordinates.
+                            Collisions make it impossible to map the count data correctly.
+                            See the help manual for more information.</p>
+                            <p>The following array positions have collisions:</p>
+                            <p>${_.map(collisions, x => `(${x})`).join(', ')}</p>`,
                             { buttons: [
                                 ['Cancel', _.noop],
                                 ['Continue anyway', () => scope.exportSpots(
