@@ -69,12 +69,12 @@ const main = [
 
         // texts to display as a title on the menu bar panel
         const panelTitles = {
-            button_uploader: 'Uploader',
-            button_aligner: 'Alignment',
+            button_uploader: 'Image upload',
+            button_aligner: 'Image adjustment',
             button_adjuster: 'Spot adjustment',
-            button_exporter: 'Export',
+            button_exporter: 'Data export',
             button_help: 'Help',
-            button_info: 'Info'
+            button_settings: 'Settings',
         };
 
         // variables which hold more "global" important information, some shared between
