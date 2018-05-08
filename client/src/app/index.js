@@ -6,6 +6,7 @@ import 'spinkit/css/spinners/10-fading-circle.css';
 import 'assets/css/stylesheet.css';
 import 'assets/html/index.html';
 
+import $ from 'jquery';
 import angular from 'angular';
 
 import aligner from './aligner.directive';
@@ -21,3 +22,5 @@ app.directive('loadingWidget', loadingWidget);
 app.directive('imageUpload', imageUpload);
 app.directive('viewer', viewer);
 app.directive('aligner', aligner);
+
+$(document).ready(() => $('[data-toggle="tooltip"]').tooltip());

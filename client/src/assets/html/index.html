@@ -20,23 +20,63 @@
             <!-- Menu Bar -->
             <div class='menu-bar btn-group btn-group-vertical' role='group'>
                 <!-- Uploader -->
-                <button ng-click='menuButtonClick("button_uploader", "state_start")' type='button' ng-class='{active: data.button=="button_uploader"}' class='btn btn-secondary' ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
+                <button ng-click='menuButtonClick("button_uploader", "state_start")'
+                        type='button'
+                        ng-class='{active: data.button=="button_uploader"}'
+                        class='btn btn-secondary'
+                        ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}"
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Image upload'
+                        >
                     <span class='fa fa-file-image-o'></span>
-                </button>
                 <!-- Aligner -->
-                <button ng-click='menuButtonClick("button_aligner", "state_alignment")' type='button' ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}' class='btn btn-secondary'>
+                <button ng-click='menuButtonClick("button_aligner", "state_alignment")'
+                        type='button'
+                        ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Image adjustment'
+                        >
                     <span class='fa fa-adjust'></span>
                 </button>
                 <!-- Adjuster -->
-                <button ng-click='menuButtonClick("button_adjuster", "state_adjustment")' type='button' ng-class='{disabled: menuButtonDisabled.button_adjuster, active: data.button=="button_adjuster"}' class='btn btn-secondary'>
+                <button ng-click='menuButtonClick("button_adjuster", "state_adjustment")'
+                        type='button'
+                        ng-class='{disabled: menuButtonDisabled.button_adjuster, active: data.button=="button_adjuster"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Spot adjustment'
+                        >
                     <span class='fa fa-pencil-square-o'></span>
                 </button>
                 <!-- Exporter -->
-                <button ng-click='menuButtonClick("button_exporter", "state_adjustment")' type='button' ng-class='{disabled: menuButtonDisabled.button_exporter, active: data.button=="button_exporter"}' class='btn btn-secondary'>
+                <button ng-click='menuButtonClick("button_exporter", "state_adjustment")'
+                        type='button'
+                        ng-class='{disabled: menuButtonDisabled.button_exporter, active: data.button=="button_exporter"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Data export'
+                        >
                     <span class='fa fa-floppy-o'></span>
                 </button>
                 <!-- Help -->
-                <button ng-click='menuButtonClick("button_help")' type='button' ng-class='{active: data.button=="button_help"}'class='btn btn-secondary'>
+                <button ng-click='menuButtonClick("button_help")'
+                        type='button'
+                        ng-class='{active: data.button=="button_help"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Help'
+                        >
                     <span class='fa fa-question-circle'></span>
                 </button>
             </div>
