@@ -24,16 +24,33 @@ class CollisionTracker {
         this.update();
     }
     update() {
-        const pxOrig = _.map(this.spots, s => [s.x, s.y]);
-        const arrAssign = px2assignment(this.calibrator, pxOrig);
-        const pxAssign = arr2px(this.calibrator, arrAssign);
+        const assigned = [];
+        const assignedArr = [];
+        const unassigned = [];
+        _.each(
+            this.spots,
+            (s) => {
+                const { x, y } = s.position;
+                const { x: ax, y: ay } = s.assignment;
+                if (ax && ay) {
+                    assigned.push([x, y]);
+                    assignedArr.push([ax, ay]);
+                } else {
+                    unassigned.push([x, y]);
+                }
+            },
+        );
+        const unassignedArr = px2assignment(this.calibrator, unassigned);
+        const orig = [...unassigned, ...assigned];
+        const arrs = [...unassignedArr, ...assignedArr];
+        const to = arr2px(this.calibrator, arrs);
         this[sbins] = _.map(
             _.range(this.calibrator.width + 1),
             () => new Array(this.calibrator.height + 1).fill(0),
         );
-        _.each(arrAssign, ([x, y]) => { this[sbins][x][y] += 1; });
+        _.each(arrs, ([x, y]) => { this[sbins][x][y] += 1; });
         this[salines] = _.map(
-            _.zip(pxOrig, pxAssign, arrAssign),
+            _.zip(orig, to, arrs),
             ([as, bs, [x, y]]) => new Line(
                 ...as, ...bs,
                 {

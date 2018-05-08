@@ -14,6 +14,7 @@ import {
 
 
 // private members of Spot
+const sassign   = Symbol('Array assignment');
 const scolor    = Symbol('Color getter');
 const sopacity  = Symbol('Opacity getter');
 const sdiameter = Symbol('Spot diameter');
@@ -36,6 +37,7 @@ class Spot extends opacityMixin(FilledCircle) {
         this[sselected] = false;
         this[sopacity] = getopacity;
         this[scolor] = getcolor;
+        this[sassign] = {};
     }
 
     get diameter() { return this[sdiameter]; }
@@ -50,6 +52,9 @@ class Spot extends opacityMixin(FilledCircle) {
         this.x = value.x;
         this.y = value.y;
     }
+
+    get assignment() { return this[sassign]; }
+    set assignment({ x, y }) { this[sassign] = { x, y }; }
 
     set x(v) { this[srpos].x = v; super.x = v; }
     get x() { return super.x; }

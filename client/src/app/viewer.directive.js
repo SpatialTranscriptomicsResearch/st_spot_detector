@@ -238,6 +238,30 @@ function viewer() {
                 refreshCanvas();
             };
 
+            scope.editAssignments = function() {
+                scope.adjustmentLH.state |= alhs.EDITING;
+                scope.visible.spotAdjuster = 'assign';
+            };
+
+            scope.clearAssign = function() {
+                this.undoStack.push(new UndoAction(
+                    'state_adjustment',
+                    'spotAdjustment',
+                    this.spotManager.spots,
+                ));
+                _.each(
+                    spots.spotsMutable,
+                    (s) => { s.assignment = {}; },
+                );
+                collisionTracker.update();
+                refreshCanvas();
+            };
+
+            scope.finishAssign = function() {
+                scope.adjustmentLH.state = 0;
+                scope.visible.spotAdjuster = 'default';
+            };
+
             scope.clearSelection = function() {
                 scope.undoStack.push(new UndoAction(
                     'state_adjustment',

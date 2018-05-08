@@ -8,7 +8,7 @@ import {
 import LogicHandler from '../logic-handler';
 import { UndoAction } from '../viewer/undo';
 import { setCursor } from '../utils';
-import { SEL } from './calibrator';
+import { SEL, px2assignment } from './calibrator';
 import { collides } from './graphics/functions';
 import { StrokedRectangle } from './graphics/rectangle';
 import Codes from './keycodes';
@@ -21,6 +21,8 @@ export const STATES = Object.freeze({
     MOVING:      1 << 3,
     SELECTING:   1 << 4,
     ADDING:      1 << 5,
+    EDITING:     1 << 6,
+    ASSIGNING:   1 << 7,
 });
 
 
@@ -92,6 +94,17 @@ class AdjustmentLH extends LogicHandler {
         }
         if (this.state & STATES.ADDING) {
             return setCursor('crosshair');
+        }
+        if (this.state & STATES.EDITING) {
+            if (this.state & STATES.ASSIGNING) {
+                return setCursor('crosshair');
+            }
+            return setCursor(
+                this.state & STATES.HOVERING
+                    ? 'cell'
+                    : 'default'
+                ,
+            );
         }
         if (this.state & STATES.CALIBRATING) {
             switch (this.calibrator.selection) {
@@ -204,6 +217,11 @@ class AdjustmentLH extends LogicHandler {
                 }
                 this.collisionTracker.update();
             } break;
+            case STATES.EDITING | STATES.ASSIGNING: {
+                const [[ax, ay]] = px2assignment(this.calibrator, [[x, y]]);
+                this.editing.assignment = { x: ax, y: ay };
+                this.collisionTracker.update();
+            } break;
             default:
                 // ignore
             }
@@ -215,26 +233,29 @@ class AdjustmentLH extends LogicHandler {
             this.refreshCanvas();
             // fall through
 
-        case Codes.mouseEvent.move:
+        case Codes.mouseEvent.move: {
             if (this.state & STATES.ADDING) {
                 _.last(this.spotManager.spotsMutable).position = { x, y };
                 this.collisionTracker.update();
                 this.refreshCanvas();
-            } else {
-                const oldSelection = this.calibrator.selection;
-                this.calibrator.setSelection(x, y);
-                if (this.calibrator.selection !== oldSelection) {
-                    this.refreshCanvas();
-                }
-                if (this.calibrator.selection !== 0 &&
-                        !(this.state & STATES.CALIBRATING)) {
-                    this.state |= STATES.CALIBRATING;
-                } else if (this.calibrator.selection === 0 &&
-                        (this.state & STATES.CALIBRATING)) {
-                    this.state &= ~STATES.CALIBRATING;
-                }
+                break;
             }
-            break;
+            if (this.state & STATES.EDITING) {
+                break;
+            }
+            const oldSelection = this.calibrator.selection;
+            this.calibrator.setSelection(x, y);
+            if (this.calibrator.selection !== oldSelection) {
+                this.refreshCanvas();
+            }
+            if (this.calibrator.selection !== 0 &&
+                !(this.state & STATES.CALIBRATING)) {
+                this.state |= STATES.CALIBRATING;
+            } else if (this.calibrator.selection === 0 &&
+                (this.state & STATES.CALIBRATING)) {
+                this.state &= ~STATES.CALIBRATING;
+            }
+        } break;
 
         case Codes.mouseEvent.down:
             if (this.state & STATES.PANNING) {
@@ -250,6 +271,18 @@ class AdjustmentLH extends LogicHandler {
                 this.spotManager.spotsMutable.push(
                     this.spotManager.createSpot(x, y));
                 this.collisionTracker.update();
+                break;
+            }
+            if (this.state & STATES.EDITING) {
+                this.editing = hovering;
+                if (this.editing) {
+                    this.undoStack.push(new UndoAction(
+                        'state_adjustment',
+                        'spotAdjustment',
+                        this.spotManager.spots,
+                    ));
+                    this.state |= STATES.ASSIGNING;
+                }
                 break;
             }
             if (this.state & STATES.CALIBRATING) {
@@ -292,6 +325,7 @@ class AdjustmentLH extends LogicHandler {
             this.state &= ~(
                 STATES.SELECTING
               | STATES.MOVING
+              | STATES.ASSIGNING
             );
             break;
 
