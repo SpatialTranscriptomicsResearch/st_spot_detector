@@ -238,6 +238,19 @@ function viewer() {
                 refreshCanvas();
             };
 
+            scope.clearSelection = function() {
+                scope.undoStack.push(new UndoAction(
+                    'state_adjustment',
+                    'spotAdjustment',
+                    spots.spots,
+                ));
+                spots.selected.forEach((s) => {
+                    /* eslint-disable no-param-reassign */
+                    s.selected = false;
+                });
+                refreshCanvas();
+            };
+
             scope.deleteSpots = function() {
                 var action = new UndoAction(
                     'state_adjustment',

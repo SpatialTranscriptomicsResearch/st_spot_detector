@@ -262,12 +262,6 @@ class AdjustmentLH extends LogicHandler {
             if (this.state & STATES.HOVERING) {
                 this.state |= STATES.MOVING;
             } else {
-                if (!this.keystates.shift && eventData.button === Codes.mouseButton.left) {
-                    this.spotManager.selected.forEach((s) => {
-                        /* eslint-disable no-param-reassign */
-                        s.selected = false;
-                    });
-                }
                 this.modifiedSelection.clear();
                 this.selectionRectangle = new StrokedRectangle(
                     x, y, x, y,
