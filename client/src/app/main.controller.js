@@ -57,7 +57,6 @@ const main = [
         const helpTexts = {
             state_start:         "Click on the top-most icon to select and upload image(s). The image(s) must be in .jpg format and rotated so that the frame cluster appears at the top left of the image.",
             state_upload:        "",
-            state_detection:     "",
             state_adjustment:    "Left click or Ctrl+click to select spots. Hold in shift to add to a selection.\n" +
             "Right click to move selected spots or navigate the canvas.\n" +
             "Click 'Delete spots' to delete selected spots.\n" +
@@ -120,7 +119,6 @@ const main = [
                 button_adjuster: Boolean(),
                 button_exporter: Boolean(),
                 button_help: Boolean(),
-                button_info: Boolean(),
                 button_settings: Boolean(),
             },
             spotAdjuster: {
@@ -138,7 +136,6 @@ const main = [
             button_adjuster: Boolean(),
             button_exporter: Boolean(),
             button_help: Boolean(),
-            button_info: Boolean(),
         };
 
         $scope.layerManager = new LayerManager();
@@ -160,7 +157,6 @@ const main = [
             $scope.visible.panel.button_adjuster = false;
             $scope.visible.panel.button_exporter = false;
             $scope.visible.panel.button_help = false;
-            $scope.visible.panel.button_info = false;
             $scope.visible.panel.button_settings = false;
             $scope.visible.spotAdjuster.button_addSpots = true;
             $scope.visible.spotAdjuster.button_finishAddSpots = false;
@@ -172,7 +168,6 @@ const main = [
             $scope.menuButtonDisabled.button_adjuster = true;
             $scope.menuButtonDisabled.button_exporter = true;
             $scope.menuButtonDisabled.button_help = false;
-            $scope.menuButtonDisabled.button_info = false;
 
             openPanel('button_uploader', 'state_start');
         }
@@ -259,12 +254,6 @@ const main = [
                 $scope.initAlignment();
 
                 $scope.data.logicHandler = $scope.alignerLH;
-            }
-            else if($scope.data.state === 'state_detection') {
-                $scope.visible.menuBar = false;
-                $scope.visible.zoomBar = false;
-                $scope.visible.loadingWidget = true;
-                $scope.visible.canvas = false;
             }
             else if($scope.data.state === 'state_adjustment') {
                 $scope.visible.menuBar = true;

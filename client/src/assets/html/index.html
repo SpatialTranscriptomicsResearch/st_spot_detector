@@ -139,19 +139,6 @@
                                  renderables="getAlignerRenderables"
                                  />
                     </div>
-                    <!-- Detector Panel -->
-                    <div ng-show='visible.panel.button_detector' style='margin-top: auto'>
-                        <form name='spotDetectorForm' ng-submit='detectSpots()'>
-                            <!--
-                            <div class='input-group-sm'>
-                                <span class='input-group-addon'>Array size</span>
-                                <input type='number' min='0' step='1'/>
-                                <input type='number' min='0' step='1'/>
-                            </div>
-                            -->
-                            <button class='btn btn-primary btn-sm submit-button' type='submit'>Detect Spots</a>
-                        </form>
-                    </div>
                     <!-- Adjuster Panel -->
                     <div ng-show='visible.panel.button_adjuster'>
                         <button ng-click='addSpots()'           ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-light btn-block'>Add spots</button>
@@ -229,9 +216,6 @@
                     <div ng-show='visible.panel.button_help'>
                         <p>{{ getHelpTexts(data.state) }}</p>
                         <p>For more in-depth help, refer to the <a href='https://github.com/SpatialTranscriptomicsResearch/st_spot_detector/wiki/ST-Spot-Detector-Usage-Guide' target='_blank'>usage guide</a>.</p>
-                    </div>
-                    <!-- Info Panel -->
-                    <div ng-show='visible.panel.button_info'>
                     </div>
                 </div>
             </div>
