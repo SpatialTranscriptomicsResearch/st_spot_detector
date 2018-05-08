@@ -31,7 +31,7 @@ export const SELECTION_RECT_WGHT = 2;
 
 // Options for spot rendering
 export const SPOT_COLS = _.map(
-    _.range(0, 360, 360 / 8),
+    _.range(225, 225 + 360, 360 / 8),
     x => `hsl(${x}, 100%, 50%)`,
 );
 export const SPOT_COL_DEF = _.first(SPOT_COLS);
