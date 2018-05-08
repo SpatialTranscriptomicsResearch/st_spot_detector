@@ -6,6 +6,7 @@ import imageToggleHE from 'assets/images/imageToggleHE.png';
 
 import LayerManager from './viewer/layer-manager';
 import { error, warning } from './modal';
+import { setCursor } from './utils';
 
 import { LOAD_STAGE } from './loading-widget.directive';
 
@@ -231,6 +232,7 @@ const main = [
                 $scope.visible.zoomBar = false;
                 $scope.visible.loadingWidget = false;
                 $scope.visible.canvas = false;
+                setCursor('default');
             }
             else if($scope.data.state === 'state_upload') {
                 $scope.visible.menuBar = false;
