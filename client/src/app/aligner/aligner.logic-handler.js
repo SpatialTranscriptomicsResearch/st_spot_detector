@@ -2,7 +2,7 @@
  * @module aligner.logic-handler
  */
 
-import _ from 'underscore';
+import _ from 'lodash';
 import math from 'mathjs';
 
 import Codes from '../viewer/keycodes';
@@ -123,8 +123,8 @@ class AlignerLHMove extends AlignerLHDefault {
             super.processMouseEvent(e, data);
         } else if (e === Codes.mouseEvent.down) {
             super.processMouseEvent(e, data);
-            this.refreshCursor();
         }
+        this.refreshCursor();
     }
 
     refreshCursor() {

@@ -18,141 +18,142 @@
                         ng-class="{ 'active': isActive(layer) }"
                         ng-click="setActive(layer)"
                         >
-                        {{ layerName(layer) }}
+                        {{ layer }}
                  </label>
             </div>
         </div>
     </div>
-<div class="card">
-    <div class="card-title">
-        <h2>Tools</h2>
-    </div>
-    <div class="card-text">
-        <div class="btn-group">
-            <label class="btn btn-light"
-                   ng-repeat="tool in toolsArray"
-                   ng-click="setCurrentTool(tool[0])"
-                   ng-class="{'active': isCurrentTool(tool[0]) }"
-                   >
-                   {{ tool[1].name }}
-            </label>
+    <div class="card">
+        <div class="card-title">
+            <h2>Tools</h2>
+        </div>
+        <div class="card-text">
+            <div class="btn-group">
+                <label class="btn btn-light btn-sm"
+                       ng-repeat="tool in toolsArray"
+                       ng-click="setCurrentTool(tool[0])"
+                       ng-class="{'active': isCurrentTool(tool[0]) }"
+                       >
+                       {{ tool[1].name }}
+                </label>
+            </div>
         </div>
     </div>
-</div>
-<div class="card">
-    <div class="card-title">
-        <h2>Adjustments</h2>
-    </div>
-    <div id="adjustments" class="card-text">
-        <div id="adjustment-list">
-             <div class="card" ng-repeat="adjustment in state.adjustments.get(state.active)">
-                 <!-- Opacity -->
-                 <div class="card-title grid2 sort-handle" ng-if="adjustment.name == 'opacity'">
-                     <h3><span class="fa fa-sort"></span> Opacity</h3>
-                     <button class='btn btn-danger btn-sm submit-button'
-                                               ng-click="rmAdjustment(adjustment)"
-                                               >
-                                               <span class="fa fa-trash"></span>
-                     </button>
-                 </div>
-                 <div class="card-text" ng-if="adjustment.name == 'opacity'">
-                     <div class="grid2" style="grid-template-columns: 65% auto;">
-                         <input type="range"
-                                min="0"
-                                max="1"
-                                step="0.01"
-                                ng-model="adjustment.value"
-                                ng-change="applyState()"
-                                />
-                         <input type="number"
-                                step="0.01"
-                                ng-model="adjustment.value"
-                                ng-change="applyState()"
-                                style="width: 100%"
-                                />
-                     </div>
-                 </div>
-
-                 <!-- Brightness -->
-                 <div class="card-title grid2 sort-handle" ng-if="adjustment.name == 'brightness'">
-                     <h3><span class="fa fa-sort"></span> Brightness</h3>
-                     <button class='btn btn-danger btn-sm submit-button'
-                                               ng-click="rmAdjustment(adjustment)"
-                                               >
-                                               <span class="fa fa-trash"></span>
-                     </button>
-                 </div>
-                 <div class="card-text" ng-if="adjustment.name == 'brightness'">
-                     <div class="grid2" style="grid-template-columns: 65% auto;">
-                         <input type="range"
-                                min="-1"
-                                max="1"
-                                step="0.01"
-                                ng-model="adjustment.value"
-                                ng-change="applyState()"
-                                />
-                         <input type="number"
-                                step="0.01"
-                                ng-model="adjustment.value"
-                                ng-change="applyState()"
-                                style="width: 100%"
-                                />
-                     </div>
-                 </div>
-
-                 <!-- Contrast -->
-                 <div class="card-title grid2 sort-handle" ng-if="adjustment.name == 'contrast'">
-                     <h3><span class="fa fa-sort"></span> Contrast</h3>
-                     <button class='btn btn-danger btn-sm submit-button'
-                                               ng-click="rmAdjustment(adjustment)"
-                                               >
-                                               <span class="fa fa-trash"></span>
-                     </button>
-                 </div>
-                 <div class="card-text" ng-if="adjustment.name == 'contrast'">
-                     <div class="grid2" style="grid-template-columns: 65% auto;">
-                         <input type="range"
-                                min="-1"
-                                max="1"
-                                step="0.01"
-                                ng-model="adjustment.value"
-                                ng-change="applyState()"
-                                />
-                         <input type="number"
-                                step="0.01"
-                                ng-model="adjustment.value"
-                                ng-change="applyState()"
-                                style="width: 100%"
-                                />
-                     </div>
-                 </div>
-
-                 <!-- Equalize -->
-                 <div class="card-title grid2 sort-handle" ng-if="adjustment.name == 'equalize'">
-                     <h3><span class="fa fa-sort"></span> Equalize</h3>
-                     <button class='btn btn-danger btn-sm submit-button'
-                                               ng-click="rmAdjustment(adjustment)"
-                                               >
-                                               <span class="fa fa-trash"></span>
-                     </button>
-                 </div>
-             </div>
+    <div class="card">
+        <div class="card-title">
+            <h2>Adjustments</h2>
         </div>
+        <div id="adjustments" class="card-text">
+            <div id="adjustment-list">
+                 <div class="card" ng-repeat="adjustment in state.adjustments.get(state.active)">
+                     <!-- Opacity -->
+                     <div class="card-title grid2 sort-handle" ng-if="adjustment.name == 'opacity'">
+                         <h3><span class="fa fa-sort"></span> Opacity</h3>
+                         <button class='btn btn-danger btn-sm submit-button'
+                                                   ng-click="rmAdjustment(adjustment)"
+                                                   >
+                                                   <span class="fa fa-trash"></span>
+                         </button>
+                     </div>
+                     <div class="card-text" ng-if="adjustment.name == 'opacity'">
+                         <div class="grid2" style="grid-template-columns: 65% auto;">
+                             <input type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.01"
+                                    ng-model="adjustment.value"
+                                    ng-change="applyState()"
+                                    />
+                             <input type="number"
+                                    step="0.01"
+                                    ng-model="adjustment.value"
+                                    ng-change="applyState()"
+                                    style="width: 100%"
+                                    />
+                         </div>
+                     </div>
 
-        <div class="btn-group">
-            <span class="btn btn-light btn-sm dropdown-toggle"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                  >
-                  Add Adjustment
-            </span>
-            <span class="dropdown-menu">
-                <button class="dropdown-item" ng-click="addAdjustment('brightness')">Brightness</button>
-                <button class="dropdown-item" ng-click="addAdjustment('contrast')">Contrast</button>
-                <button class="dropdown-item" ng-click="addAdjustment('equalize')">Equalize</button>
-                <button class="dropdown-item" ng-click="addAdjustment('opacity')">Opacity</button>
-            </span>
+                     <!-- Brightness -->
+                     <div class="card-title grid2 sort-handle" ng-if="adjustment.name == 'brightness'">
+                         <h3><span class="fa fa-sort"></span> Brightness</h3>
+                         <button class='btn btn-danger btn-sm submit-button'
+                                                   ng-click="rmAdjustment(adjustment)"
+                                                   >
+                                                   <span class="fa fa-trash"></span>
+                         </button>
+                     </div>
+                     <div class="card-text" ng-if="adjustment.name == 'brightness'">
+                         <div class="grid2" style="grid-template-columns: 65% auto;">
+                             <input type="range"
+                                    min="-1"
+                                    max="1"
+                                    step="0.01"
+                                    ng-model="adjustment.value"
+                                    ng-change="applyState()"
+                                    />
+                             <input type="number"
+                                    step="0.01"
+                                    ng-model="adjustment.value"
+                                    ng-change="applyState()"
+                                    style="width: 100%"
+                                    />
+                         </div>
+                     </div>
+
+                     <!-- Contrast -->
+                     <div class="card-title grid2 sort-handle" ng-if="adjustment.name == 'contrast'">
+                         <h3><span class="fa fa-sort"></span> Contrast</h3>
+                         <button class='btn btn-danger btn-sm submit-button'
+                                                   ng-click="rmAdjustment(adjustment)"
+                                                   >
+                                                   <span class="fa fa-trash"></span>
+                         </button>
+                     </div>
+                     <div class="card-text" ng-if="adjustment.name == 'contrast'">
+                         <div class="grid2" style="grid-template-columns: 65% auto;">
+                             <input type="range"
+                                    min="-1"
+                                    max="1"
+                                    step="0.01"
+                                    ng-model="adjustment.value"
+                                    ng-change="applyState()"
+                                    />
+                             <input type="number"
+                                    step="0.01"
+                                    ng-model="adjustment.value"
+                                    ng-change="applyState()"
+                                    style="width: 100%"
+                                    />
+                         </div>
+                     </div>
+
+                     <!-- Equalize -->
+                     <div class="card-title grid2 sort-handle" ng-if="adjustment.name == 'equalize'">
+                         <h3><span class="fa fa-sort"></span> Equalize</h3>
+                         <button class='btn btn-danger btn-sm submit-button'
+                                                   ng-click="rmAdjustment(adjustment)"
+                                                   >
+                                                   <span class="fa fa-trash"></span>
+                         </button>
+                     </div>
+                 </div>
+            </div>
+
+            <div class="btn-group">
+                <span class="btn btn-light btn-sm dropdown-toggle"
+                      data-toggle="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                      >
+                      Add Adjustment
+                </span>
+                <span class="dropdown-menu">
+                    <button class="dropdown-item" ng-click="addAdjustment('brightness')">Brightness</button>
+                    <button class="dropdown-item" ng-click="addAdjustment('contrast')">Contrast</button>
+                    <button class="dropdown-item" ng-click="addAdjustment('equalize')">Equalize</button>
+                    <button class="dropdown-item" ng-click="addAdjustment('opacity')">Opacity</button>
+                </span>
+            </div>
         </div>
     </div>
 </div>

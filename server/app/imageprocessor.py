@@ -12,7 +12,7 @@ import warnings
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS=None
 
-URI_HEADER = b'data:image/jpeg;base64,'
+URI_HEADER = 'data:image/jpeg;base64,'
 
 def validate_jpeg_URI(jpeg_URI):
     """Checks that it is a valid base64-encoded jpeg URI."""
@@ -35,10 +35,8 @@ def Image_to_jpeg_URI(image):
 
     # encode the data into a URI with the header added
     jpeg_string = base64.b64encode(jpeg_data.getvalue())
-    jpeg_string = URI_HEADER + jpeg_string
+    jpeg_string = URI_HEADER + jpeg_string.decode()
 
-    # convert the string from a raw literal to utf-8 encoding
-    jpeg_string = unicode(jpeg_string, 'utf-8')
     return jpeg_string
 
 def tile_image(image, tile_width, tile_height):
@@ -52,8 +50,8 @@ def tile_image(image, tile_width, tile_height):
     tile_size = [tile_width, tile_height]
     # width and height of the tilemap (ints)
     tilemap_size = [
-        image.size[0] / tile_size[0] + 1,
-        image.size[1] / tile_size[1] + 1
+        image.size[0] // tile_size[0] + 1,
+        image.size[1] // tile_size[1] + 1
     ]
 
     for x in range(0, tilemap_size[0]):

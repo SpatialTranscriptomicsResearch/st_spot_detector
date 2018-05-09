@@ -4,7 +4,7 @@
 
 /* eslint-env worker */
 
-import _ from 'underscore';
+import _ from 'lodash';
 
 import Filters from './filters';
 import { Messages, Responses } from './return-codes';
@@ -13,19 +13,19 @@ let histogram;
 
 function applyFilters(tile, filters, ...args) {
     _.each(
-        _.filter(filters, _.compose(k => k in Filters, _.first)),
+        _.filter(filters, _.flowRight(k => k in Filters, _.first)),
         ([k, v]) => { Filters[k].apply(tile.data, histogram, v); },
     );
     postMessage([Responses.SUCCESS, [tile, ...args]], [tile.data.buffer]);
 }
 
 function parseHistogram(histRaw) {
-    const cumulative = a => _.tail(_.foldl(a, (acc, x) => acc.concat(_.last(acc) + x), [0]));
+    const cumulative = a => _.tail(_.reduce(a, (acc, x) => acc.concat(_.last(acc) + x), [0]));
     const normalize = a => _.map(a, x => x / _.last(a));
-    const cdf = _.compose(normalize, cumulative);
+    const cdf = _.flowRight(normalize, cumulative);
 
     histogram = _.map(_.range(3),
-        _.compose(
+        _.flowRight(
             cdf,
             i => histRaw.slice(i * 256, (i + 1) * 256),
         ),

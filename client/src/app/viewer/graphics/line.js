@@ -53,18 +53,19 @@ renderAdd(
 collidesAdd(
     cType,
     (x, y, line) => {
+        /* eslint-disable no-multi-spaces, array-bracket-spacing, yoda */
         const v0 = math.subtract(
             [line.x1, line.y1],
             [line.x0, line.y0],
         );
         const v1 = math.subtract(
-        /* eslint no-multi-spaces: 0, array-bracket-spacing: 0 */
             [      x,       y],
             [line.x0, line.y0],
         );
-        const n = math.multiply([[0, 1], [-1, 0]], v0);
-        return Math.abs(math.dot(v1, n) / math.sqrt(math.dot(n, n))) <
-            (line.scale * line.lineWidth);
+        const c = math.dot(v0, v1) / math.dot(v0, v0);
+        const v2 = math.subtract(v1, math.multiply(c, v0));
+        return (0 <= c && c <= 1) &&
+            math.dot(v2, v2) < (line.scale * line.lineWidth) ** 2;
     },
 );
 

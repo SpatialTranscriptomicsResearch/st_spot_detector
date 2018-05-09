@@ -7,7 +7,7 @@
 import 'assets/css/aligner.css';
 import template from 'assets/html/aligner.html';
 
-import _ from 'underscore';
+import _ from 'lodash';
 import sortable from 'sortablejs';
 
 import {
@@ -76,11 +76,18 @@ class RotationPoint {
     get graphic() { return this[sgraphic]; }
 }
 
-const ADJUSTMENTS = {
-    opacity: 1,
+const ADJUSTMENTS = Object.freeze({
+    brightness: 0,
     contrast: 0,
     equalize: true,
-};
+    opacity: 1,
+});
+
+const MULTIPLIERS = Object.freeze({
+    brightness: 3,
+    contrast: 1,
+    opacity: 1,
+});
 
 function aligner() {
     return {
@@ -106,16 +113,12 @@ function aligner() {
                 s.adjustments.forEach((xs, layer) => {
                     scope.layers.getLayer(layer).adjustments = _.map(
                         xs,
-                        ({ name, value }) => {
-                            switch (name) {
-                            case 'brightness':
-                                return [name, 2 * value];
-                            case 'contrast':
-                                return [name, value / 2];
-                            default:
-                                return [name, value];
-                            }
-                        },
+                        ({ name, value }) => [
+                            name,
+                            name in MULTIPLIERS
+                                ? value * MULTIPLIERS[name]
+                                : value,
+                        ],
                     );
                 });
                 scope.logicHandler.set(s.logicHandler);
@@ -134,7 +137,10 @@ function aligner() {
                         name,
                         _.map(xs, ([adjName, x]) => Object({
                             name: adjName,
-                            value: x,
+                            value:
+                                adjName in MULTIPLIERS
+                                    ? x / MULTIPLIERS[adjName]
+                                    : x,
                         })),
                     ],
                 ));
@@ -158,11 +164,14 @@ function aligner() {
 
 
             /* adjustments */
-            scope.addAdjustment = _.compose(
+            scope.addAdjustment = _.flowRight(
                 scope.applyState,
-                stateful((s, name, value) => {
+                stateful((s, name, value, pos = -1) => {
                     if (s.active !== undefined) {
-                        s.adjustments.get(s.active).push({
+                        const adjs = s.adjustments.get(s.active);
+                        const n = adjs.length + 1;
+                        pos = ((pos % n) + n) % n;
+                        adjs.splice(pos, 0, {
                             name,
                             value: value || ADJUSTMENTS[name],
                         });
@@ -171,7 +180,7 @@ function aligner() {
                 }),
             );
 
-            scope.rmAdjustment = _.compose(
+            scope.rmAdjustment = _.flowRight(
                 scope.applyState,
                 stateful((s, aObj) => {
                     s.adjustments.set(
@@ -216,7 +225,7 @@ function aligner() {
 
             scope.isCurrentTool = stateful((s, name) => [s, name === s.tool]);
 
-            scope.setCurrentTool = _.compose(
+            scope.setCurrentTool = _.flowRight(
                 scope.applyState,
                 stateful((s, name) => {
                     if (name === 'rotate') {
@@ -231,39 +240,35 @@ function aligner() {
 
 
             /* init / exit */
-            let initialState;
-
             scope.init = () => {
                 scope.readState();
 
-                initialState = scope.state.clone();
-
-                _.each(_.tail(scope.layers.layerOrder), (x) => {
+                const n = scope.layers.layerOrder.length;
+                _.each(_.zip(scope.layers.layerOrder, _.range(n)), ([x, i]) => {
                     scope.setActive(x);
-                    scope.addAdjustment('opacity', 0.5);
+                    scope.addAdjustment('opacity', (n - i) / n, 0);
                 });
 
                 scope.setCurrentTool('move');
             };
 
             scope.exit = () => {
-                scope.state = initialState;
+                // remove all opacity adjustments
+                _.each(
+                    Array.from(scope.state.adjustments.entries()),
+                    ([x, ys]) => {
+                        scope.setActive(x);
+                        _.each(
+                            _.filter(ys, y => y.name === 'opacity'),
+                            (y) => { scope.rmAdjustment(y); },
+                        );
+                    },
+                );
                 scope.applyState();
             };
 
 
             /* other */
-            scope.layerName = (x) => {
-                switch (x) {
-                case 'cy3':
-                    return 'Cy3';
-                case 'he':
-                    return 'HE';
-                default:
-                    return x;
-                }
-            };
-
             scope.renderables = () => {
                 const ret = [];
                 if (scope.state.tool === 'rotate') {

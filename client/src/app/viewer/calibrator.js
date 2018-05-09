@@ -1,6 +1,4 @@
-/** @module graphic */
-
-import _ from 'underscore';
+import _ from 'lodash';
 import math from 'mathjs';
 
 import { FilledCircle } from './graphics/circle';
@@ -9,30 +7,53 @@ import { collides } from './graphics/functions';
 import {
     CALIBRATOR_LINE_COL_DEF,
     CALIBRATOR_LINE_COL_HLT,
-    CALIBRATOR_LINE_DASH,
     CALIBRATOR_LINE_WGHT,
+    CALIBRATOR_GRID_COL,
+    CALIBRATOR_GRID_WGHT,
     CALIBRATOR_CORNER_COL,
     CALIBRATOR_CORNER_WGHT,
 } from '../config';
 
+
+export const SEL = Object.freeze({
+    L: 1 << 0, // left
+    R: 1 << 1, // right
+    T: 1 << 2, // top
+    B: 1 << 3, // bottom
+});
+
+function createLines(n) {
+    return _.map(
+        _.range(n),
+        k => new Line(
+            0, 0, 0, 0,
+            k === 0 || k === n - 1
+                ? {
+                    lineWidth: CALIBRATOR_LINE_WGHT,
+                    lineColor: CALIBRATOR_LINE_COL_DEF,
+                }
+                : {
+                    lineWidth: CALIBRATOR_GRID_WGHT,
+                    lineColor: CALIBRATOR_GRID_COL,
+                },
+        ),
+    );
+}
+
 // Calibrator private members
-const arrayW            = Symbol('Calibrator array width');
-const arrayH            = Symbol('Calibrator array height');
+const arrayW = Symbol('Array width');
+const arrayH = Symbol('Array height');
 
-const sx0               = Symbol('Calibrator left coordinate');
-const sx1               = Symbol('Calibrator right coordinate');
-const sy0               = Symbol('Calibrator top coordinate');
-const sy1               = Symbol('Calibrator bottom coordinate');
+const sx0 = Symbol('Left coordinate');
+const sx1 = Symbol('Right coordinate');
+const sy0 = Symbol('Top coordinate');
+const sy1 = Symbol('Bottom coordinate');
 
-const ssel              = Symbol('Calibrator selection flags');
-const sselAnnotation    = Symbol('Calibrator selection annotation');
-const sselBoundsSetters = Symbol('Calibrator selection bounds setters');
+const ssel = Symbol('Selection flags');
 
-const slines            = Symbol('Calibrator lines');
-const slineSelSetters   = Symbol('Calibrator line selection setters');
-
-const scircles          = Symbol('Calibrator corner circles');
-const scircleSelSetters = Symbol('Calibrator corner circle selection setters');
+const svlines = Symbol('Vertical lines');
+const shlines = Symbol('Horizontal lines');
+const scircles = Symbol('Corner circles');
 
 class Calibrator {
     constructor() {
@@ -44,126 +65,110 @@ class Calibrator {
         this[sx1] = Number();
         this[sy1] = Number();
 
-        this[ssel] = new Array(4);
+        this[ssel] = 0;
 
-        this[sselAnnotation] = ['l', 'r', 't', 'b'];
+        this[svlines] = [];
+        this[shlines] = [];
 
-        this[sselBoundsSetters] = [
-            /* eslint no-unused-vars: 0 */
-            (x, y) => { this[sx0] = x; },
-            (x, y) => { this[sx1] = x; },
-            (x, y) => { this[sy0] = y; },
-            (x, y) => { this[sy1] = y; },
-        ];
-
-        this[slines] = _.times(
-            4,
-            () => new Line(0, 0, 0, 0, {
-                lineDash: CALIBRATOR_LINE_DASH,
-                lineWidth: CALIBRATOR_LINE_WGHT,
-                lineColor: CALIBRATOR_LINE_COL_DEF,
-            }),
-        );
-
-        this[slineSelSetters] = [
-            () => { this[ssel][0] = true; },
-            () => { this[ssel][1] = true; },
-            () => { this[ssel][2] = true; },
-            () => { this[ssel][3] = true; },
-        ];
-
-        this[scircles] = _.times(4, () => {
-            const c = new FilledCircle(
+        this[scircles] = _.zip(
+            [
+                SEL.L | SEL.T,
+                SEL.L | SEL.B,
+                SEL.R | SEL.T,
+                SEL.R | SEL.B,
+            ],
+            _.times(4, () => new FilledCircle(
                 0, 0,
                 CALIBRATOR_CORNER_WGHT,
-                {
-                    fillColor: CALIBRATOR_CORNER_COL,
-                },
-            );
-            return c;
-        });
-
-        this[scircleSelSetters] = [
-            () => { this[ssel][0] = true; this[ssel][2] = true; },
-            () => { this[ssel][1] = true; this[ssel][2] = true; },
-            () => { this[ssel][1] = true; this[ssel][3] = true; },
-            () => { this[ssel][0] = true; this[ssel][3] = true; },
-        ];
-
-        this.updateGraphics();
+                { fillColor: CALIBRATOR_CORNER_COL },
+            )),
+        );
     }
 
     updateGraphics() {
-        // update line positions
-        this[slines][0].x0 = this[sx0]; this[slines][0].y0 = this[sy0];
-        this[slines][0].x1 = this[sx0]; this[slines][0].y1 = this[sy1];
+        /* eslint-disable no-param-reassign */
+        /* eslint-disable no-multi-assign */
+        _.each(
+            _.zip(_.range(this.height), this[shlines]),
+            ([i, x]) => {
+                x.y0 = x.y1 = ((this.y1 - this.y0) *
+                    (i / (this.height - 1))) + this.y0;
+                x.x0 = this.x0;
+                x.x1 = this.x1;
+            },
+        );
+        _.each(
+            _.zip(_.range(this.width), this[svlines]),
+            ([i, x]) => {
+                x.x0 = x.x1 = ((this.x1 - this.x0) *
+                    (i / (this.width - 1))) + this.x0;
+                x.y0 = this.y0;
+                x.y1 = this.y1;
+            },
+        );
 
-        this[slines][1].x0 = this[sx1]; this[slines][1].y0 = this[sy0];
-        this[slines][1].x1 = this[sx1]; this[slines][1].y1 = this[sy1];
-
-        this[slines][2].x0 = this[sx0]; this[slines][2].y0 = this[sy0];
-        this[slines][2].x1 = this[sx1]; this[slines][2].y1 = this[sy0];
-
-        this[slines][3].x0 = this[sx0]; this[slines][3].y0 = this[sy1];
-        this[slines][3].x1 = this[sx1]; this[slines][3].y1 = this[sy1];
-
-        // update corner circle positions
-        this[scircles][0].x = this[sx0]; this[scircles][0].y = this[sy0];
-        this[scircles][1].x = this[sx1]; this[scircles][1].y = this[sy0];
-        this[scircles][2].x = this[sx1]; this[scircles][2].y = this[sy1];
-        this[scircles][3].x = this[sx0]; this[scircles][3].y = this[sy1];
+        _.each(
+            this[scircles],
+            ([corner, x]) => {
+                x.x = corner & SEL.L ? this.x0 : this.x1;
+                x.y = corner & SEL.T ? this.y0 : this.y1;
+            },
+        );
     }
 
     setSelection(x, y) {
+        /* eslint-disable no-param-reassign */
         const collidesxy = _.partial(collides, x, y);
-        /* eslint no-param-reassign: 0 */
-        this[ssel] = _.map(this[ssel], () => false);
-        _.each(
+        const selLines = [
+            [SEL.L, _.head(this[svlines])],
+            [SEL.R, _.last(this[svlines])],
+            [SEL.T, _.head(this[shlines])],
+            [SEL.B, _.last(this[shlines])],
+        ];
+        this[ssel] = _.reduce(
             _.filter(
-                _.zip(
-                    Array.concat(this[slines], this[scircles]),
-                    Array.concat(this[slineSelSetters], this[scircleSelSetters]),
-                ),
-                ([z]) => collidesxy(z),
+                _.concat(selLines, this[scircles]),
+                ([, z]) => collidesxy(z),
             ),
-            ([, s]) => s(),
+            (a, [s]) => a | s,
+            0,
         );
         _.each(
-            _.zip(this[ssel], this[slines]),
-            ([s, l]) => {
-                l.lineColor = s ? CALIBRATOR_LINE_COL_HLT : CALIBRATOR_LINE_COL_DEF;
+            selLines,
+            ([s, z]) => {
+                z.lineColor = this.selection & s
+                    ? CALIBRATOR_LINE_COL_HLT
+                    : CALIBRATOR_LINE_COL_DEF;
             },
         );
     }
 
     setSelectionCoordinates(x, y) {
-        _.each(
-            _.filter(_.zip(this[ssel], this[sselBoundsSetters]), _.head),
-            ([, f]) => { f(x, y); },
-        );
+        if (this.selection & SEL.L) { this.x0 = x; }
+        if (this.selection & SEL.R) { this.x1 = x; }
+        if (this.selection & SEL.T) { this.y0 = y; }
+        if (this.selection & SEL.B) { this.y1 = y; }
         this.updateGraphics();
     }
 
-    get renderables() { return Array.concat(this[slines], this[scircles]); }
-
-    get selection() {
-        return _.reduce(
-            _.filter(_.zip(this[ssel], this[sselAnnotation]), _.head),
-            (a, [, x]) => a + x,
-            '',
+    get renderables() {
+        return _.concat(
+            this[shlines],
+            this[svlines],
+            _.map(this[scircles], _.last),
         );
     }
 
+    get selection() { return this[ssel]; }
+
     get points() {
         return [
-            this[sx0],
-            this[sy0],
-            this[sx1],
-            this[sy1],
+            [this[sx0], this[sy0]],
+            [this[sx1], this[sy1]],
         ];
     }
 
-    set points([x0, y0, x1, y1]) {
+    set points([[x0, y0], [x1, y1]]) {
         this[sx0] = x0;
         this[sy0] = y0;
         this[sx1] = x1;
@@ -171,11 +176,101 @@ class Calibrator {
         this.updateGraphics();
     }
 
-    get width() { return this[arrayW]; }
-    set width(value) { this[arrayW] = value; }
+    get x0() { return this[sx0]; }
+    get x1() { return this[sx1]; }
+    get y0() { return this[sy0]; }
+    get y1() { return this[sy1]; }
 
+    set x0(v) { this[sx0] = v; this.updateGraphics(); }
+    set x1(v) { this[sx1] = v; this.updateGraphics(); }
+    set y0(v) { this[sy0] = v; this.updateGraphics(); }
+    set y1(v) { this[sy1] = v; this.updateGraphics(); }
+
+    get width() { return this[arrayW]; }
     get height() { return this[arrayH]; }
-    set height(value) { this[arrayH] = value; }
+
+    set width(v) {
+        this[arrayW] = v;
+        this[svlines] = createLines(v);
+        this.updateGraphics();
+    }
+    set height(v) {
+        this[arrayH] = v;
+        this[shlines] = createLines(v);
+        this.updateGraphics();
+    }
 }
+
+export function arr2pxMatrix(calibrator) {
+    const [[x0, y0], [x1, y1]] = calibrator.points;
+    return _.flowRight(
+        /* eslint-disable array-bracket-spacing, no-multi-spaces */
+        ([[s0], [s1], [d0], [d1]]) => [
+            [s0,  0, d0],
+            [ 0, s1, d1],
+            [ 0,  0,  1],
+        ],
+        _.partial(
+            math.multiply,
+            math.inv([
+                [               1,                 0, 1, 0],
+                [               0,                 1, 0, 1],
+                [calibrator.width,                 0, 1, 0],
+                [               0, calibrator.height, 0, 1],
+            ]),
+        ),
+    )(
+        [[x0], [y0], [x1], [y1]],
+    );
+}
+
+export function arr2px(calibrator, pts) {
+    if (pts.length === 0) { return []; }
+    return _.flowRight(
+        as => _.zip(...as),
+        _.partial(_.take, _, 2),
+        _.partial(math.multiply, arr2pxMatrix(calibrator)),
+    )([
+        ..._.zip(...pts),
+        (new Array(pts.length)).fill(1),
+    ]);
+}
+
+export function px2arr(calibrator, pts) {
+    if (pts.length === 0) { return []; }
+    const T = (() => {
+        try {
+            return math.inv(arr2pxMatrix(calibrator));
+        } catch (e) {
+            return math.zeros(3, 3);
+        }
+    })();
+    return _.flowRight(
+        as => _.zip(...as),
+        _.partial(_.take, _, 2),
+        _.partial(math.multiply, T),
+    )([
+        ..._.zip(...pts),
+        (new Array(pts.length)).fill(1),
+    ]);
+}
+
+export function arr2assignment(calibrator, pts) {
+    const [assignX, assignY] = _.map(
+        [calibrator.width, calibrator.height],
+        max => _.flowRight(
+            Math.round,
+            _.partial(Math.max, 1),
+            _.partial(Math.min, max),
+        ),
+    );
+    return _.map(pts, ([x, y]) => [assignX(x), assignY(y)]);
+}
+
+export const px2assignment = (calibrator, ...args) =>
+    _.flowRight(
+        _.partial(arr2assignment, calibrator),
+        _.partial(px2arr, calibrator),
+    )(...args);
 
 export default Calibrator;

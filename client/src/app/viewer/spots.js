@@ -1,37 +1,43 @@
-import _ from 'underscore';
+import _ from 'lodash';
 import math from 'mathjs';
 
 import Vec2 from './vec2';
 
 import opacityMixin from './graphics/opacity';
 import { FilledCircle } from './graphics/circle';
-import { chunksOf, combinations, intBounds, mulVec2 } from '../utils';
+import { combinations, intBounds, mulVec2 } from '../utils';
 import {
     SPOT_COL_DEF,
     SPOT_COL_HLT,
-    SPOT_OPACITY,
+    SPOT_OPACITY_DEF,
 } from '../config';
 
+
 // private members of Spot
+const sassign   = Symbol('Array assignment');
+const scolor    = Symbol('Color getter');
+const sopacity  = Symbol('Opacity getter');
 const sdiameter = Symbol('Spot diameter');
 const srpos     = Symbol('Spot render position');
+const sselected = Symbol('Selected');
+const sselectcb = Symbol('Selection callback');
 
 class Spot extends opacityMixin(FilledCircle) {
     constructor({
-        arrayPosition,
+        position,
         diameter,
-        newArrayPosition,
-        renderPosition,
-        selected,
+        selectcb,
+        getcolor,
+        getopacity,
     }) {
         super();
-        this.arrayPosition = arrayPosition;
-        this.newArrayPosition = newArrayPosition;
-        this.renderPosition = renderPosition;
+        this.position = position;
         this.diameter = diameter;
-        this.selected = selected;
-        this.opacity = SPOT_OPACITY;
-        this.color = SPOT_COL_DEF;
+        this[sselectcb] = selectcb;
+        this[sselected] = false;
+        this[sopacity] = getopacity;
+        this[scolor] = getcolor;
+        this[sassign] = {};
     }
 
     get diameter() { return this[sdiameter]; }
@@ -40,174 +46,165 @@ class Spot extends opacityMixin(FilledCircle) {
         this.r = value / 2;
     }
 
-    get renderPosition() { return this[srpos]; }
-    set renderPosition(value) {
+    get position() { return this[srpos]; }
+    set position(value) {
         this[srpos] = value;
         this.x = value.x;
         this.y = value.y;
     }
 
+    get assignment() { return this[sassign]; }
+    set assignment({ x, y }) { this[sassign] = { x, y }; }
+
+    set x(v) { this[srpos].x = v; super.x = v; }
+    get x() { return super.x; }
+    set y(v) { this[srpos].y = v; super.y = v; }
+    get y() { return super.y; }
+
+    get color() { return this[scolor](); }
+    get opacity() { return this[sopacity](); }
+
+    /* eslint-disable class-methods-use-this */
+    set color(v) { /* can't be set */ }
+    set opacity(v) { /* can't be set */ }
+
     get fillColor() { return this.selected ? SPOT_COL_HLT : this.color; }
     set fillColor(value) { this.color = value; }
+
+    set selected(v) {
+        this[sselected] = v;
+        this[sselectcb](this, v);
+    }
+    get selected() { return this[sselected]; }
 }
 
-const SpotManager = (function() {
 
-    var self;
-    var SpotManager = function(camera) {
-        self = this;
-        self.spots = [];
-        self.mask = [];
-        self.maskScale = 0;
-        self.maskShape = [];
-        self.spacer = {};
-        self.average = {};
-        self.transformMatrix;
-        self.spotToAdd = new Spot({
-            arrayPosition: Vec2.Vec2(0, 0),
-            newArrayPosition: Vec2.Vec2(0, 0),
-            renderPosition: Vec2.Vec2(0, 0),
-            diameter: 0,
-            selected: false,
-        });
-    };
+// private members of SpotManager
+const sspots = Symbol('Spots');
 
-    SpotManager.prototype = {
-        loadSpots: function(data) {
-            self.spots = _.map(data.spots.positions, x => new Spot(x));
-            self.spacer = data.spots.spacer;
-            if (data.tissue_mask !== null) {
-                self.loadMask(data.tissue_mask);
+class SpotManager {
+    constructor() {
+        this.mask = [];
+        this.maskScale = 0;
+        this.maskShape = [];
+        this.avgDiameter = Number();
+        this.selected = new Set();
+        this[sspots] = [];
+        this.color = SPOT_COL_DEF;
+        this.opacity = SPOT_OPACITY_DEF;
+    }
+
+    get spotsMutable() { return this[sspots]; }
+    get spots() { return _.cloneDeep(this[sspots]); }
+    set spots(xs) {
+        this[sspots].splice(0, this[sspots].length, ...xs);
+        this.selected.clear();
+        _.each(xs, (x) => {
+            if (x.selected) {
+                this.selected.add(x);
             }
-            self.average.diameter = (([n, s]) => s / n)(
-                _.reduce(
-                    _.map(self.spots, x => x.diameter),
-                    ([n, s], x) => [n + 1, s + x], [0, 0],
-                ),
-            );
-            self.spotToAdd.diameter = self.average.diameter;
-            // the 3x3 affine transformation matrix between the adjusted array and pixel coordinates
-            // represented as a string in the format a11 a12 a13 a21 a22 a23 a31 a32 a33
-            self.transformMatrix = math.matrix(
-                chunksOf(3, _.map(
-                    data.spots.transform_matrix.trim().split(' '),
-                    x => parseFloat(x, 10),
-                )),
-            );
-        },
-        setSpots: function(spots) {
-            self.spots = spots;
-        },
-        loadMask: function(mask) {
-            self.mask = _.reduce(
-                _.map(
-                    mask.data.split(''),
-                    _.compose(
-                        c => _.map(
-                            _.range(6, -1, -1),
-                            /* eslint-disable no-bitwise */
-                            i => (c & (1 << i)) !== 0,
-                        ),
-                        c => c.charCodeAt(0),
+        });
+    }
+
+    createSpot(x = 0, y = 0, d = 0) {
+        return new Spot({
+            diameter: d > 0 ? d : this.avgDiameter,
+            position: { x, y },
+            selectcb: (s, v) => {
+                if (v) {
+                    this.selected.add(s);
+                } else {
+                    this.selected.delete(s);
+                }
+            },
+            getcolor: () => this.color,
+            getopacity: () => this.opacity,
+        });
+    }
+
+    loadSpots(spots, tissueMask) {
+        this.avgDiameter = math.sum(
+            _.filter(_.map(spots, _.last), x => x > 0),
+        ) / spots.length;
+        this.spots = _.map(spots, props => this.createSpot(...props));
+        if (tissueMask !== null) {
+            this.loadMask(tissueMask);
+        }
+    }
+
+    setSpots(spots) {
+        this.spots = spots;
+    }
+
+    loadMask(mask) {
+        this.mask = _.reduce(
+            _.map(
+                mask.data.split(''),
+                _.flowRight(
+                    c => _.map(
+                        _.range(6, -1, -1),
+                        i => (c & (1 << i)) !== 0,
                     ),
+                    c => c.charCodeAt(0),
                 ),
-                (a, x) => {
-                    a.push(...x);
-                    return a;
-                },
-                [],
-            );
-            self.maskShape = mask.shape;
-            self.maskScale = mask.scale;
-        },
-        getSpots: function() {
-            return {spots: self.spots, spacer: self.spacer};
-        },
-        /**
-         * Given a particular spot, the spot is set to selected or not depending on whether it is
-         * located on the tissue or not. The threshold parameter determines the percentage of how
-         * many pixels in the tissue it needs to overlap in order to be classified as being under
-         * the tissue.
-         */
-        selectTissueSpots: function(tmat, threshold) {
-            // relevant only if an HE image has been uploaded
-            // adds to current selection
-            _.each(
-                // ignore if already selected
-                _.filter(self.spots, s => s.selected === false),
-                (s) => {
-                    // transform coordinates to the basis of the mask
-                    const center = _.map(
-                        Vec2.data(
-                            mulVec2(tmat, s.renderPosition),
-                        ),
-                        x => x * self.maskScale,
-                    );
-                    const radius = (s.diameter * self.maskScale) / 2;
-                    const inside = _.reduce(
-                        _.filter(
-                            // check all (x, y) in the bounding box of the spot
-                            combinations(
-                                ..._.map(center, (c) => {
-                                    const bounds = intBounds([c], radius)[0];
-                                    return _.range(bounds[0], bounds[1] + 1);
-                                }),
-                            ),
-                            // but discard those more than `radius` away
-                            ([x, y]) => Math.sqrt(
-                                ((x - center[0]) ** 2) + ((y - center[1]) ** 2)) < radius,
-                        ),
-                        (a, [x, y]) => [a[0] + 1, a[1] + self.mask[(y * self.maskShape[0]) + x]],
-                        [0, 0],
-                    );
-                    /* eslint-disable no-param-reassign */
-                    s.selected = inside[1] / inside[0] > threshold;
-                },
-            );
-        },
-        setSpotColor(value) {
-            _.each(self.spots, (x) => { x.color = value; });
-        },
-        setSpotOpacity(value) {
-            _.each(self.spots, (x) => { x.opacity = value; });
-        },
-        exportSpots(selection, transformation) {
-            let header = 'x\ty\tnew_x\tnew_y\tpixel_x\tpixel_y';
-            header += selection === 'all' ? '\tselection\n' : '\n';
-            const data = _.reduce(
-                self.spots,
-                (a, x) => {
-                    if (selection === 'selection' && x.selected === false) {
-                        // we want to skip adding the spot if we are only exporting the selection
-                        // and find that the current spot is not selected
-                        return a;
-                    }
-                    a += `${x.arrayPosition.x}\t`;
-                    a += `${x.arrayPosition.y}\t`;
-                    a += `${x.newArrayPosition.x.toFixed(2)}\t`;
-                    a += `${x.newArrayPosition.y.toFixed(2)}\t`;
-                    let position = x.renderPosition;
-                    if (transformation !== undefined) {
-                        position = mulVec2(transformation, position);
-                    }
-                    position = Vec2.map(position, Math.round);
-                    a += `${position.x}\t${position.y}`;
-                    if (selection === 'all') {
-                        // we add a bool 0 or 1, depending on whether the spot is selected or not
-                        a += x.selected ? '\t1' : '\t0';
-                    }
-                    a += '\n';
-                    return a;
-                },
-                '',
-            );
-            return header + data;
-        },
-    };
+            ),
+            (a, x) => {
+                a.push(...x);
+                return a;
+            },
+            [],
+        );
+        this.maskShape = mask.shape;
+        this.maskScale = mask.scale;
+    }
 
-    return SpotManager;
+    getSpots() {
+        return { spots: this.spots, spacer: 20 };
+    }
 
-}());
+    /**
+     * Given a particular spot, the spot is set to selected or not depending on whether it is
+     * located on the tissue or not. The threshold parameter determines the percentage of how
+     * many pixels in the tissue it needs to overlap in order to be classified as being under
+     * the tissue.
+     */
+    selectTissueSpots(tmat, threshold) {
+        // relevant only if an HE image has been uploaded
+        // adds to current selection
+        _.each(
+            // ignore if already selected
+            _.filter(this.spotsMutable, s => s.selected === false),
+            (s) => {
+                // transform coordinates to the basis of the mask
+                const center = _.map(
+                    Vec2.data(
+                        mulVec2(tmat, s.position),
+                    ),
+                    x => x * this.maskScale,
+                );
+                const radius = (s.diameter * this.maskScale) / 2;
+                const inside = _.reduce(
+                    _.filter(
+                        // check all (x, y) in the bounding box of the spot
+                        combinations(
+                            ..._.map(center, (c) => {
+                                const bounds = intBounds([c], radius)[0];
+                                return _.range(bounds[0], bounds[1] + 1);
+                            }),
+                        ),
+                        // but discard those more than `radius` away
+                        ([x, y]) => Math.sqrt(
+                            ((x - center[0]) ** 2) + ((y - center[1]) ** 2)) < radius,
+                    ),
+                    (a, [x, y]) => [a[0] + 1, a[1] + this.mask[(y * this.maskShape[0]) + x]],
+                    [0, 0],
+                );
+                /* eslint-disable no-param-reassign */
+                s.selected = inside[1] / inside[0] > threshold;
+            },
+        );
+    }
+}
 
 export default SpotManager;
 export { Spot };

@@ -12,6 +12,23 @@ html {
 
 body {
     background-color: #eeeeee;
+    font-size: 0.875rem;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+p {
+    margin-bottom: 0;
+}
+
+p + p {
+    margin-top: 1rem;
+}
+
+input[type="radio"] {
+  display: none;
 }
 
 .spinner, .error-text {
@@ -27,6 +44,12 @@ body {
 canvas:active {
 }
 
+.clickable {
+    cursor: -webkit-pointer;
+    cursor:    -moz-pointer;
+    cursor:         pointer;
+}
+
 .fullscreen {
     position: absolute;
     width: 100%;
@@ -34,6 +57,7 @@ canvas:active {
 }
 
 .menu-wrapper {
+    cursor: default;
     position: fixed;
     top: 20px;
     left: 20px;
@@ -105,6 +129,7 @@ canvas:active {
     display: grid;
     grid-template-columns: auto auto;
     grid-column-gap: 0.5rem;
+    grid-row-gap: 0.5rem;
 }
 
 .panel-content-wrapper .grid2 > * {
@@ -209,14 +234,23 @@ hr {
 
 .panel-content-wrapper .spot-color-bar {
     flex-direction: row;
-    height: 39px;
+    width: 100%;
     border: #000 1px solid;
 }
 
 .panel-content-wrapper .spot-color {
     flex-grow: 1;
     margin: 0;
-    height: 100%;
+    height: 1.2rem;
+    width: 1.2rem;
+}
+
+.panel-content-wrapper .spot-color:hover {
+    border: 1px solid #fff;
+}
+
+.panel-content-wrapper .spot-color.selected {
+    border: 1px solid #fff;
 }
 
 #spot-color-1 {

@@ -20,36 +20,77 @@
             <!-- Menu Bar -->
             <div class='menu-bar btn-group btn-group-vertical' role='group'>
                 <!-- Uploader -->
-                <button ng-click='menuButtonClick("button_uploader", "state_start")' type='button' ng-class='{active: data.button=="button_uploader"}' class='btn btn-secondary' ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
+                <button ng-click='menuButtonClick("button_uploader", "state_start")'
+                        type='button'
+                        ng-class='{active: data.button=="button_uploader"}'
+                        class='btn btn-secondary'
+                        ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}"
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Image upload'
+                        >
                     <span class='fa fa-file-image-o'></span>
-                </button>
                 <!-- Aligner -->
-                <button ng-click='menuButtonClick("button_aligner", "state_alignment")' type='button' ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}' class='btn btn-secondary'>
+                <button ng-click='menuButtonClick("button_aligner", "state_alignment")'
+                        type='button'
+                        ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Image adjustment'
+                        >
                     <span class='fa fa-adjust'></span>
                 </button>
-                <!-- Detector -->
-                <!--<button export-spots type='button' class='btn btn-secondary '>-->
-                <button ng-click='menuButtonClick("button_detector", "state_predetection")' type='button' ng-class='{disabled: menuButtonDisabled.button_detector, active: data.button=="button_detector"}' class='btn btn-secondary'>
-                    <span class='fa fa-eye'></span>
-                </button>
                 <!-- Adjuster -->
-                <button ng-click='menuButtonClick("button_adjuster", "state_adjustment")' type='button' ng-class='{disabled: menuButtonDisabled.button_adjuster, active: data.button=="button_adjuster"}' class='btn btn-secondary'>
+                <button ng-click='menuButtonClick("button_adjuster", "state_adjustment")'
+                        type='button'
+                        ng-class='{disabled: menuButtonDisabled.button_adjuster, active: data.button=="button_adjuster"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Spot adjustment'
+                        >
                     <span class='fa fa-pencil-square-o'></span>
                 </button>
                 <!-- Exporter -->
-                <button ng-click='menuButtonClick("button_exporter", "state_adjustment")' type='button' ng-class='{disabled: menuButtonDisabled.button_exporter, active: data.button=="button_exporter"}' class='btn btn-secondary'>
+                <button ng-click='menuButtonClick("button_exporter", "state_adjustment")'
+                        type='button'
+                        ng-class='{disabled: menuButtonDisabled.button_exporter, active: data.button=="button_exporter"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Data export'
+                        >
                     <span class='fa fa-floppy-o'></span>
                 </button>
+                <!-- Settings -->
+                <button ng-click='menuButtonClick("button_settings")'
+                        type='button'
+                        ng-class='{active: data.button=="button_settings"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Settings'
+                        >
+                    <span class='fa fa-cog'></span>
+                </button>
                 <!-- Help -->
-                <button ng-click='menuButtonClick("button_help")' type='button' ng-class='{active: data.button=="button_help"}'class='btn btn-secondary'>
+                <button ng-click='menuButtonClick("button_help")'
+                        type='button'
+                        ng-class='{active: data.button=="button_help"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Help'
+                        >
                     <span class='fa fa-question-circle'></span>
                 </button>
-                <!-- Info -->
-                <!-- This opens in a new tab to avoid an in-progress application being aborted -->
-                <a target='_blank'
-                    href='https://github.com/SpatialTranscriptomicsResearch/st_spot_detector/blob/master/README.md' class='btn btn-secondary' ng-style="{'border-bottom-right-radius': visible.menuBarPanel ? '0px' : '4px'}">
-                    <span class='fa fa-info-circle'></span>
-                </a>
             </div>
             <!-- Menu Bar Panel -->
             <div ng-show='visible.menuBarPanel' class='menu-bar-panel'>
@@ -98,71 +139,50 @@
                                  renderables="getAlignerRenderables"
                                  />
                     </div>
-                    <!-- Detector Panel -->
-                    <div ng-show='visible.panel.button_detector' style='margin-top: auto'>
-                        <form name='spotDetectorForm' ng-submit='detectSpots()'>
-                            <!--
-                            <div class='input-group-sm'>
-                                <span class='input-group-addon'>Array size</span>
-                                <input type='number' min='0' step='1'/>
-                                <input type='number' min='0' step='1'/>
-                            </div>
-                            -->
-                            <button class='btn btn-primary btn-sm submit-button' type='submit'>Detect Spots</a>
-                        </form>
-                    </div>
                     <!-- Adjuster Panel -->
                     <div ng-show='visible.panel.button_adjuster'>
-                        <button ng-click='addSpots()'           ng-show='visible.spotAdjuster.button_addSpots'       type='button' class='btn btn-light btn-block'>Add spots</button>
-                        <button ng-click='finishAddSpots()'     ng-show='visible.spotAdjuster.button_finishAddSpots' type='button' class='btn btn-light btn-block'>Finish adding spots</button>
-                        <button ng-click='deleteSpots()'        ng-show='visible.spotAdjuster.button_deleteSpots'    type='button' class='btn btn-light btn-block'>Delete selected spots</button>
-                        <button ng-click='selectInsideTissue()' ng-show='visible.spotAdjuster.div_insideTissue'      type='button' class='btn btn-light btn-block'>Select spots inside tissue</button>
-                        <div class='card'>
-                            <div class='card-title'><h2>Spot Opacity</h2></div>
-                            <div class='card-text'>
-                                <div class='spot-color-bar clickable'>
-                                    <div class='spot-color' id='spot-opacity-1' ng-click='setSpotOpacity(0.0)'></div>
-                                    <div class='spot-color' id='spot-opacity-2' ng-click='setSpotOpacity(0.2)'></div>
-                                    <div class='spot-color' id='spot-opacity-3' ng-click='setSpotOpacity(0.4)'></div>
-                                    <div class='spot-color' id='spot-opacity-4' ng-click='setSpotOpacity(0.6)'></div>
-                                    <div class='spot-color' id='spot-opacity-5' ng-click='setSpotOpacity(0.8)'></div>
-                                    <div class='spot-color' id='spot-opacity-6' ng-click='setSpotOpacity(1.0)'></div>
-                                </div>
-                            </div>
+                        <div ng-show='visible.spotAdjuster == "default"'>
+                            <button ng-click='addSpots()' type='button' class='btn btn-sm btn-light btn-block'>Add spots</button>
+                            <button ng-click='editAssignments()' type='button' class='btn btn-sm btn-light btn-block'>Edit assignments</button>
+                            <button ng-click='selectInsideTissue()' ng-show='hasHE() && spotManager.selected.size == 0' type='button' class='btn btn-sm btn-primary btn-block'>Select spots inside tissue</button>
+                            <button ng-click='clearSelection()' ng-show='spotManager.selected.size > 0' type='button' class='btn btn-sm btn-secondary btn-block'>Clear selection</button>
+                            <button ng-click='deleteSpots()' ng-show='spotManager.selected.size > 0' type='button' class='btn btn-sm btn-danger btn-block'>Delete selection</button>
                         </div>
-                        <div class='card'>
-                            <div class='card-title'><h2>Spot Color</h2></div>
-                            <div class='card-text'>
-                                <div class='spot-color-bar clickable'>
-                                    <div class='spot-color' id='spot-color-1' ng-click='setSpotColor("hsl(  6, 78%, 57%)")'></div>
-                                    <div class='spot-color' id='spot-color-2' ng-click='setSpotColor("hsl( 28, 80%, 52%)")'></div>
-                                    <div class='spot-color' id='spot-color-3' ng-click='setSpotColor("hsl( 48, 89%, 50%)")'></div>
-                                    <div class='spot-color' id='spot-color-4' ng-click='setSpotColor("hsl(145, 63%, 49%)")'></div>
-                                    <div class='spot-color' id='spot-color-5' ng-click='setSpotColor("hsl(204, 70%, 53%)")'></div>
-                                    <div class='spot-color' id='spot-color-6' ng-click='setSpotColor("hsl(283, 39%, 53%)")'></div>
-                                </div>
-                            </div>
+                        <div ng-show='visible.spotAdjuster == "adjust"' style='margin-top: 0'>
+                            <button ng-click='finishAddSpots()' type='button' class='btn btn-sm btn-secondary btn-block'>Go back</button>
+                        </div>
+                        <div ng-show='visible.spotAdjuster == "assign"' style='margin-top: 0'>
+                            <button ng-click='finishAssign()' type='button' class='btn btn-sm btn-secondary btn-block'>Go back</button>
+                            <button ng-click='clearAssign()' type='button' class='btn btn-sm btn-light btn-block'>Reset assignments</button>
                         </div>
                     </div>
                     <!-- Exporter Panel -->
                     <div ng-show='visible.panel.button_exporter'>
-                        <form class="card card-default" ng-submit='exportSpots(exportForm.selection)'>
+                        <form class="card card-default" ng-submit='exportSpots(exportForm.selection, { selectionFlag: exportForm.selectionFlag() })'>
                             <div class="card-title grid2">
-                                <h2>Spot data</h2>
+                                <h2>Spots</h2>
                                 <button class='btn btn-primary btn-sm submit-button' type='submit'>
                                     <span class='fa fa-download'></span>
                                 </button>
                             </div>
                             <div class="card-text">
-                                Include spots:
-                                <div class="btn-group" data-toggle="buttons">
-                                    <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-light">
+                                <div class="btn-group">
+                                    <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-light btn-sm radio-button">
                                         <input type="radio" value='all' ng-model='exportForm.selection'>All
                                     </label>
-                                    <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-light radio-button">
-                                        <input type="radio" value='selection' ng-model='exportForm.selection' checked>Selected
+                                    <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-light btn-sm radio-button">
+                                        <input type="radio" value='selection' ng-model='exportForm.selection'>Selected
                                     </label>
                                 </div>
+                                <label>
+                                    <input ng-disabled='exportForm.selection != "all"'
+                                           ng-model='exportForm.selectionFlag'
+                                           ng-model-options='{ getterSetter: true }'
+                                           type="checkbox"
+                                           value="value"
+                                           />
+                                    Include selection flag
+                                </label>
                             </div>
                         </form>
                         <form class="card card-default" ng-submit='exportTMat()'>
@@ -174,13 +194,38 @@
                             </div>
                         </form>
                     </div>
+                    <!-- Settings Panel -->
+                    <div ng-show='visible.panel.button_settings'>
+                        <div class='card'>
+                            <div class='card-title'><h2>Annotation settings</h2></div>
+                            <div class='card-text grid2'>
+                                <p>Opacity:</p>
+                                <div class='spot-color-bar clickable'>
+                                    <div class='spot-color'
+                                         ng-repeat='v in opacity.all'
+                                         ng-class='{selected: v == opacity.current()}'
+                                         ng-click='opacity.set(v)'
+                                         ng-style='{"background-color": "rgba(0, 0, 0," + v + ")"}'
+                                         >
+                                    </div>
+                                </div>
+                                <p>Color:</p>
+                                <div class='spot-color-bar clickable'>
+                                    <div class='spot-color'
+                                         ng-repeat='v in color.all'
+                                         ng-class='{selected: v == color.current()}'
+                                         ng-click='color.set(v)'
+                                         ng-style='{"background-color": v}'
+                                         >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Help Panel -->
                     <div ng-show='visible.panel.button_help'>
                         <p>{{ getHelpTexts(data.state) }}</p>
                         <p>For more in-depth help, refer to the <a href='https://github.com/SpatialTranscriptomicsResearch/st_spot_detector/wiki/ST-Spot-Detector-Usage-Guide' target='_blank'>usage guide</a>.</p>
-                    </div>
-                    <!-- Info Panel -->
-                    <div ng-show='visible.panel.button_info'>
                     </div>
                 </div>
             </div>

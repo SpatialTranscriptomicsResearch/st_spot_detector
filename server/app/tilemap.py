@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Data structure for holding tilemaps"""
 
-from imageprocessor import tile_image
+from .imageprocessor import tile_image
 
 class Tilemap:
     # pylint:disable=too-few-public-methods

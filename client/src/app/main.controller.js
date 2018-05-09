@@ -1,26 +1,14 @@
-import _ from 'underscore';
+import _ from 'lodash';
+import math from 'mathjs';
 
 import imageToggleCy from 'assets/images/imageToggleCy3.png';
 import imageToggleHE from 'assets/images/imageToggleHE.png';
 
 import LayerManager from './viewer/layer-manager';
-import modal from './modal';
+import { error, warning } from './modal';
+import { setCursor } from './utils';
 
 import { LOAD_STAGE } from './loading-widget.directive';
-
-function error(message) {
-    modal(
-        'Error',
-        `<b>Error</b>: ${message === null ? 'Unkown error' : message}`,
-    );
-}
-
-function warning(message) {
-    modal(
-        'Warning',
-        `<b>Warning</b>: ${message === null ? 'Unkown warning' : message}`,
-    );
-}
 
 function unwrapRequest(request) {
     return new Promise(
@@ -32,14 +20,13 @@ function unwrapRequest(request) {
                     const result = response.data.result;
                     _.each(warnings, warning);
                     if (!success) {
-                        error(result);
-                        return reject(result);
+                        reject(result);
+                    } else {
+                        resolve(result);
                     }
-                    return resolve(result);
                 })
                 .catch((response) => {
                     const result = response.data;
-                    error(result);
                     reject(result);
                 })
             ;
@@ -71,9 +58,6 @@ const main = [
         const helpTexts = {
             state_start:         "Click on the top-most icon to select and upload image(s). The image(s) must be in .jpg format and rotated so that the frame cluster appears at the top left of the image.",
             state_upload:        "",
-            state_predetection:  "Adjust the lines to align on top of the outermost spot frame.\n" +
-            "Click on 'Detect spots' to begin spot detection.",
-            state_detection:     "",
             state_adjustment:    "Left click or Ctrl+click to select spots. Hold in shift to add to a selection.\n" +
             "Right click to move selected spots or navigate the canvas.\n" +
             "Click 'Delete spots' to delete selected spots.\n" +
@@ -85,13 +69,12 @@ const main = [
 
         // texts to display as a title on the menu bar panel
         const panelTitles = {
-            button_uploader: 'Uploader',
-            button_aligner: 'Alignment',
-            button_detector: 'Detection Parameters',
+            button_uploader: 'Image upload',
+            button_aligner: 'Image adjustment',
             button_adjuster: 'Spot adjustment',
-            button_exporter: 'Export',
+            button_exporter: 'Data export',
             button_help: 'Help',
-            button_info: 'Info'
+            button_settings: 'Settings',
         };
 
         // variables which hold more "global" important information, some shared between
@@ -109,19 +92,14 @@ const main = [
 
         $scope.exportForm = {
             selection: 'selection',
-            includeImageSize: false,
-            /*
-            includeImageSizeLatent: true,
-            includeImageSize(value) {
-                if (arguments.length !== 0) {
-                    this.includeImageSizeLatent = value;
+            selectionFlag(v) {
+                if (arguments.length) {
+                    this.selectionFlagValue = v;
+                    return v;
                 }
-                if (this.coordinateType === 'pixel') {
-                    return this.includeImageSizeLatent;
-                }
-                return false;
+                return this.selection === 'all' && this.selectionFlagValue;
             },
-            */
+            selectionFlagValue: true,
         };
 
         // bools which control the visibilty of various elements on the page
@@ -139,29 +117,21 @@ const main = [
             panel: {
                 button_uploader: Boolean(),
                 button_aligner: Boolean(),
-                button_detector: Boolean(),
                 button_adjuster: Boolean(),
                 button_exporter: Boolean(),
                 button_help: Boolean(),
-                button_info: Boolean(),
+                button_settings: Boolean(),
             },
-            spotAdjuster: {
-                button_addSpots: Boolean(),
-                button_finishAddSpots: Boolean(),
-                button_deleteSpots: Boolean(),
-                div_insideTissue: Boolean(),
-            },
+            spotAdjuster: String(),
         };
 
         // strings which determine the clickable state of the menu bar buttons 
         $scope.menuButtonDisabled = {
             button_uploader: Boolean(),
             button_aligner: Boolean(),
-            button_detector: Boolean(),
             button_adjuster: Boolean(),
             button_exporter: Boolean(),
             button_help: Boolean(),
-            button_info: Boolean(),
         };
 
         $scope.layerManager = new LayerManager();
@@ -180,26 +150,24 @@ const main = [
             $scope.visible.undo.redo = true;
             $scope.visible.panel.button_uploader = false;
             $scope.visible.panel.button_aligner = false;
-            $scope.visible.panel.button_detector = false;
             $scope.visible.panel.button_adjuster = false;
             $scope.visible.panel.button_exporter = false;
             $scope.visible.panel.button_help = false;
-            $scope.visible.panel.button_info = false;
-            $scope.visible.spotAdjuster.button_addSpots = true;
-            $scope.visible.spotAdjuster.button_finishAddSpots = false;
-            $scope.visible.spotAdjuster.button_deleteSpots = true;
-            $scope.visible.spotAdjuster.div_insideTissue = false;
+            $scope.visible.panel.button_settings = false;
+            $scope.visible.spotAdjuster = 'default';
 
             $scope.menuButtonDisabled.button_uploader = false;
             $scope.menuButtonDisabled.button_aligner = true;
-            $scope.menuButtonDisabled.button_detector = true;
             $scope.menuButtonDisabled.button_adjuster = true;
             $scope.menuButtonDisabled.button_exporter = true;
             $scope.menuButtonDisabled.button_help = false;
-            $scope.menuButtonDisabled.button_info = false;
 
             openPanel('button_uploader', 'state_start');
         }
+
+        $scope.hasHE = function() {
+            return 'HE' in $scope.layerManager.getLayers();
+        };
 
         var toggleMenuBarPanelVisibility = function(previousButton, thisButton) {
             // the panel is closed if the same button is pressed again
@@ -213,18 +181,48 @@ const main = [
         };
 
         function updateVisibility() {
+            const setVisibility = (layer, value) => {
+                if (layer in $scope.layerManager.getLayers()) {
+                    $scope.layerManager.getLayer(layer).set('visible', value);
+                }
+            };
             if ($scope.data.state === 'state_alignment') {
-                $scope.layerManager.getLayer('cy3').set('visible', true);
-                $scope.layerManager.getLayer('he').set('visible', true);
+                setVisibility('Cy3', true);
+                setVisibility('HE', true);
             } else {
-                $scope.layerManager.getLayer('cy3').set('visible', $scope.data.cy3Active);
-                $scope.layerManager.getLayer('he').set('visible', !$scope.data.cy3Active);
+                setVisibility('Cy3', $scope.data.cy3Active);
+                setVisibility('HE', !$scope.data.cy3Active);
             }
         }
 
         $scope.updateState = function(new_state) {
+            const transformAnnotations = (tmat) => {
+                const doTransform = _.flow(
+                    xs => [[...xs, 1]],
+                    math.transpose,
+                    _.partial(math.multiply, tmat),
+                    math.flatten,
+                    /* eslint-disable no-underscore-dangle */
+                    xs => xs._data,
+                    _.partial(_.take, _, 2),
+                );
+
+                $scope.calibrator.points = _.map(
+                    $scope.calibrator.points, doTransform);
+                $scope.spotManager.spots = _.map(
+                    $scope.spotManager.spots,
+                    (s) => {
+                        /* eslint-disable no-param-reassign */
+                        [s.x, s.y] = doTransform([s.x, s.y]);
+                        return s;
+                    },
+                );
+            };
+
             if ($scope.data.state === 'state_alignment') {
                 $scope.exitAlignment();
+                transformAnnotations(
+                    $scope.layerManager.getLayer('Cy3').tmat);
             }
 
             $scope.data.state = new_state;
@@ -234,20 +232,13 @@ const main = [
                 $scope.visible.zoomBar = false;
                 $scope.visible.loadingWidget = false;
                 $scope.visible.canvas = false;
+                setCursor('default');
             }
             else if($scope.data.state === 'state_upload') {
                 $scope.visible.menuBar = false;
                 $scope.visible.zoomBar = false;
                 $scope.visible.loadingWidget = true;
                 $scope.visible.canvas = false;
-            }
-            else if($scope.data.state === 'state_predetection') {
-                $scope.visible.menuBar = true;
-                $scope.visible.zoomBar = true;
-                $scope.visible.loadingWidget = false;
-                $scope.visible.canvas = true;
-
-                $scope.data.logicHandler = $scope.predetectionLH;
             }
             else if($scope.data.state === 'state_alignment') {
                 $scope.visible.menuBar = true;
@@ -256,17 +247,11 @@ const main = [
                 $scope.visible.canvas = true;
                 $scope.visible.imageToggleBar = false;
 
+                transformAnnotations(math.inv(
+                    $scope.layerManager.getLayer('Cy3').tmat));
                 $scope.initAlignment();
 
-                updateVisibility();
-
                 $scope.data.logicHandler = $scope.alignerLH;
-            }
-            else if($scope.data.state === 'state_detection') {
-                $scope.visible.menuBar = false;
-                $scope.visible.zoomBar = false;
-                $scope.visible.loadingWidget = true;
-                $scope.visible.canvas = false;
             }
             else if($scope.data.state === 'state_adjustment') {
                 $scope.visible.menuBar = true;
@@ -277,15 +262,15 @@ const main = [
                 $scope.data.logicHandler = $scope.adjustmentLH;
             }
 
-            if ('he' in $scope.layerManager.getLayers() && new_state !== 'state_alignment') {
+            if ($scope.hasHE() && new_state !== 'state_alignment') {
                 // toggle bar should have the same visibility as the zoom bar if HE tiles
                 // uploaded and we're not in the alignment view
                 $scope.visible.imageToggleBar = $scope.visible.zoomBar;
-                updateVisibility();
             } else {
                 $scope.visible.imageToggleBar = false;
             }
 
+            updateVisibility();
         };
 
         $scope.undoButtonClick = function(direction) {
@@ -319,49 +304,6 @@ const main = [
             }
         };
 
-        $scope.detectSpots = function() {
-            // we want to send the calibration data to the server,
-            // so we retrieve it from the viewer directive
-            const calibrationData = $scope.getCalibrationData();
-            // append the session id to this data so the server knows
-            // who we are
-            calibrationData.session_id = $scope.data.sessionId;
-
-            let loadingState = $scope.initLoading(LOAD_STAGE.WAIT);
-
-            $q.when(tryState(
-                $scope,
-                'state_detection',
-                unwrapRequest($http({
-                    method: 'GET',
-                    url: '../detect_spots',
-                    params: calibrationData,
-                    eventHandlers: {
-                        progress(e) {
-                            loadingState = $scope.updateLoading(
-                                loadingState,
-                                {
-                                    stage: LOAD_STAGE.DOWNLOAD,
-                                    loaded: e.loaded,
-                                    total: e.total,
-                                },
-                            );
-                        },
-                    },
-                })),
-            )).then((result) => {
-                $scope.updateState('state_adjustment');
-                openPanel('button_exporter');
-                openPanel('button_adjuster');
-                $scope.loadSpots(result); // defined in the viewer directive
-                $scope.data.spotTransformMatrx = result.transform_matrix;
-            }).catch(
-                _.noop,
-            ).finally(() => {
-                $scope.exitLoading(loadingState);
-            });
-        };
-
         $scope.getPanelTitle = function(button) {
             return panelTitles[button];
         };
@@ -393,65 +335,90 @@ const main = [
                 $q.when(tryState(
                     $scope,
                     'state_upload',
-                    unwrapRequest($http.get('../session_id')).then((response) => {
-                        $scope.data.sessionId = response;
-                        return unwrapRequest($http({
-                            method: 'POST',
-                            url: '../tiles',
-                            uploadEventHandlers: {
-                                progress(e) {
-                                    loadingState = $scope.updateLoading(
-                                        loadingState,
-                                        {
-                                            stage: LOAD_STAGE.UPLOAD,
-                                            loaded: e.loaded,
-                                            total: e.total,
-                                        },
-                                    );
-                                },
-                                load() {
-                                    loadingState = $scope.updateLoading(
-                                        loadingState,
-                                        { stage: LOAD_STAGE.WAIT },
-                                    );
-                                },
+                    unwrapRequest($http({
+                        method: 'POST',
+                        url: '../run',
+                        uploadEventHandlers: {
+                            progress(e) {
+                                loadingState = $scope.updateLoading(
+                                    loadingState,
+                                    {
+                                        stage: LOAD_STAGE.UPLOAD,
+                                        loaded: e.loaded,
+                                        total: e.total,
+                                    },
+                                );
                             },
-                            eventHandlers: {
-                                progress(e) {
-                                    loadingState = $scope.updateLoading(
-                                        loadingState,
-                                        {
-                                            stage: LOAD_STAGE.DOWNLOAD,
-                                            loaded: e.loaded,
-                                            total: e.total,
-                                        },
-                                    );
-                                },
+                            load() {
+                                loadingState = $scope.updateLoading(
+                                    loadingState,
+                                    { stage: LOAD_STAGE.WAIT },
+                                );
                             },
-                            data: {
-                                cy3_image: $scope.data.cy3Image,
-                                he_image: $scope.data.heImage,
-                                session_id: $scope.data.sessionId,
+                        },
+                        eventHandlers: {
+                            progress(e) {
+                                loadingState = $scope.updateLoading(
+                                    loadingState,
+                                    {
+                                        stage: LOAD_STAGE.DOWNLOAD,
+                                        loaded: e.loaded,
+                                        total: e.total,
+                                    },
+                                );
                             },
-                        }));
+                        },
+                        data: {
+                            cy3_image: $scope.data.cy3Image,
+                            he_image: $scope.data.heImage,
+                            array_size: [
+                                $scope.calibrator.width,
+                                $scope.calibrator.height,
+                            ],
+                        },
+                    })).then((result) => {
+                        $scope.receiveTilemap(result.tiles);
+
+                        // apply default adjustments
+                        _.each(
+                            Object.entries($scope.layerManager.getLayers()),
+                            ([name, layer]) => {
+                                switch (name) {
+                                case 'Cy3':
+                                    layer.adjustments = [
+                                        ['brightness', 1.5],
+                                        ['contrast', 0.5],
+                                    ];
+                                    break;
+                                case 'HE':
+                                    layer.adjustments = [
+                                        ['equalize', true],
+                                    ];
+                                    break;
+                                default:
+                                    // ignore
+                                }
+                            },
+                        );
+
+                        $scope.loadSpots(result.spots, result.tissue_mask);
+                        $scope.data.spotTransformMatrx = result.spots.transform_matrix;
+                        $scope.data.cy3Active = true;
+                        $scope.menuButtonDisabled.button_exporter = false;
+                        if ($scope.hasHE()) {
+                            $scope.menuButtonDisabled.button_adjuster = false;
+                            openPanel('button_aligner', 'state_alignment');
+                        } else {
+                            $scope.menuButtonDisabled.button_aligner = false;
+                            openPanel('button_adjuster', 'state_adjustment');
+                        }
                     }),
-                )).then((result) => {
-                    $scope.receiveTilemap(result);
-                    $scope.data.cy3Active = true;
-                    if (result.he !== undefined) {
-                        $scope.visible.spotAdjuster.div_insideTissue = true;
-                        $scope.menuButtonDisabled.button_detector = false;
-                        $scope.updateState('state_predetection');
-                        openPanel('button_aligner', 'state_alignment');
-                    } else {
-                        $scope.visible.spotAdjuster.div_insideTissue = false;
-                        $scope.updateState('state_predetection');
-                        openPanel('button_detector');
-                    }
-                }).catch(
-                    _.noop,
+                )).catch(
+                    error,
                 ).finally(() => {
                     $scope.exitLoading(loadingState);
+                    /* eslint-disable no-new */
+                    new Notification('Spot detection complete!');
                 });
             }
         };

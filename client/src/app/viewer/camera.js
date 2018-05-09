@@ -25,7 +25,7 @@ const Camera = (function() {
             scale: Vec2.Vec2(1, 1)
         };
         self.navFactor = 60;
-        self.scaleFactor = 0.90;
+        self.scaleFactor = 0.8;
         self.minScale = 0.03;
         self.maxScale = 1.00;
         self.positionBoundaries = {"minX": 0, "maxX": 20480, "minY": 0, "maxY": 20480};

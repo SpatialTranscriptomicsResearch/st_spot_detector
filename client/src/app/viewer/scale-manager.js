@@ -1,6 +1,6 @@
 /** @module scale-manager */
 
-import _ from 'underscore';
+import _ from 'lodash';
 
 // private members
 const level = Symbol('Current tile level');
