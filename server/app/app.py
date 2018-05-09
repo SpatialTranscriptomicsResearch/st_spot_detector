@@ -10,6 +10,7 @@ import numpy as np
 from PIL import Image
 from tissue_recognition import recognize_tissue, get_binary_mask, free
 
+from . import bottle
 from .bottle import Bottle, request, static_file
 
 from . import imageprocessor as ip
@@ -22,6 +23,8 @@ warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS=None
 
 app = application = Bottle()
+
+bottle.ERROR_PAGE_TEMPLATE = "<p>{{e.status}}: {{e.body}}</p>"
 
 class ClientError(RuntimeError):
     # pylint:disable=missing-docstring
