@@ -68,7 +68,10 @@ def get_spots(img, scale_factor, array_size):
 
     keypoints = ip.detect_keypoints(bct_image)
     spots = Spots(array_size, scale_factor)
-    spots.create_spots_from_keypoints(keypoints, bct_image)
+    try:
+        spots.create_spots_from_keypoints(keypoints, bct_image)
+    except RuntimeError:
+        raise ClientError('Spot detection failed.')
 
     return spots.wrap_spots()
 

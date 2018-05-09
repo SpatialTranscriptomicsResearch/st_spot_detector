@@ -45,6 +45,9 @@ class Spots:
         pixels around that position to determine if a spot is likely
         to be there or not.
         """
+        if len(keypoints) < max(*self.array_size):
+            raise RuntimeError('Too few keypoints')
+
         spots = np.array(list(zip(*[x.pt + (x.size,) for x in keypoints])))
 
         labels = [
