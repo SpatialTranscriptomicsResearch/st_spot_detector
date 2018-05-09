@@ -378,6 +378,29 @@ const main = [
                         },
                     })).then((result) => {
                         $scope.receiveTilemap(result.tiles);
+
+                        // apply default adjustments
+                        _.each(
+                            Object.entries($scope.layerManager.getLayers()),
+                            ([name, layer]) => {
+                                switch (name) {
+                                case 'Cy3':
+                                    layer.adjustments = [
+                                        ['brightness', 1.5],
+                                        ['contrast', 0.5],
+                                    ];
+                                    break;
+                                case 'HE':
+                                    layer.adjustments = [
+                                        ['equalize', true],
+                                    ];
+                                    break;
+                                default:
+                                    // ignore
+                                }
+                            },
+                        );
+
                         $scope.loadSpots(result.spots, result.tissue_mask);
                         $scope.data.spotTransformMatrx = result.spots.transform_matrix;
                         $scope.data.cy3Active = true;
