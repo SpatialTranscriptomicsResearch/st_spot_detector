@@ -24,3 +24,4 @@ app.directive('viewer', viewer);
 app.directive('aligner', aligner);
 
 $(document).ready(() => $('[data-toggle="tooltip"]').tooltip());
+Notification.requestPermission();

@@ -417,6 +417,8 @@ const main = [
                     error,
                 ).finally(() => {
                     $scope.exitLoading(loadingState);
+                    /* eslint-disable no-new */
+                    new Notification('Spot detection complete!');
                 });
             }
         };
