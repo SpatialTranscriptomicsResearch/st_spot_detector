@@ -76,11 +76,12 @@ class RotationPoint {
     get graphic() { return this[sgraphic]; }
 }
 
-const ADJUSTMENTS = {
-    opacity: 1,
+const ADJUSTMENTS = Object.freeze({
+    brightness: 0,
     contrast: 0,
     equalize: true,
-};
+    opacity: 1,
+});
 
 function aligner() {
     return {
