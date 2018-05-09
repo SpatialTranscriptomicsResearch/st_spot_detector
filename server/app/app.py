@@ -15,6 +15,7 @@ from .bottle import Bottle, request, static_file
 
 from . import imageprocessor as ip
 from .logger import log, INFO, WARNING
+from .oauth import protect
 from .spots import Spots
 from .tilemap import Tilemap
 from .utils import bits_to_ascii
@@ -95,6 +96,7 @@ def get_tissue_mask(image):
     return bit_string
 
 @app.post('/run')
+@protect
 @return_decorator
 def get_tiles():
     """Here we receive the Cy3 image (and optionally HE image) from the client,
@@ -171,9 +173,11 @@ def get_tiles():
 
 @app.route('/')
 @app.route('/<filepath:path>')
+@protect
 def serve_site(filepath='index.html'):
     return static_file(filepath, root='../client/dist')
 
 @app.error(404)
+@protect
 def error404(error):
     return "404 Not Found"
