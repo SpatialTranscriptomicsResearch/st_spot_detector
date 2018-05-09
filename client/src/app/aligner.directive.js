@@ -83,6 +83,12 @@ const ADJUSTMENTS = Object.freeze({
     opacity: 1,
 });
 
+const MULTIPLIERS = Object.freeze({
+    brightness: 3,
+    contrast: 1,
+    opacity: 1,
+});
+
 function aligner() {
     return {
         link(scope, element) {
@@ -107,16 +113,12 @@ function aligner() {
                 s.adjustments.forEach((xs, layer) => {
                     scope.layers.getLayer(layer).adjustments = _.map(
                         xs,
-                        ({ name, value }) => {
-                            switch (name) {
-                            case 'brightness':
-                                return [name, 2 * value];
-                            case 'contrast':
-                                return [name, value / 2];
-                            default:
-                                return [name, value];
-                            }
-                        },
+                        ({ name, value }) => [
+                            name,
+                            name in MULTIPLIERS
+                                ? value * MULTIPLIERS[name]
+                                : value,
+                        ],
                     );
                 });
                 scope.logicHandler.set(s.logicHandler);
@@ -135,7 +137,10 @@ function aligner() {
                         name,
                         _.map(xs, ([adjName, x]) => Object({
                             name: adjName,
-                            value: x,
+                            value:
+                                adjName in MULTIPLIERS
+                                    ? x / MULTIPLIERS[adjName]
+                                    : x,
                         })),
                     ],
                 ));
