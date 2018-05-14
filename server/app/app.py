@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import ast
 from functools import reduce
-import json
 import traceback
 import warnings
 
 import numpy as np
 from PIL import Image
+import sanic
+from sanic import Sanic, response
 from tissue_recognition import recognize_tissue, get_binary_mask, free
-
-from . import bottle
-from .bottle import Bottle, request, static_file
 
 from . import imageprocessor as ip
 from .logger import log, INFO, WARNING
@@ -22,9 +19,13 @@ from .utils import bits_to_ascii
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS=None
 
-app = application = Bottle()
+APP = Sanic()
+APP.static('', '../client/dist')
+APP.static('', '../client/dist/index.html')
 
-bottle.ERROR_PAGE_TEMPLATE = "<p>{{e.status}}: {{e.body}}</p>"
+sanic.handlers.INTERNAL_SERVER_ERROR_HTML = '''
+Something went wrong! :(
+'''
 
 class ClientError(RuntimeError):
     # pylint:disable=missing-docstring
@@ -52,16 +53,25 @@ def return_decorator(fnc):
                         log(WARNING, f'Non-user warning: {message}')
                 return _warnings
             try:
-                return dict(result=fnc(*args, **kwargs), success=True, warnings=pack_warnings())
+                return response.json(dict(
+                    result=fnc(*args, **kwargs),
+                    success=True,
+                    warnings=pack_warnings(),
+                ))
             except ClientError as err:
-                return dict(result=str(err), success=False, warnings=pack_warnings())
+                return response.json(dict(
+                    result=str(err),
+                    success=False,
+                    warnings=pack_warnings(),
+                ))
             except Exception as err:
                 log(WARNING, f'Non-user exception: {str(err)}')
                 traceback.print_exc()
-                return dict(
+                return response.json(dict(
                     result='Unknown error. Please report this to the administrator.',
                     success=False,
-                    warnings=pack_warnings())
+                    warnings=pack_warnings(),
+                ))
     return wrapper
 
 def get_spots(img, scale_factor, array_size):
@@ -94,9 +104,9 @@ def get_tissue_mask(image):
 
     return bit_string
 
-@app.post('/run')
+@APP.route('/run', methods=['POST'])
 @return_decorator
-def get_tiles():
+def run(req):
     """Here we receive the Cy3 image (and optionally HE image) from the client,
     then firstly scale it to approximately 20k x 20k.
     The scaling factor for this is saved and sent to the client.
@@ -104,7 +114,7 @@ def get_tiles():
     A Cy3 image of approximately 3k x 3k is saved on the server for further
     spot detection later on.
     """
-    data = json.loads(request.body.read())
+    data = req.json
 
     array_size = data.get('array_size')
     if not (isinstance(array_size, list)
@@ -168,12 +178,3 @@ def get_tiles():
             scale=1 / tissue_sf,
         ) if tissue_img is not None else None,
     )
-
-@app.route('/')
-@app.route('/<filepath:path>')
-def serve_site(filepath='index.html'):
-    return static_file(filepath, root='../client/dist')
-
-@app.error(404)
-def error404(error):
-    return "404 Not Found"
