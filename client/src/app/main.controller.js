@@ -259,6 +259,8 @@ const main = [
                 $scope.visible.loadingWidget = false;
                 $scope.visible.canvas = true;
 
+                $scope.collisionTracker.update();
+
                 $scope.data.logicHandler = $scope.adjustmentLH;
             }
 

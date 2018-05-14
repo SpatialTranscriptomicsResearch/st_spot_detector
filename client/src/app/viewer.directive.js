@@ -563,6 +563,7 @@ function viewer() {
 
             scope.camera = camera;
             scope.calibrator = calibrator;
+            scope.collisionTracker = collisionTracker;
             scope.layerManager.container = layers;
             scope.layerManager.callback = refreshCanvas;
             scope.spotManager = spots;
