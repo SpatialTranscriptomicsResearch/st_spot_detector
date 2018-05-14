@@ -5,47 +5,11 @@ import imageToggleCy from 'assets/images/imageToggleCy3.png';
 import imageToggleHE from 'assets/images/imageToggleHE.png';
 
 import LayerManager from './viewer/layer-manager';
+import { LOAD_STAGE } from './loading-widget.directive';
 import { error, warning } from './modal';
+import send, { SOCKET_STATUS } from './socket';
 import { setCursor } from './utils';
 
-import { LOAD_STAGE } from './loading-widget.directive';
-
-function unwrapRequest(request) {
-    return new Promise(
-        (resolve, reject) => {
-            request
-                .then((response) => {
-                    const success = response.data.success;
-                    const warnings = response.data.warnings;
-                    const result = response.data.result;
-                    _.each(warnings, warning);
-                    if (!success) {
-                        reject(result);
-                    } else {
-                        resolve(result);
-                    }
-                })
-                .catch((response) => {
-                    const result = response.data;
-                    reject(result);
-                })
-            ;
-        },
-    );
-}
-
-function tryState(scope, state, request) {
-    const oldState = scope.data.state;
-    scope.updateState(state);
-    return new Promise(
-        (resolve, reject) => {
-            request.then(resolve).catch((result) => {
-                scope.updateState(oldState);
-                reject(result);
-            });
-        },
-    );
-}
 
 const main = [
     '$scope',
@@ -332,53 +296,62 @@ const main = [
             if($scope.data.cy3Image != '') {
                 init_state();
 
-                let loadingState = $scope.initLoading();
+                const oldState = $scope.data.state;
 
-                $q.when(tryState(
-                    $scope,
-                    'state_upload',
-                    unwrapRequest($http({
-                        method: 'POST',
-                        url: '../run',
-                        uploadEventHandlers: {
-                            progress(e) {
-                                loadingState = $scope.updateLoading(
-                                    loadingState,
-                                    {
-                                        stage: LOAD_STAGE.UPLOAD,
-                                        loaded: e.loaded,
-                                        total: e.total,
-                                    },
-                                );
-                            },
-                            load() {
-                                loadingState = $scope.updateLoading(
-                                    loadingState,
-                                    { stage: LOAD_STAGE.WAIT },
-                                );
-                            },
-                        },
-                        eventHandlers: {
-                            progress(e) {
-                                loadingState = $scope.updateLoading(
-                                    loadingState,
-                                    {
-                                        stage: LOAD_STAGE.DOWNLOAD,
-                                        loaded: e.loaded,
-                                        total: e.total,
-                                    },
-                                );
-                            },
-                        },
-                        data: {
-                            cy3_image: $scope.data.cy3Image,
-                            he_image: $scope.data.heImage,
+                const loadingState = $scope.initLoading();
+                $scope.updateState('state_upload');
+
+                $q.when(
+                    send(
+                        `${window.location.origin.replace(/^http/, 'ws')}/run`,
+                        {
+                            images: _.reduce(
+                                [
+                                    ['Cy3', $scope.data.cy3Image],
+                                    ['HE', $scope.data.heImage],
+                                ],
+                                (a, [k, v]) => {
+                                    if (v) { a[k] = v; }
+                                    return a;
+                                },
+                                {},
+                            ),
                             array_size: [
                                 $scope.calibrator.width,
                                 $scope.calibrator.height,
                             ],
                         },
-                    })).then((result) => {
+                        ([status, data]) => {
+                            switch (status) {
+                            case SOCKET_STATUS.SENDING:
+                                $scope.updateLoading(
+                                    loadingState,
+                                    {
+                                        stage: LOAD_STAGE.UPLOAD,
+                                        loaded: data.loaded,
+                                        total: data.total,
+                                    },
+                                );
+                                break;
+                            case SOCKET_STATUS.RECEIVING:
+                                $scope.updateLoading(
+                                    loadingState,
+                                    {
+                                        stage: LOAD_STAGE.DOWNLOAD,
+                                        loaded: data.loaded,
+                                        total: data.total,
+                                    },
+                                );
+                                break;
+                            case SOCKET_STATUS.PROCESSING:
+                                break;
+                            default:
+                                // ignore
+                            }
+                        },
+                    ),
+                ).then(
+                    (result) => {
                         $scope.receiveTilemap(result.tiles);
 
                         // apply default adjustments
@@ -414,14 +387,19 @@ const main = [
                             $scope.menuButtonDisabled.button_aligner = false;
                             openPanel('button_adjuster', 'state_adjustment');
                         }
-                    }),
-                )).catch(
-                    error,
-                ).finally(() => {
-                    $scope.exitLoading(loadingState);
-                    /* eslint-disable no-new */
-                    new Notification('Spot detection complete!');
-                });
+                    },
+                ).catch(
+                    (e) => {
+                        error(e);
+                        $scope.updateState(oldState);
+                    },
+                ).finally(
+                    () => {
+                        /* eslint-disable no-new */
+                        $scope.exitLoading(loadingState);
+                        new Notification('Spot detection complete!');
+                    },
+                );
             }
         };
 
