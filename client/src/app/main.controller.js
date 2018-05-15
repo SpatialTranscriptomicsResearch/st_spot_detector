@@ -344,6 +344,13 @@ const main = [
                                 );
                                 break;
                             case SOCKET_STATUS.PROCESSING:
+                                $scope.updateLoading(
+                                    loadingState,
+                                    {
+                                        stage: LOAD_STAGE.WAIT,
+                                        message: data.message,
+                                    },
+                                );
                                 break;
                             default:
                                 // ignore

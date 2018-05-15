@@ -2,6 +2,7 @@
 
 import asyncio
 from functools import reduce, wraps
+import itertools as it
 import json
 import warnings
 
@@ -15,11 +16,11 @@ from tissue_recognition import recognize_tissue, get_binary_mask, free
 from . import imageprocessor as ip
 from .logger import log, INFO, WARNING
 from .spots import Spots
-from .tilemap import Tilemap
 from .utils import bits_to_ascii, chunks_of
 
 
 MESSAGE_SIZE = 2 * (2 ** 10) ** 2
+TILE_SIZE = [256, 256]
 
 
 ENC = json.JSONEncoder().encode
@@ -122,7 +123,12 @@ def get_tissue_mask(image):
 
 
 @progress_request('/run')
-async def run(data):
+async def run(data, loop=None):
+    if loop is None:
+        loop = asyncio.get_event_loop()
+    execute = lambda f, *args: \
+        loop.run_in_executor(None, f, *args)
+
     array_size = data.get('array_size')
     if not (isinstance(array_size, list)
             and len(array_size) == 2
@@ -130,7 +136,6 @@ async def run(data):
         raise ClientError('Invalid array size')
 
     images = data.get('images')
-
     if not reduce(
             lambda a, x: a and x,
             map(ip.validate_jpeg_URI, images.values()),
@@ -138,52 +143,59 @@ async def run(data):
         raise ClientError(
             'Invalid image format. Please upload only jpeg images.')
 
+
+    async def _do_spot_detection(image):
+        image, scale = await execute(ip.resize_image, image, [4000, 4000])
+        return await execute(get_spots, image, scale, array_size)
+
+    async def _do_mask_detection(image):
+        image, scale = await execute(ip.resize_image, image, [500, 500])
+        return dict(
+            data=await execute(get_tissue_mask, image),
+            shape=image.size,
+            scale=1 / scale,
+        )
+
+
     tiles = dict()
-    spot_img, spot_sf = None, None
-    tissue_img, tissue_sf = None, None
+    mask, spots = None, None
     for key, image in images.items():
-        yield f'Transforming {key} image'
+        yield f'Decompressing {key} image data'
+        image = await execute(ip.jpeg_URI_to_Image, image)
 
-        log(INFO, f'Transforming {key} image')
-        image = ip.jpeg_URI_to_Image(image)
-
-        log(INFO, f'Tiling {key} image')
-        tiles_ = Tilemap(image)
-
-        if key == 'Cy3':
-            spot_img, spot_sf = ip.resize_image(image, [4000, 4000])
-        elif key == 'HE':
-            tissue_img, tissue_sf = ip.resize_image(image, [500, 500])
+        tilemap = dict()
+        tilemap_sizes = list(it.takewhile(
+            lambda x: all([a > b for a, b in zip(x[1], TILE_SIZE)]),
+            ((l, [x / l for x in image.size])
+             for l in (2 ** k for k in it.count())),
+        ))
+        cur = image
+        for i, (l, s) in enumerate(tilemap_sizes):
+            yield f'Tiling {key} image: level l ({i + 1}/{len(tilemap_sizes)})'
+            cur = cur.resize(list(map(int, s)))
+            tilemap[l] = await loop.run_in_executor(
+                None, ip.tile_image, cur, *TILE_SIZE)
 
         tiles.update({
             key: {
                 'histogram': image.histogram(),
                 'image_size': image.size,
-                'tiles': tiles_.tilemaps,
-                'tile_size': [tiles_.tile_width, tiles_.tile_height],
+                'tiles': tilemap,
+                'tile_size': TILE_SIZE,
             },
         })
+
+        if key == 'Cy3':
+            yield 'Detecting spots'
+            spots = await _do_spot_detection(image)
+        elif key == 'HE':
+            yield 'Computing tissue mask'
+            mask = await _do_mask_detection(image)
     image = None
-    log(INFO, 'Image tiling complete')
 
-    if spot_img is not None:
-        yield 'Detecting spots'
-        spots = get_spots(spot_img, spot_sf, array_size)
-    else:
-        spots = None
-
-    if tissue_img is not None:
-        yield 'Computing tissue mask'
-        tissue_mask = dict(
-            mask=get_tissue_mask(tissue_img),
-            shape=tissue_img.size,
-            scale=1 / tissue_sf,
-        )
-    else:
-        tissue_mask = None
 
     raise Result(dict(
         tiles=tiles,
         spots=spots,
-        tissue_mask=tissue_mask,
+        tissue_mask=mask,
     ))
