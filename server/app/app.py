@@ -14,7 +14,6 @@ from sanic.config import Config
 from tissue_recognition import recognize_tissue, get_binary_mask, free
 
 from . import imageprocessor as ip
-from .logger import log, INFO, WARNING
 from .spots import Spots
 from .utils import bits_to_ascii, chunks_of
 
@@ -91,8 +90,6 @@ def progress_request(route):
 
 
 def get_spots(img, scale_factor, array_size):
-    log(INFO, 'Detecting spots')
-
     bct_image = ip.apply_BCT(img)
 
     keypoints = ip.detect_keypoints(bct_image)
