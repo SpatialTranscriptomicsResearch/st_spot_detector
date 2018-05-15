@@ -1,3 +1,6 @@
+""" Provides utility functions for logging
+"""
+
 import logging as L
 from logging.config import dictConfig
 

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+""" Instantiates the server
+"""
 
 import asyncio
-from functools import reduce, wraps
+from functools import wraps
 import itertools as it
 import json
 import warnings
@@ -27,7 +29,7 @@ DEC = json.JSONDecoder().decode
 
 
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
-Image.MAX_IMAGE_PIXELS=None
+Image.MAX_IMAGE_PIXELS = None
 
 
 Config.WEBSOCKET_MAX_SIZE = 200 * (2 ** 10) ** 2
@@ -42,16 +44,15 @@ APP.static('', '../client/dist/index.html')
 
 
 class ClientError(RuntimeError):
-    # pylint:disable=missing-docstring
     pass
 
 class Result(Exception):
-    # pylint:disable=missing-docstring
     def __init__(self, result):
+        super().__init__()
         self.result = result
 
 
-def progress_request(route):
+def _progress_request(route):
     def _decorator(fnc):
         @APP.websocket(route)
         @wraps(fnc)
@@ -89,8 +90,8 @@ def progress_request(route):
     return _decorator
 
 
-def get_spots(img, scale_factor, array_size):
-    bct_image = ip.apply_BCT(img)
+def _get_spots(img, scale_factor, array_size):
+    bct_image = ip.apply_bct(img)
 
     keypoints = ip.detect_keypoints(bct_image)
     spots = Spots(array_size, scale_factor)
@@ -102,7 +103,7 @@ def get_spots(img, scale_factor, array_size):
     return spots.wrap_spots()
 
 
-def get_tissue_mask(image):
+def _get_tissue_mask(image):
     # Convert image to numpy matrix and preallocate the mask matrix
     image = np.array(image, dtype=np.uint8)
     mask = np.zeros(image.shape[0:2], dtype=np.uint8)
@@ -119,8 +120,10 @@ def get_tissue_mask(image):
     return bit_string
 
 
-@progress_request('/run')
+@_progress_request('/run')
 async def run(data, loop=None):
+    """ Tiles the received images and runs spot and tissue detection
+    """
     if loop is None:
         loop = asyncio.get_event_loop()
     execute = lambda f, *args: \
@@ -133,33 +136,12 @@ async def run(data, loop=None):
         raise ClientError('Invalid array size')
 
     images = data.get('images')
-    if not reduce(
-            lambda a, x: a and x,
-            map(ip.validate_jpeg_URI, images.values()),
-    ):
+    if not all(map(ip.validate_jpeg_uri, images.values())):
         raise ClientError(
             'Invalid image format. Please upload only jpeg images.')
 
 
-    async def _do_spot_detection(image):
-        image, scale = await execute(ip.resize_image, image, [4000, 4000])
-        return await execute(get_spots, image, scale, array_size)
-
-    async def _do_mask_detection(image):
-        image, scale = await execute(ip.resize_image, image, [500, 500])
-        return dict(
-            data=await execute(get_tissue_mask, image),
-            shape=image.size,
-            scale=1 / scale,
-        )
-
-
-    tiles = dict()
-    mask, spots = None, None
-    for key, image in images.items():
-        yield f'Decompressing {key} image data'
-        image = await execute(ip.jpeg_URI_to_Image, image)
-
+    async def _do_image_tiling(image):
         tilemap = dict()
         tilemap_sizes = list(it.takewhile(
             lambda x: all([a > b for a, b in zip(x[1], TILE_SIZE)]),
@@ -168,31 +150,55 @@ async def run(data, loop=None):
         ))
         cur = image
         for i, (l, s) in enumerate(tilemap_sizes):
-            yield f'Tiling {key} image: level l ({i + 1}/{len(tilemap_sizes)})'
+            yield l, i + 1, len(tilemap_sizes)
             cur = cur.resize(list(map(int, s)))
             tilemap[l] = await loop.run_in_executor(
                 None, ip.tile_image, cur, *TILE_SIZE)
-
-        tiles.update({
-            key: {
-                'histogram': image.histogram(),
-                'image_size': image.size,
-                'tiles': tilemap,
-                'tile_size': TILE_SIZE,
-            },
+        raise Result({
+            'histogram': image.histogram(),
+            'image_size': image.size,
+            'tiles': tilemap,
+            'tile_size': TILE_SIZE,
         })
 
-        if key == 'Cy3':
-            yield 'Detecting spots'
-            spots = await _do_spot_detection(image)
-        elif key == 'HE':
-            yield 'Computing tissue mask'
-            mask = await _do_mask_detection(image)
-    image = None
+    async def _do_spot_detection(image):
+        image, scale = await execute(ip.resize_image, image, [4000, 4000])
+        return await execute(_get_spots, image, scale, array_size)
+
+    async def _do_mask_detection(image):
+        image, scale = await execute(ip.resize_image, image, [500, 500])
+        return dict(
+            data=await execute(_get_tissue_mask, image),
+            shape=image.size,
+            scale=1 / scale,
+        )
+
+    async def _go():
+        tiles = dict()
+        mask, spots = None, None
+        for key, image in images.items():
+            yield f'Decompressing {key} image data'
+            image = await execute(ip.jpeg_uri_to_image, image)
+
+            try:
+                async for level, i, n in _do_image_tiling(image):
+                    yield f'Tiling {key} image: level {level} ({i}/{n})'
+            except Result as tilemap:
+                tiles.update({key: tilemap.result})
+
+            if key == 'Cy3':
+                yield 'Detecting spots'
+                spots = await _do_spot_detection(image)
+            elif key == 'HE':
+                yield 'Computing tissue mask'
+                mask = await _do_mask_detection(image)
+
+        raise Result(dict(
+            tiles=tiles,
+            spots=spots,
+            tissue_mask=mask,
+        ))
 
 
-    raise Result(dict(
-        tiles=tiles,
-        spots=spots,
-        tissue_mask=mask,
-    ))
+    async for msg in _go():
+        yield msg
