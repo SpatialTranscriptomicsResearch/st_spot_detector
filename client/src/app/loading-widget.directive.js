@@ -122,7 +122,7 @@ function getAnimators(state) {
                 case STAGE.DOWNLOAD:
                     return 'Downloading';
                 default:
-                    return 'Waiting for response...';
+                    return state.message;
                 }
             })();
             const text = (() => {
@@ -177,6 +177,7 @@ class State {
         this.canvas = canvas;
         this.stopped = false;
         this.stage = initialStage;
+        this.message = '';
         this.uploaded = initialStage > STAGE.UPLOAD ? 1 : 0;
         this.uploadSize = this.uploaded;
         this.uploadSpeed = 0;
@@ -206,27 +207,30 @@ function loadingWidget() {
                 initialStage,
             });
 
-            scope.update = (state, {
-                stage,
-                loaded,
-                total,
-            }) => {
+            scope.update = (state, data) => {
+                const { stage } = data;
                 const time = Date.now();
                 state.stage = stage;
                 switch (stage) {
                 case STAGE.UPLOAD:
+                    state.msg = '';
                     state.uploadSpeed =
-                            (loaded - state.uploaded) *
+                            (data.loaded - state.uploaded) *
                             (1000 / (time - state.timestamp));
-                    state.uploaded = loaded;
-                    state.uploadSize = total;
+                    state.uploaded = data.loaded;
+                    state.uploadSize = data.total;
                     break;
                 case STAGE.DOWNLOAD:
+                    state.msg = '';
                     state.downloadSpeed =
-                            (loaded - state.downloaded) *
+                            (data.loaded - state.downloaded) *
                             (1000 / (time - state.timestamp));
-                    state.downloaded = loaded;
-                    state.downloadSize = total;
+                    state.downloaded = data.loaded;
+                    state.downloadSize = data.total;
+                    break;
+                case STAGE.WAIT:
+                    state.message = data.message;
+                    state.downloadSpeed = 0;
                     break;
                 default:
                     break;

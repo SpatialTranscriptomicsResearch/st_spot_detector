@@ -1,72 +1,95 @@
 # -*- coding: utf-8 -*-
 
-import ast
-from functools import reduce
+import asyncio
+from functools import reduce, wraps
+import itertools as it
 import json
-import traceback
 import warnings
 
 import numpy as np
 from PIL import Image
+import sanic
+from sanic import Sanic
+from sanic.config import Config
 from tissue_recognition import recognize_tissue, get_binary_mask, free
 
-from . import bottle
-from .bottle import Bottle, request, static_file
-
 from . import imageprocessor as ip
-from .logger import log, INFO, WARNING
 from .spots import Spots
-from .tilemap import Tilemap
-from .utils import bits_to_ascii
+from .utils import bits_to_ascii, chunks_of
+
+
+MESSAGE_SIZE = 2 * (2 ** 10) ** 2
+TILE_SIZE = [256, 256]
+
+
+ENC = json.JSONEncoder().encode
+DEC = json.JSONDecoder().decode
+
 
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS=None
 
-app = application = Bottle()
 
-bottle.ERROR_PAGE_TEMPLATE = "<p>{{e.status}}: {{e.body}}</p>"
+Config.WEBSOCKET_MAX_SIZE = 200 * (2 ** 10) ** 2
+
+sanic.handlers.INTERNAL_SERVER_ERROR_HTML = '''
+Something went wrong! :(
+'''
+
+APP = Sanic()
+APP.static('', '../client/dist')
+APP.static('', '../client/dist/index.html')
+
 
 class ClientError(RuntimeError):
     # pylint:disable=missing-docstring
     pass
 
-class ClientWarning(UserWarning):
+class Result(Exception):
     # pylint:disable=missing-docstring
-    pass
+    def __init__(self, result):
+        self.result = result
 
-def return_decorator(fnc):
-    """Catches any ClientError or ClienWarnings while evaluating the decorated
-    function and returns a dict with the result of the evaluation.
-    """
-    def wrapper(*args, **kwargs):
-        # pylint:disable=missing-docstring, broad-except
-        with warnings.catch_warnings(record=True) as wlog:
-            warnings.simplefilter('always', ClientWarning)
-            def pack_warnings():
-                _warnings = []
-                for warning in wlog:
-                    message = str(warning.message)
-                    if warning.category == ClientWarning:
-                        _warnings.append(message)
-                    else:
-                        log(WARNING, f'Non-user warning: {message}')
-                return _warnings
+
+def progress_request(route):
+    def _decorator(fnc):
+        @APP.websocket(route)
+        @wraps(fnc)
+        async def _wrapper(_req, socket, *args, **kwargs):
+            # pylint: disable=missing-docstring
+            payload = json.loads(await socket.recv())
             try:
-                return dict(result=fnc(*args, **kwargs), success=True, warnings=pack_warnings())
+                async for progress in fnc(payload, *args, **kwargs):
+                    await socket.send(ENC(dict(
+                        type='progress',
+                        data=progress,
+                    )))
+            except Result as r:
+                sres = ENC(r.result)
+                packages = chunks_of(MESSAGE_SIZE, list(sres))
+                response_size = len(sres)
+                sent = 0
+                for data in packages:
+                    sent += len(data)
+                    await socket.send(ENC(dict(
+                        type='package',
+                        data=dict(
+                            payload=''.join(data),
+                            loaded=sent,
+                            total=response_size,
+                        ),
+                    )))
             except ClientError as err:
-                return dict(result=str(err), success=False, warnings=pack_warnings())
-            except Exception as err:
-                log(WARNING, f'Non-user exception: {str(err)}')
-                traceback.print_exc()
-                return dict(
-                    result='Unknown error. Please report this to the administrator.',
-                    success=False,
-                    warnings=pack_warnings())
-    return wrapper
+                await socket.send(ENC(dict(
+                    type='error',
+                    data=str(err),
+                )))
+            socket.close()
+        return _wrapper
+    return _decorator
+
 
 def get_spots(img, scale_factor, array_size):
-    log(INFO, 'Detecting spots')
-
     bct_image = ip.apply_BCT(img)
 
     keypoints = ip.detect_keypoints(bct_image)
@@ -77,6 +100,7 @@ def get_spots(img, scale_factor, array_size):
         raise ClientError('Spot detection failed.')
 
     return spots.wrap_spots()
+
 
 def get_tissue_mask(image):
     # Convert image to numpy matrix and preallocate the mask matrix
@@ -94,17 +118,13 @@ def get_tissue_mask(image):
 
     return bit_string
 
-@app.post('/run')
-@return_decorator
-def get_tiles():
-    """Here we receive the Cy3 image (and optionally HE image) from the client,
-    then firstly scale it to approximately 20k x 20k.
-    The scaling factor for this is saved and sent to the client.
-    The images are tiled and the tilemaps are saved and sent to the client.
-    A Cy3 image of approximately 3k x 3k is saved on the server for further
-    spot detection later on.
-    """
-    data = json.loads(request.body.read())
+
+@progress_request('/run')
+async def run(data, loop=None):
+    if loop is None:
+        loop = asyncio.get_event_loop()
+    execute = lambda f, *args: \
+        loop.run_in_executor(None, f, *args)
 
     array_size = data.get('array_size')
     if not (isinstance(array_size, list)
@@ -112,68 +132,67 @@ def get_tiles():
             and all([x > 0 for x in array_size])):
         raise ClientError('Invalid array size')
 
-    images = []
-    if 'cy3_image' not in data:
-        raise ClientError('No Cy3 image has been uploaded')
-    images.append(('Cy3', data['cy3_image']))
-    if 'he_image' in data and data['he_image'] != '':
-        images.append(('HE', data['he_image']))
-
+    images = data.get('images')
     if not reduce(
             lambda a, x: a and x,
-            map(lambda x: ip.validate_jpeg_URI(x[1]), images),
+            map(ip.validate_jpeg_URI, images.values()),
     ):
         raise ClientError(
             'Invalid image format. Please upload only jpeg images.')
 
+
+    async def _do_spot_detection(image):
+        image, scale = await execute(ip.resize_image, image, [4000, 4000])
+        return await execute(get_spots, image, scale, array_size)
+
+    async def _do_mask_detection(image):
+        image, scale = await execute(ip.resize_image, image, [500, 500])
+        return dict(
+            data=await execute(get_tissue_mask, image),
+            shape=image.size,
+            scale=1 / scale,
+        )
+
+
     tiles = dict()
-    spot_img, spot_sf = None, None
-    tissue_img, tissue_sf = None, None
-    for key, image in images:
-        log(INFO, f'Transforming {key} image')
-        image = ip.jpeg_URI_to_Image(image)
+    mask, spots = None, None
+    for key, image in images.items():
+        yield f'Decompressing {key} image data'
+        image = await execute(ip.jpeg_URI_to_Image, image)
 
-        log(INFO, f'Tiling {key} image')
-        tiles_ = Tilemap(image)
-
-        if key == 'Cy3':
-            spot_img, spot_sf = ip.resize_image(image, [4000, 4000])
-        elif key == 'HE':
-            tissue_img, tissue_sf = ip.resize_image(image, [500, 500])
+        tilemap = dict()
+        tilemap_sizes = list(it.takewhile(
+            lambda x: all([a > b for a, b in zip(x[1], TILE_SIZE)]),
+            ((l, [x / l for x in image.size])
+             for l in (2 ** k for k in it.count())),
+        ))
+        cur = image
+        for i, (l, s) in enumerate(tilemap_sizes):
+            yield f'Tiling {key} image: level l ({i + 1}/{len(tilemap_sizes)})'
+            cur = cur.resize(list(map(int, s)))
+            tilemap[l] = await loop.run_in_executor(
+                None, ip.tile_image, cur, *TILE_SIZE)
 
         tiles.update({
             key: {
                 'histogram': image.histogram(),
                 'image_size': image.size,
-                'tiles': tiles_.tilemaps,
-                'tile_size': [tiles_.tile_width, tiles_.tile_height],
+                'tiles': tilemap,
+                'tile_size': TILE_SIZE,
             },
         })
+
+        if key == 'Cy3':
+            yield 'Detecting spots'
+            spots = await _do_spot_detection(image)
+        elif key == 'HE':
+            yield 'Computing tissue mask'
+            mask = await _do_mask_detection(image)
     image = None
-    log(INFO, 'Image tiling complete')
 
-    sss = list(map(lambda x: x.get('image_size'), tiles.values()))
-    if not any([ss[1:] == ss[:-1] for ss in zip(*sss)]):
-        warnings.warn('Images have different widths and heights. '
-                      'Check that all images have the correct zoom level.',
-                      ClientWarning)
 
-    return dict(
+    raise Result(dict(
         tiles=tiles,
-        spots=get_spots(spot_img, spot_sf, array_size) \
-            if spot_img is not None else None,
-        tissue_mask=dict(
-            data=get_tissue_mask(tissue_img),
-            shape=tissue_img.size,
-            scale=1 / tissue_sf,
-        ) if tissue_img is not None else None,
-    )
-
-@app.route('/')
-@app.route('/<filepath:path>')
-def serve_site(filepath='index.html'):
-    return static_file(filepath, root='../client/dist')
-
-@app.error(404)
-def error404(error):
-    return "404 Not Found"
+        spots=spots,
+        tissue_mask=mask,
+    ))
