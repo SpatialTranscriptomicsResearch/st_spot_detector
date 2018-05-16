@@ -177,7 +177,7 @@ class State {
         this.canvas = canvas;
         this.stopped = false;
         this.stage = initialStage;
-        this.message = '';
+        this.message = 'Please wait...';
         this.uploaded = initialStage > STAGE.UPLOAD ? 1 : 0;
         this.uploadSize = this.uploaded;
         this.uploadSpeed = 0;
