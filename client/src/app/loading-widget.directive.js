@@ -213,7 +213,6 @@ function loadingWidget() {
                 state.stage = stage;
                 switch (stage) {
                 case STAGE.UPLOAD:
-                    state.msg = '';
                     state.uploadSpeed =
                             (data.loaded - state.uploaded) *
                             (1000 / (time - state.timestamp));
@@ -221,7 +220,6 @@ function loadingWidget() {
                     state.uploadSize = data.total;
                     break;
                 case STAGE.DOWNLOAD:
-                    state.msg = '';
                     state.downloadSpeed =
                             (data.loaded - state.downloaded) *
                             (1000 / (time - state.timestamp));
