@@ -6,7 +6,7 @@ from functools import reduce
 import numpy as np
 
 
-def chunks_of(n, list_):
+def chunks_of(length, list_):
     """
     Splits list into sublists, each of length n. If the length of the list is
     not divisible by n, the last sublist will have length len(list) % n. The
@@ -18,8 +18,8 @@ def chunks_of(n, list_):
     # convert to numpy array first, since slicing in numpy is O(1)
     list_ = np.array(list_)
     while list_.size > 0:
-        yield list_[:n].tolist()
-        list_ = list_[n:]
+        yield list_[:length].tolist()
+        list_ = list_[length:]
 
 
 def bits_to_int(list_):
