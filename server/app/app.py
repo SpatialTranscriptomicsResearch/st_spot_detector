@@ -90,7 +90,6 @@ def _progress_request(route):
                     type='error',
                     data=str(err),
                 )))
-            socket.close()
         return _wrapper
     return _decorator
 
