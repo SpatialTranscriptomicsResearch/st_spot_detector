@@ -41,5 +41,7 @@ export const SPOT_OPACITY_DEF = SPOT_OPACITIES[
     Math.trunc(SPOT_OPACITIES.length / 2)];
 
 // Options for the loading widget
-export const LOADING_FPS = 60;
-export const LOADING_TWEEN_TIME = 1000;
+export const LOADING_FPS          = 60;
+export const LOADING_HIST_SIZE    = 1000;
+export const LOADING_MEASURE_TIME = 5000;
+export const LOADING_TWEEN_TIME   = 1000;
