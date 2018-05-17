@@ -80,6 +80,11 @@ def _progress_request(route):
                             total=response_size,
                         ),
                     )))
+                await socket.send(ENC(dict(
+                    type='state',
+                    data='END',
+                )))
+                await socket.recv()
             except ClientError as err:
                 await socket.send(ENC(dict(
                     type='error',

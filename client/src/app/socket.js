@@ -65,6 +65,19 @@ function send(url, data, callback) {
             case 'error':
                 error = message.data;
                 break;
+            case 'state':
+                switch (message.data) {
+                case 'END':
+                    // "ping" server to let it know that we've received the END
+                    // message and are ready to close the connection.
+                    // the server will wait for our response before closing the
+                    // connection in order to avoid connection timeouts.
+                    socket.send('');
+                    break;
+                default:
+                    // ignore
+                }
+                break;
             default:
                 // ignore
             }
