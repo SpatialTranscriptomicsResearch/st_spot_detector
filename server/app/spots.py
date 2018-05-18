@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from functools import partial
 import itertools as it
-import warnings
 
-from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
 
 from .circle_detector import CircleDetector, DetectionType
 
-warnings.simplefilter('ignore', Image.DecompressionBombWarning)
-Image.MAX_IMAGE_PIXELS=None
 
-circle_detector = CircleDetector()
+CIRCLE_DETECTOR = CircleDetector()
+
 
 class Spots:
     """Holds the spot data. These spots are stored with positions relative
@@ -30,12 +26,12 @@ class Spots:
         self.br = [0, 0]
 
     def wrap_spots(self):
-        spot_dictionary = {
+        """Wraps detected spot positions and calibration coordinates in dict"""
+        return {
             'positions': self.spots.tolist(),
             'tl': self.tl.tolist(),
             'br': self.br.tolist(),
         }
-        return spot_dictionary
 
     def create_spots_from_keypoints(self, keypoints, thresholded_image):
         """Takes keypoints generated from opencv spot detection and
@@ -50,30 +46,32 @@ class Spots:
 
         spots = np.array(list(zip(*[x.pt + (x.size,) for x in keypoints])))
 
-        labels = [
-            KMeans(n_clusters=k).fit_predict(np.transpose([zs]))
-            for k, zs in zip(self.array_size, spots)
-        ]
         xmeans, ymeans = [
             np.sort([np.mean(zs[c == k]) for k in range(n)])
-            for zs, n, c in zip(spots, self.array_size, labels)
+            for zs, n, c in zip(
+                spots,
+                self.array_size,
+                [
+                    KMeans(n_clusters=k).fit_predict(np.transpose([zs]))
+                    for k, zs in zip(self.array_size, spots)
+                ]
+            )
         ]
 
-        def bin_search(xs, x):
-            # pylint: disable=missing-docstring
-            def do(l, h):
+        def _bin_search(xs, x):
+            def _do(l, h):
                 if h - l == 1:
                     return l, h
                 m = (h + l) // 2
                 if xs[m] >= x:
-                    return do(l, m)
-                return do(m, h)
-            l, h = do(0, len(xs) - 1)
+                    return _do(l, m)
+                return _do(m, h)
+            l, h = _do(0, len(xs) - 1)
             return h if xs[h] - x < x - xs[l] else l
 
         bins = np.zeros(self.array_size)
         for x, y, _ in zip(*spots):
-            bins[bin_search(xmeans, x), bin_search(ymeans, y)] += 1
+            bins[_bin_search(xmeans, x), _bin_search(ymeans, y)] += 1
 
         missing_spots = []
         for x, y in it.product(*map(range, self.array_size)):
@@ -84,7 +82,7 @@ class Spots:
 
         for x, y in missing_spots:
             for res in (
-                    circle_detector.detect_spot(
+                    CIRCLE_DETECTOR.detect_spot(
                         t,
                         image_pixels,
                         (xmeans[x], ymeans[y]),

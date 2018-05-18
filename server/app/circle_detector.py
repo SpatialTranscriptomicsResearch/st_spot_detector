@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
-from PIL import Image, ImageDraw
+from enum import Enum
 
-class DetectionType:
+import numpy as np
+
+class DetectionType(Enum):
     EDGES = 1
     WHITENESS = 2
 
@@ -12,6 +13,7 @@ class CircleDetector:
     given pixel array.
     """
 
+    # pylint: disable=bad-whitespace
     __directions = [
         ( 1.0,  0.0),
         ( 1.0,  1.0),
@@ -191,7 +193,7 @@ class CircleDetector:
 
         edges = [edge for edge in edges if edge is not None] # remove all "None"s
         return edges
-        
+
     def __circle_from_edges(self, edges):
         """Given an array of edges, determine if they form a circle or not
         based on the distances of the edges from their centre.
@@ -228,7 +230,7 @@ class CircleDetector:
         pixels = self.__get_surrounding_pixels(position, self.__white_search_radius)
         for pixel in pixels:
             whiteness += self.__intensity_at(image_pixels, pixel)
-            
+
         whiteness_avg = float(whiteness) / float(len(pixels))
         if(whiteness_avg < self.__whiteness_threshold):
             return position

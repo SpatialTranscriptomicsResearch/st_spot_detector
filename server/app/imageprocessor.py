@@ -3,31 +3,34 @@
 
 import base64
 import io
+import warnings
+
 import cv2
+from PIL import Image, ImageOps
 import numpy
 
-from PIL import Image, ImageOps, ImageEnhance
 
-import warnings
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
-Image.MAX_IMAGE_PIXELS=None
+Image.MAX_IMAGE_PIXELS = None
+
 
 URI_HEADER = 'data:image/jpeg;base64,'
 
-def validate_jpeg_URI(jpeg_URI):
+
+def validate_jpeg_uri(jpeg_uri):
     """Checks that it is a valid base64-encoded jpeg URI."""
-    valid = (jpeg_URI.find(URI_HEADER) == 0)
+    valid = (jpeg_uri.find(URI_HEADER) == 0)
     return valid
 
-def jpeg_URI_to_Image(jpeg_URI):
+def jpeg_uri_to_image(jpeg_uri):
     """Take a jpeg base64-encoded URI and return a PIL Image object."""
     # remove 'data:image/jpeg;base64,' and decode the string
-    jpeg_data = base64.b64decode(jpeg_URI[23:])
+    jpeg_data = base64.b64decode(jpeg_uri[23:])
     # stream the data as a bytes object and open as an image
     image = Image.open(io.BytesIO(jpeg_data))
     return image
 
-def Image_to_jpeg_URI(image):
+def image_to_jpeg_uri(image):
     """Take a PIL Image object and return a jpeg base64-encoded URI."""
     # save the image to a byte stream encoded as jpeg
     jpeg_data = io.BytesIO()
@@ -69,12 +72,12 @@ def tile_image(image, tile_width, tile_height):
             cropped_image = image.crop(
                 tuple(crop_start + crop_stop))
 
-            new_row.append(Image_to_jpeg_URI(cropped_image))
+            new_row.append(image_to_jpeg_uri(cropped_image))
         tiles.append(new_row)
 
     return tiles
 
-def apply_BCT(image, apply_thresholding=True):
+def apply_bct(image, apply_thresholding=True):
     """Performs colour invert on a PIL image, then converts it to an OpenCV
     image and applies automatic brightness and contrast equalisation (CLAHE) and
     thresholding, then converts it back and returns a processed PIL Image.
@@ -86,7 +89,7 @@ def apply_BCT(image, apply_thresholding=True):
     image = numpy.array(image.convert('L'))
 
     # create a CLAHE object
-    clahe = cv2.createCLAHE(clipLimit=20.0, tileGridSize=(1,1))
+    clahe = cv2.createCLAHE(clipLimit=20.0, tileGridSize=(1, 1))
 
     image = clahe.apply(image)
 
@@ -110,12 +113,10 @@ def detect_keypoints(image):
     """
     image = numpy.array(image.convert('L'))
 
-    height, width = image.shape
-
     params = cv2.SimpleBlobDetector_Params()
     params.thresholdStep = 5.0
     params.minThreshold = 170.0
-    params.maxThreshold = params.minThreshold + 50.0;
+    params.maxThreshold = params.minThreshold + 50.0
     params.filterByArea = True
     params.minArea = 800
     params.maxArea = 5000
@@ -132,7 +133,7 @@ def resize_image(image, max_size):
     """
     width, height = image.size
     aspect_ratio = float(width) / float(height)
-    if(aspect_ratio >= 1.0):
+    if aspect_ratio >= 1.0:
         new_width = max_size[0]
         new_height = int(float(new_width) / aspect_ratio)
     else:

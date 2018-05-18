@@ -1,3 +1,6 @@
-numpy==1.11.1
-opencv-python==3.1.0.2
-Pillow==3.3.1
+numpy==1.14.*
+opencv-python==3.4.*
+Pillow==5.1.*
+sanic==0.7.*
+scikit-learn==0.18.*
+scipy==1.0.*

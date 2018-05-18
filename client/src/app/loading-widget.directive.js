@@ -5,9 +5,12 @@
  */
 
 import $ from 'jquery';
+import _ from 'lodash';
 
 import {
     LOADING_FPS as FPS,
+    LOADING_HIST_SIZE as HIST_SIZE,
+    LOADING_MEASURE_TIME as MEASURE_TIME,
     LOADING_TWEEN_TIME as TWEEN_TIME,
 } from './config';
 
@@ -103,7 +106,26 @@ function getAnimators(state) {
         return [m, n - (60 * m)];
     };
 
-    const showRateInfo = (rate, remaining) => {
+    const computeRate = () => {
+        const lagged = _.first(_.map(
+            _.takeRightWhile(
+                state.history,
+                s => s.stage === state.stage &&
+                    s.timestamp > state.timestamp - MEASURE_TIME,
+            ),
+            s => [s.timestamp, s.loaded],
+        ));
+        if (lagged) {
+            const [laggedTime, laggedLoaded] = lagged;
+            return (state.loaded - laggedLoaded) *
+                (1000 / (state.timestamp - laggedTime));
+        }
+        return 0;
+    };
+
+    const showRateInfo = () => {
+        const rate = computeRate();
+        const remaining = state.total - state.loaded;
         const [fmtRate, unit] = fmtBytes(rate);
         const [m, s] = fmtTime(remaining / rate);
         return [
@@ -122,21 +144,14 @@ function getAnimators(state) {
                 case STAGE.DOWNLOAD:
                     return 'Downloading';
                 default:
-                    return 'Waiting for response...';
+                    return state.message;
                 }
             })();
             const text = (() => {
                 switch (state.stage) {
                 case STAGE.UPLOAD:
-                    return showRateInfo(
-                        state.uploadSpeed,
-                        state.uploadSize - state.uploaded,
-                    );
                 case STAGE.DOWNLOAD:
-                    return showRateInfo(
-                        state.downloadSpeed,
-                        state.downloadSize - state.downloaded,
-                    );
+                    return showRateInfo();
                 default: {
                     const n = Math.trunc((Date.now() / 500)) % 20;
                     const m = n > 10 ? 20 - n : n;
@@ -151,19 +166,15 @@ function getAnimators(state) {
         (scene, prevTime, time) => {
             const { uploadProgress, downloadProgress } = scene;
             const dt = Math.min((time - state.timestamp) / TWEEN_TIME, 1);
-            const tweenProgress = (x, y) => {
-                const d = y - x;
-                return x + (d * (1 - ((1 - dt) ** 2)));
-            };
+            const tweenFnc = _.curry((x, y) => x + ((y - x) * (1 - ((1 - dt) ** 2))));
+            const tweenFncPartial = tweenFnc(_, state.loaded / Math.max(1, state.total));
             return Object.assign(scene, {
-                uploadProgress: tweenProgress(
-                    uploadProgress,
-                    state.uploaded / Math.max(1, state.uploadSize),
-                ),
-                downloadProgress: tweenProgress(
-                    downloadProgress,
-                    state.downloaded / Math.max(1, state.downloadSize),
-                ),
+                uploadProgress: state.stage === STAGE.UPLOAD
+                    ? tweenFncPartial(uploadProgress)
+                    : state.stage > STAGE.UPLOAD,
+                downloadProgress: state.stage === STAGE.DOWNLOAD
+                    ? tweenFncPartial(downloadProgress)
+                    : state.stage > STAGE.DOWNLOAD,
             });
         },
     ];
@@ -177,12 +188,9 @@ class State {
         this.canvas = canvas;
         this.stopped = false;
         this.stage = initialStage;
-        this.uploaded = initialStage > STAGE.UPLOAD ? 1 : 0;
-        this.uploadSize = this.uploaded;
-        this.uploadSpeed = 0;
-        this.downloaded = 0;
-        this.downloadSize = 0;
-        this.downloadSpeed = 0;
+        this.message = 'Please wait...';
+        this.loaded = 0;
+        this.total = 1;
         this.timestamp = Date.now();
         this.animator = animate(
             {
@@ -195,6 +203,7 @@ class State {
             getAnimators(this),
             getRenderer(this.canvas),
         );
+        this.history = [];
     }
 }
 
@@ -206,32 +215,32 @@ function loadingWidget() {
                 initialStage,
             });
 
-            scope.update = (state, {
-                stage,
-                loaded,
-                total,
-            }) => {
+            scope.update = (state, data) => {
+                const { stage } = data;
                 const time = Date.now();
+
+                const oldState = _.clone(state);
+                state.history = _.clone(state.history);
+                state.history.push(oldState);
+                if (state.history.length > HIST_SIZE) {
+                    state.history.shift();
+                }
+                state.timestamp = time;
                 state.stage = stage;
+
                 switch (stage) {
                 case STAGE.UPLOAD:
-                    state.uploadSpeed =
-                            (loaded - state.uploaded) *
-                            (1000 / (time - state.timestamp));
-                    state.uploaded = loaded;
-                    state.uploadSize = total;
-                    break;
                 case STAGE.DOWNLOAD:
-                    state.downloadSpeed =
-                            (loaded - state.downloaded) *
-                            (1000 / (time - state.timestamp));
-                    state.downloaded = loaded;
-                    state.downloadSize = total;
+                    state.loaded = data.loaded;
+                    state.total = data.total;
+                    break;
+                case STAGE.WAIT:
+                    state.message = data.message;
                     break;
                 default:
                     break;
                 }
-                state.timestamp = time;
+
                 return state;
             };
 
