@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Methods related to image processing."""
 
-import base64
-import io
+from base64 import b64encode
+from io import BytesIO
 import warnings
 
 import cv2
@@ -13,34 +13,6 @@ import numpy
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = None
 
-
-URI_HEADER = 'data:image/jpeg;base64,'
-
-
-def validate_jpeg_uri(jpeg_uri):
-    """Checks that it is a valid base64-encoded jpeg URI."""
-    valid = (jpeg_uri.find(URI_HEADER) == 0)
-    return valid
-
-def jpeg_uri_to_image(jpeg_uri):
-    """Take a jpeg base64-encoded URI and return a PIL Image object."""
-    # remove 'data:image/jpeg;base64,' and decode the string
-    jpeg_data = base64.b64decode(jpeg_uri[23:])
-    # stream the data as a bytes object and open as an image
-    image = Image.open(io.BytesIO(jpeg_data))
-    return image
-
-def image_to_jpeg_uri(image):
-    """Take a PIL Image object and return a jpeg base64-encoded URI."""
-    # save the image to a byte stream encoded as jpeg
-    jpeg_data = io.BytesIO()
-    image.save(jpeg_data, 'JPEG', quality=100)
-
-    # encode the data into a URI with the header added
-    jpeg_string = base64.b64encode(jpeg_data.getvalue())
-    jpeg_string = URI_HEADER + jpeg_string.decode()
-
-    return jpeg_string
 
 def tile_image(image, tile_width, tile_height):
     """Takes a jpeg image, scales its size down and splits it up
@@ -72,7 +44,12 @@ def tile_image(image, tile_width, tile_height):
             cropped_image = image.crop(
                 tuple(crop_start + crop_stop))
 
-            new_row.append(image_to_jpeg_uri(cropped_image))
+            data = BytesIO()
+            cropped_image.save(data, 'JPEG', quality=100)
+            new_row.append(
+                'data:image/jpeg;base64,'
+                f'{b64encode(data.getvalue()).decode()}'
+            )
         tiles.append(new_row)
 
     return tiles

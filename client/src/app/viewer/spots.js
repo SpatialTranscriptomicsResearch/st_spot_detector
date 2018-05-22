@@ -127,7 +127,7 @@ class SpotManager {
             _.filter(_.map(spots, _.last), x => x > 0),
         ) / spots.length;
         this.spots = _.map(spots, props => this.createSpot(...props));
-        if (tissueMask !== null) {
+        if (tissueMask) {
             this.loadMask(tissueMask);
         }
     }

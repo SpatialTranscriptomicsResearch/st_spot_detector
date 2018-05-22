@@ -56,7 +56,7 @@
                     <span class='fa fa-pencil-square-o'></span>
                 </button>
                 <!-- Exporter -->
-                <button ng-click='menuButtonClick("button_exporter", "state_adjustment")'
+                <button ng-click='menuButtonClick("button_exporter")'
                         type='button'
                         ng-class='{disabled: menuButtonDisabled.button_exporter, active: data.button=="button_exporter"}'
                         class='btn btn-secondary'
@@ -146,7 +146,7 @@
                             <button ng-click='editAssignments()' type='button' class='btn btn-sm btn-light btn-block'>Edit assignments</button>
                             <button ng-click='selectInsideTissue()' ng-show='hasHE() && spotManager.selected.size == 0' type='button' class='btn btn-sm btn-primary btn-block'>Select spots inside tissue</button>
                             <button ng-click='clearSelection()' ng-show='spotManager.selected.size > 0' type='button' class='btn btn-sm btn-secondary btn-block'>Clear selection</button>
-                            <button ng-click='deleteSpots()' ng-show='spotManager.selected.size > 0' type='button' class='btn btn-sm btn-danger btn-block'>Delete selection</button>
+                            <button ng-click='deleteSpots()' type='button' class='btn btn-sm btn-danger btn-block'>Delete selection</button>
                         </div>
                         <div ng-show='visible.spotAdjuster == "adjust"' style='margin-top: 0'>
                             <button ng-click='finishAddSpots()' type='button' class='btn btn-sm btn-secondary btn-block'>Go back</button>
@@ -266,12 +266,7 @@
                 </p>
             </a>
         </div>
-        <loading-widget exit='exitLoading'
-                        init='initLoading'
-                        update='updateLoading'
-                        ng-show='visible.loadingWidget'
-                        id='loading-widget'
-                        />
+        <div id='loading' ng-show='visible.loading'></div>
     </div>
 </body>
 </html>
