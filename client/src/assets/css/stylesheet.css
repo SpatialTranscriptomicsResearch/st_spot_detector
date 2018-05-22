@@ -313,16 +313,27 @@ hr {
     background-color: #000000;
 }
 
-#loading-widget {
-    position: absolute;
-    width: 70%;
-    height: 10%;
-    top: 25%;
-    left: 15%;
+#loading {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    width: 50%;
+    margin: 0 auto;
+    overflow: hidden;
 }
 
-#loading-widget > canvas {
-    position: absolute;
+#loading > canvas {
     width: 100%;
-    height: 100%;
+    height: 2.5rem;
+    margin: 1rem 0;
+}
+
+#loading > p {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 10%;
+    padding: 1rem;
+    background: white;
 }
