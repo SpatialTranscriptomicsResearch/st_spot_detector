@@ -131,31 +131,22 @@ def _async_request(route):
 
 def _get_spots(img, scale_factor, array_size):
     bct_image = ip.apply_bct(img)
-
     keypoints = ip.detect_keypoints(bct_image)
     spots = Spots(array_size, scale_factor)
     try:
         spots.create_spots_from_keypoints(keypoints, bct_image)
     except RuntimeError:
         raise ClientError('Spot detection failed.')
-
     return spots.wrap_spots()
 
 
 def _get_tissue_mask(image):
-    # Convert image to numpy matrix and preallocate the mask matrix
     image = np.array(image, dtype=np.uint8)
     mask = np.zeros(image.shape[0:2], dtype=np.uint8)
-
-    # Run tissue recognition
     recognize_tissue(image, mask)
     mask = get_binary_mask(mask)
-
-    # Encode mask to bit string
     bit_string = bits_to_ascii((mask == 255).flatten())
-
     free(mask)
-
     return bit_string
 
 
