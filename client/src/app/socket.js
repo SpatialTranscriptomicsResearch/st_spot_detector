@@ -1,98 +1,103 @@
+import _ from 'lodash';
+
 const STATUS = Object.freeze({
     SENDING:    1 << 0,
     PROCESSING: 1 << 1,
     RECEIVING:  1 << 2,
 });
 
-function send(url, data, callback) {
-    return new Promise(async (resolve, reject) => {
+function send(url, items, callback) {
+    return new Promise((resolve, reject) => {
         /* eslint-disable no-await-in-loop */
-        const whileTrue = async (f) => {
-            while (f()) {
-                await new Promise(r => setTimeout(r, 100));
-            }
-        };
-
         const socket = new WebSocket(url);
 
-        const sendData = async () => {
-            const payload = JSON.stringify(data);
-            const size = payload.length;
-
-            socket.send(payload);
-            await whileTrue(() => {
-                const remaining = socket.bufferedAmount;
-                callback([
-                    STATUS.SENDING,
-                    {
-                        loaded: size - remaining,
-                        total: size,
-                    },
-                ]);
-                return remaining > 0;
-            });
+        socket.onopen = async () => {
+            /* eslint-disable no-restricted-syntax */
+            for (const { type, identifier, data } of items) {
+                const packages = [`${type}:${identifier}:1`, data];
+                const uploadSize = _.sum(_.map(packages, x => x.length || x.byteLength));
+                _.each(packages, (x) => { socket.send(x); });
+                while (socket.readyState < socket.CLOSED) {
+                    callback([
+                        STATUS.SENDING,
+                        {
+                            identifier,
+                            loaded: uploadSize - socket.bufferedAmount,
+                            total: uploadSize,
+                        },
+                    ]);
+                    if (!(socket.bufferedAmount > 0)) {
+                        break;
+                    }
+                    await new Promise(r => setTimeout(r, 100));
+                }
+            }
+            socket.send('\0');
         };
 
-        await whileTrue(() =>
-            socket.readyState === socket.CONNECTING);
-
-        const transmission = sendData();
-
-        let payload = '';
-        let error = null;
-        socket.onmessage = async (e) => {
-            const message = JSON.parse(e.data);
-            await transmission;
-            switch (message.type) {
-            case 'progress':
+        let error;
+        const response = {};
+        const process = (type, identifier, data) => {
+            switch (type) {
+            case 'error':
+                error = data;
+                break;
+            case 'json':
+                response[identifier] = JSON.parse(data);
+                break;
+            case 'status':
                 callback([
                     STATUS.PROCESSING,
-                    {
-                        message: message.data,
-                    },
+                    { message: data },
                 ]);
-                break;
-            case 'package':
-                payload += message.data.payload;
-                callback([
-                    STATUS.RECEIVING,
-                    {
-                        loaded: message.data.loaded,
-                        total: message.data.total,
-                    },
-                ]);
-                break;
-            case 'error':
-                error = message.data;
-                break;
-            case 'state':
-                switch (message.data) {
-                case 'END':
-                    // "ping" server to let it know that we've received the END
-                    // message and are ready to close the connection.
-                    // the server will wait for our response before closing the
-                    // connection in order to avoid connection timeouts.
-                    socket.send('');
-                    break;
-                default:
-                    // ignore
-                }
                 break;
             default:
                 // ignore
             }
         };
 
-        await whileTrue(() => socket.readyState !== socket.CLOSED);
-
-        if (!error) {
-            try {
-                return resolve(JSON.parse(payload));
-            } catch (e) {
-                error = e;
+        let type = String();
+        let identifier = String();
+        let chunks = 0;
+        let total = 0;
+        let data = '';
+        socket.onmessage = ({ data: x }) => {
+            if (x === '\0') {
+                socket.send('');
+                return;
             }
-        }
-        return reject(error);
+            if (chunks === 0) {
+                data = '';
+                [type, identifier, chunks, total] = x.split(':');
+                total = parseInt(total, 10);
+            } else {
+                chunks -= 1;
+                data += x;
+                if (chunks === 0) {
+                    process(type, identifier, data);
+                }
+            }
+            if (type !== 'status') {
+                callback([
+                    STATUS.RECEIVING,
+                    {
+                        identifier,
+                        loaded: data.length,
+                        total,
+                    },
+                ]);
+            }
+        };
+
+        socket.onclose = () => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(response);
+            }
+        };
+
+        socket.onerror = reject;
     });
 }
 

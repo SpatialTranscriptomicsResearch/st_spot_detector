@@ -2,6 +2,7 @@
 """ Instantiates the server
 """
 
+from abc import abstractmethod
 import asyncio
 from functools import wraps
 import itertools as it
@@ -20,12 +21,8 @@ from .spots import Spots
 from .utils import bits_to_ascii, chunks_of
 
 
-MESSAGE_SIZE = 2 * (2 ** 10) ** 2
+MESSAGE_SIZE = 10 * (2 ** 10) ** 2
 TILE_SIZE = [256, 256]
-
-
-ENC = json.JSONEncoder().encode
-DEC = json.JSONDecoder().decode
 
 
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -46,50 +43,88 @@ APP.static('', '../client/dist/index.html')
 class ClientError(RuntimeError):
     pass
 
+
 class Result(Exception):
     def __init__(self, result):
         super().__init__()
         self.result = result
 
 
-def _progress_request(route):
+class Message(object):
+    # pylint: disable=missing-docstring
+    # pylint: disable=too-few-public-methods
+    @staticmethod
+    def _generate_header(response_type, identifier, chunks, length):
+        return f'{response_type}:{identifier}:{chunks}:{length}'
+    @abstractmethod
+    def chunks(self):
+        pass
+
+class Error(Message):
+    # pylint: disable=missing-docstring
+    # pylint: disable=too-few-public-methods
+    def __init__(self, message):
+        self.message = message
+    def chunks(self):
+        return [
+            self._generate_header('error', '', 1, len(self.message)),
+            self.message,
+        ]
+
+class Json(Message):
+    # pylint: disable=missing-docstring
+    # pylint: disable=too-few-public-methods
+    def __init__(self, identifier, data):
+        self.identifier = identifier
+        self.data = json.JSONEncoder().encode(data)
+    def chunks(self):
+        chunks = list(map(''.join, chunks_of(MESSAGE_SIZE, list(self.data))))
+        return [
+            self._generate_header(
+                'json',
+                self.identifier,
+                len(chunks),
+                len(self.data),
+            ),
+            *chunks,
+        ]
+
+class Status(Message):
+    # pylint: disable=missing-docstring
+    # pylint: disable=too-few-public-methods
+    def __init__(self, status):
+        self.status = status
+    def chunks(self):
+        return [
+            self._generate_header('status', '', 1, len(self.status)),
+            self.status,
+        ]
+
+
+def _async_request(route):
     def _decorator(fnc):
         @APP.websocket(route)
         @wraps(fnc)
         async def _wrapper(_req, socket, *args, **kwargs):
-            # pylint: disable=missing-docstring
-            payload = json.loads(await socket.recv())
+            async def _receive():
+                async for header in socket:
+                    if header == '\0':
+                        break
+                    [type_, identifier, chunks] = header.split(':')
+                    data = [await socket.recv() for _ in range(int(chunks))]
+                    from operator import add
+                    from functools import reduce
+                    yield [type_, identifier, reduce(add, data)]
+            async def _send(message):
+                for chunk in message.chunks():
+                    await socket.send(chunk)
             try:
-                async for progress in fnc(payload, *args, **kwargs):
-                    await socket.send(ENC(dict(
-                        type='progress',
-                        data=progress,
-                    )))
-            except Result as r:
-                sres = ENC(r.result)
-                packages = chunks_of(MESSAGE_SIZE, list(sres))
-                response_size = len(sres)
-                sent = 0
-                for data in packages:
-                    sent += len(data)
-                    await socket.send(ENC(dict(
-                        type='package',
-                        data=dict(
-                            payload=''.join(data),
-                            loaded=sent,
-                            total=response_size,
-                        ),
-                    )))
-                await socket.send(ENC(dict(
-                    type='state',
-                    data='END',
-                )))
-                await socket.recv()
+                async for message in fnc(_receive(), *args, **kwargs):
+                    await _send(message)
             except ClientError as err:
-                await socket.send(ENC(dict(
-                    type='error',
-                    data=str(err),
-                )))
+                await _send(Error(str(err)))
+            await socket.send('\0')
+            await socket.recv()
         return _wrapper
     return _decorator
 
@@ -124,8 +159,8 @@ def _get_tissue_mask(image):
     return bit_string
 
 
-@_progress_request('/run')
-async def run(data, loop=None):
+@_async_request('/run')
+async def run(packages, loop=None):
     """ Tiles the received images and runs spot and tissue detection
     """
     if loop is None:
@@ -133,17 +168,7 @@ async def run(data, loop=None):
     execute = lambda f, *args: \
         loop.run_in_executor(None, f, *args)
 
-    array_size = data.get('array_size')
-    if not (isinstance(array_size, list)
-            and len(array_size) == 2
-            and all([x > 0 for x in array_size])):
-        raise ClientError('Invalid array size')
-
-    images = data.get('images')
-    if not all(map(ip.validate_jpeg_uri, images.values())):
-        raise ClientError(
-            'Invalid image format. Please upload only jpeg images.')
-
+    array_size = []
 
     async def _do_image_tiling(image):
         tilemap = dict()
@@ -155,17 +180,20 @@ async def run(data, loop=None):
         cur = image
         for i, (l, s) in enumerate(tilemap_sizes):
             yield l, i + 1, len(tilemap_sizes)
-            cur = cur.resize(list(map(int, s)))
+            cur = await execute(lambda: cur.resize(list(map(int, s))))
             tilemap[l] = await loop.run_in_executor(
                 None, ip.tile_image, cur, *TILE_SIZE)
-        raise Result({
-            'histogram': image.histogram(),
-            'image_size': image.size,
-            'tiles': tilemap,
-            'tile_size': TILE_SIZE,
-        })
+        raise Result(dict(
+            image_size=image.size,
+            tiles=tilemap,
+            tile_size=TILE_SIZE,
+        ))
 
     async def _do_spot_detection(image):
+        if not (isinstance(array_size, list)
+                and len(array_size) == 2
+                and all([x > 0 for x in array_size])):
+            raise ClientError('Invalid array size')
         image, scale = await execute(ip.resize_image, image, [4000, 4000])
         return await execute(_get_spots, image, scale, array_size)
 
@@ -177,32 +205,32 @@ async def run(data, loop=None):
             scale=1 / scale,
         )
 
-    async def _go():
-        tiles = dict()
-        mask, spots = None, None
-        for key, image in images.items():
-            yield f'Decompressing {key} image data'
-            image = await execute(ip.jpeg_uri_to_image, image)
+    async def _process_image(identifier, image_data):
+        try:
+            yield Status(f'Inflating {identifier} image data')
+            from io import BytesIO
+            image = await execute(lambda: Image.open(BytesIO(image_data)))
+        except:
+            raise ClientError(
+                'Invalid image format. Please upload only jpeg images.')
+        try:
+            async for level, i, n in _do_image_tiling(image):
+                yield Status(f'Tiling {identifier}: level {level} ({i}/{n})')
+        except Result as r:
+            yield Status(f'Computing {identifier} histogram')
+            r.result.update(histogram=await execute(image.histogram))
+            yield Json(identifier, r.result)
 
-            try:
-                async for level, i, n in _do_image_tiling(image):
-                    yield f'Tiling {key} image: level {level} ({i}/{n})'
-            except Result as tilemap:
-                tiles.update({key: tilemap.result})
+        if identifier == 'Cy3':
+            yield Status('Detecting spots')
+            yield Json('spots', await _do_spot_detection(image))
+        elif identifier == 'HE':
+            yield Status('Computing tissue mask')
+            yield Json('mask', await _do_mask_detection(image))
 
-            if key == 'Cy3':
-                yield 'Detecting spots'
-                spots = await _do_spot_detection(image)
-            elif key == 'HE':
-                yield 'Computing tissue mask'
-                mask = await _do_mask_detection(image)
-
-        raise Result(dict(
-            tiles=tiles,
-            spots=spots,
-            tissue_mask=mask,
-        ))
-
-
-    async for msg in _go():
-        yield msg
+    async for [type_, identifier, data] in packages:
+        if type_ == 'image':
+            async for response in _process_image(identifier, data):
+                yield response
+        elif type_ == 'json_string' and identifier == 'array_size':
+            array_size = json.JSONDecoder().decode(data)
