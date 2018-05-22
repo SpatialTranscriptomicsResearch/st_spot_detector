@@ -57,13 +57,13 @@ function getRenderer(canvas) {
 
         ctx.clearRect(0, 0, ...coords(1, 1));
 
-        ctx.textAlign = 'center';
+        ctx.textAlign = 'left';
         ctx.font = '1.0em bold sans';
-        ctx.fillText(title, ...coords(0.5, 0.25));
+        ctx.fillText(title, ...coords(0.1, 0.4));
 
-        ctx.textAlign = 'center';
+        ctx.textAlign = 'right';
         ctx.font = '0.9em monospace';
-        ctx.fillText(text, ...coords(0.5, 0.50));
+        ctx.fillText(text, ...coords(0.9, 0.4));
 
         ctx.beginPath();
         ctx.moveTo(...coords(0.1, 0.75));
@@ -140,11 +140,11 @@ function getAnimators(state) {
             const title = (() => {
                 switch (state.stage) {
                 case STAGE.UPLOAD:
-                    return 'Uploading';
+                    return `${state.title}: Uploading`;
                 case STAGE.DOWNLOAD:
-                    return 'Downloading';
+                    return `${state.title}: Downloading`;
                 default:
-                    return state.message;
+                    return `${state.title}: ${state.message}`;
                 }
             })();
             const text = (() => {
@@ -181,13 +181,11 @@ function getAnimators(state) {
 }
 
 class State {
-    constructor({
-        canvas,
-        initialStage,
-    }) {
+    constructor({ canvas, title }) {
+        this.title = title;
         this.canvas = canvas;
         this.stopped = false;
-        this.stage = initialStage;
+        this.stage = STAGE.INIT;
         this.message = 'Please wait...';
         this.loaded = 0;
         this.total = 1;
@@ -196,7 +194,7 @@ class State {
             {
                 title: '',
                 text: '',
-                uploadProgress: initialStage > STAGE.UPLOAD,
+                uploadProgress: 0,
                 downloadProgress: 0,
             },
             () => this.stopped,
@@ -207,58 +205,47 @@ class State {
     }
 }
 
-function loadingWidget() {
-    return {
-        link(scope, element) {
-            scope.init = (initialStage = STAGE.INIT) => new State({
-                canvas: $('<canvas>').appendTo(element)[0],
-                initialStage,
-            });
-
-            scope.update = (state, data) => {
-                const { stage } = data;
-                const time = Date.now();
-
-                const oldState = _.clone(state);
-                state.history = _.clone(state.history);
-                state.history.push(oldState);
-                if (state.history.length > HIST_SIZE) {
-                    state.history.shift();
-                }
-                state.timestamp = time;
-                state.stage = stage;
-
-                switch (stage) {
-                case STAGE.UPLOAD:
-                case STAGE.DOWNLOAD:
-                    state.loaded = data.loaded;
-                    state.total = data.total;
-                    break;
-                case STAGE.WAIT:
-                    state.message = data.message;
-                    break;
-                default:
-                    break;
-                }
-
-                return state;
-            };
-
-            scope.exit = async (state) => {
-                state.stopped = true;
-                await state.animator;
-                $(state.canvas).remove();
-            };
-        },
-        restrict: 'E',
-        scope: {
-            /* provides */
-            exit: '=',
-            init: '=',
-            update: '=',
-        },
-    };
+function create(element, title) {
+    const canvas = $('<canvas>');
+    return [
+        new State({ canvas: canvas[0], title }),
+        canvas,
+    ];
 }
 
-export default loadingWidget;
+function update(widget, data) {
+    const { stage } = data;
+    const time = Date.now();
+
+    const oldState = _.clone(widget);
+    widget.history = _.clone(widget.history);
+    widget.history.push(oldState);
+    if (widget.history.length > HIST_SIZE) {
+        widget.history.shift();
+    }
+    widget.timestamp = time;
+    widget.stage = stage;
+
+    switch (stage) {
+    case STAGE.UPLOAD:
+    case STAGE.DOWNLOAD:
+        widget.loaded = data.loaded;
+        widget.total = data.total;
+        break;
+    case STAGE.WAIT:
+        widget.message = data.message;
+        break;
+    default:
+        break;
+    }
+
+    return widget;
+}
+
+async function stop(widget) {
+    widget.stopped = true;
+    await widget.animator;
+}
+
+export { create, update, stop };
 export { STAGE as LOAD_STAGE };

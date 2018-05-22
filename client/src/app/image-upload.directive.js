@@ -28,7 +28,7 @@ function imageUpload() {
                     });
                 }, false);
                 if(img) {
-                    reader.readAsDataURL(img);
+                    reader.readAsArrayBuffer(img);
                 }
             }
         });
@@ -47,7 +47,7 @@ function imageUpload() {
                     });
                 }, false);
                 if(img) {
-                    reader.readAsDataURL(img);
+                    reader.readAsArrayBuffer(img);
                 }
             }
         });

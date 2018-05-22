@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import _ from 'lodash';
 import math from 'mathjs';
 
@@ -5,7 +6,12 @@ import imageToggleCy from 'assets/images/imageToggleCy3.png';
 import imageToggleHE from 'assets/images/imageToggleHE.png';
 
 import LayerManager from './viewer/layer-manager';
-import { LOAD_STAGE } from './loading-widget.directive';
+import {
+    create as createLWidget,
+    update as updateLWidget,
+    stop as stopLWidget,
+    LOAD_STAGE,
+} from './loading-widget';
 import { error, warning } from './modal';
 import send, { SOCKET_STATUS } from './socket';
 import { setCursor } from './utils';
@@ -72,7 +78,7 @@ const main = [
             menuBarPanel: Boolean(),
             zoomBar: Boolean(),
             imageToggleBar: Boolean(),
-            loadingWidget: Boolean(),
+            loading: Boolean(),
             canvas: Boolean(),
             undo: {
                 undo: Boolean(),
@@ -194,20 +200,20 @@ const main = [
             if($scope.data.state === 'state_start') {
                 $scope.visible.menuBar = true;
                 $scope.visible.zoomBar = false;
-                $scope.visible.loadingWidget = false;
+                $scope.visible.loading = false;
                 $scope.visible.canvas = false;
                 setCursor('default');
             }
             else if($scope.data.state === 'state_upload') {
                 $scope.visible.menuBar = false;
                 $scope.visible.zoomBar = false;
-                $scope.visible.loadingWidget = true;
+                $scope.visible.loading = true;
                 $scope.visible.canvas = false;
             }
             else if($scope.data.state === 'state_alignment') {
                 $scope.visible.menuBar = true;
                 $scope.visible.zoomBar = true;
-                $scope.visible.loadingWidget = false;
+                $scope.visible.loading = false;
                 $scope.visible.canvas = true;
                 $scope.visible.imageToggleBar = false;
 
@@ -220,7 +226,7 @@ const main = [
             else if($scope.data.state === 'state_adjustment') {
                 $scope.visible.menuBar = true;
                 $scope.visible.zoomBar = true;
-                $scope.visible.loadingWidget = false;
+                $scope.visible.loading = false;
                 $scope.visible.canvas = true;
 
                 $scope.collisionTracker.update();
@@ -298,44 +304,98 @@ const main = [
 
                 const oldState = $scope.data.state;
 
-                const loadingState = $scope.initLoading();
+                const lel = $('#loading');
+                lel.empty();
+
+                const LWidgets = {};
+                const update = (name, state) => {
+                    const getWidget = () => {
+                        if (!(name in LWidgets)) {
+                            const ret = createLWidget(lel, name);
+                            const [, canvas] = ret;
+                            LWidgets[name] = ret;
+                            canvas.hide().appendTo(lel).slideDown(500);
+                            return ret;
+                        }
+                        return LWidgets[name];
+                    };
+                    const [widget, canvas] = getWidget();
+                    updateLWidget(widget, state);
+                    if (state.stage === LOAD_STAGE.DOWNLOAD &&
+                            state.loaded === state.total) {
+                        stopLWidget(widget);
+                        canvas.slideUp(500, () => { canvas.remove(); });
+                    }
+                };
+
+                const addStatusMessage = (message) => {
+                    $(`<p>${message}<i class="fa fa-spinner fa-pulse"></i></p>`)
+                        .hide().prependTo(lel).slideDown(500);
+                };
+
+                const removeStatusMessages = () => {
+                    const statusMessages = lel.children('p');
+                    statusMessages.children('i')
+                        .removeClass('fa-spinner fa-pulse')
+                        .addClass('fa-check');
+                    $.when(statusMessages.slideUp(500))
+                        .done(() => { statusMessages.remove(); });
+                };
+
                 $scope.updateState('state_upload');
 
                 $q.when(
                     send(
                         `${window.location.origin.replace(/^http/, 'ws')}/run`,
-                        {
-                            images: _.reduce(
-                                [
-                                    ['Cy3', $scope.data.cy3Image],
-                                    ['HE', $scope.data.heImage],
-                                ],
-                                (a, [k, v]) => {
-                                    if (v) { a[k] = v; }
-                                    return a;
-                                },
-                                {},
+                        [
+                            {
+                                type: 'json_string',
+                                identifier: 'array_size',
+                                data: JSON.stringify([
+                                    $scope.calibrator.width,
+                                    $scope.calibrator.height,
+                                ]),
+                            },
+                            ..._.filter(
+                                _.map(
+                                    [
+                                        ['Cy3', $scope.data.cy3Image],
+                                        ['HE', $scope.data.heImage],
+                                    ],
+                                    ([identifier, data]) => {
+                                        if (data.length === 0) {
+                                            return undefined;
+                                        }
+                                        return { type: 'image', identifier, data };
+                                    },
+                                ),
+                                _.identity,
                             ),
-                            array_size: [
-                                $scope.calibrator.width,
-                                $scope.calibrator.height,
-                            ],
-                        },
+                        ],
                         ([status, data]) => {
+                            if (status & (SOCKET_STATUS.RECEIVING | SOCKET_STATUS.PROCESSING)) {
+                                removeStatusMessages();
+                            }
                             switch (status) {
                             case SOCKET_STATUS.SENDING:
-                                $scope.updateLoading(
-                                    loadingState,
-                                    {
-                                        stage: LOAD_STAGE.UPLOAD,
-                                        loaded: data.loaded,
-                                        total: data.total,
-                                    },
-                                );
+                                if (data.identifier !== 'array_size') {
+                                    const state = data.loaded === data.total
+                                        ? {
+                                            stage: LOAD_STAGE.WAIT,
+                                            message: 'Waiting',
+                                        }
+                                        : {
+                                            stage: LOAD_STAGE.UPLOAD,
+                                            loaded: data.loaded,
+                                            total: data.total,
+                                        }
+                                    ;
+                                    update(data.identifier, state);
+                                }
                                 break;
                             case SOCKET_STATUS.RECEIVING:
-                                $scope.updateLoading(
-                                    loadingState,
+                                update(
+                                    data.identifier,
                                     {
                                         stage: LOAD_STAGE.DOWNLOAD,
                                         loaded: data.loaded,
@@ -344,13 +404,7 @@ const main = [
                                 );
                                 break;
                             case SOCKET_STATUS.PROCESSING:
-                                $scope.updateLoading(
-                                    loadingState,
-                                    {
-                                        stage: LOAD_STAGE.WAIT,
-                                        message: data.message,
-                                    },
-                                );
+                                addStatusMessage(data.message);
                                 break;
                             default:
                                 // ignore
@@ -359,9 +413,9 @@ const main = [
                     ),
                 ).then(
                     (result) => {
-                        $scope.receiveTilemap(result.tiles);
-                        $scope.loadSpots(result.spots, result.tissue_mask);
-                        $scope.data.spotTransformMatrx = result.spots.transform_matrix;
+                        const tiles = _.omit(result, ['spots', 'mask']);
+                        $scope.receiveTilemap(tiles);
+                        $scope.loadSpots(result.spots, result.mask);
                         $scope.data.cy3Active = true;
                         $scope.menuButtonDisabled.button_exporter = false;
                         if ($scope.hasHE()) {
@@ -378,11 +432,8 @@ const main = [
                         $scope.updateState(oldState);
                     },
                 ).finally(
-                    () => {
-                        /* eslint-disable no-new */
-                        $scope.exitLoading(loadingState);
-                        new Notification('Spot detection complete!');
-                    },
+                    /* eslint-disable no-new */
+                    () => { new Notification('Spot detection complete!'); },
                 );
             }
         };
