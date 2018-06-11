@@ -1,0 +1,272 @@
+<!doctype html>
+
+<html lang='en'>
+<head>
+	<meta charset='utf-8'>
+	<title>ST Spot Detector</title>
+	<meta name='description' content='Spatial Transcriptomics Spot Detector'>
+    <link rel="shortcut icon" type="image/x-icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4QMJDCg4VyG4jQAABQxJREFUWMOVl0uMFFUUhr9TXf2cR48kMjBAwIAaHokTmGGhUcJOxURDQgI7WbFENrrR6I6wkuhOFyQsNMHolgSjZBYEXAgKM4AgBCYOzPAYGIZ5dFd3Hxenbld1TfXMcJNKV1fXvfc//zn3P39LVxdKOBQQsav5TGM/pg1JfJWF9xkP6o3YWrF1/fjaIuBnoLsMG9ZDoQCjozA+DrVaCJDo0y2UBCwCWR/6+2HjRshkYH4e/rkBV69CoxED2dmFugVKRThwAL74HMo9Qq1m0E6dgk8/g5kZ2z2NjDhzxQJ8+BF0lIRqVanXoKEWxPNp+PU3uwfw3KSsDwcPwtGjMF8RHj5U5udhbh72vA/ff2eRaIx5kXQgu3ZBRwlqgSIY/SLg+1AsQf8b0fuem9TbC0eOwP37sLJX6e2Fclkod0OhCLt3w47t0aYay2McSKkIq/tCmgWCIIxWwQtTsylMSwuAHdthZAQ6OwU/I0i4qohQLEKlAvv2LSzSJAvlMmgDqlVo1COgtYalQTxjIpdNAHh5JQSB0PNSerlnMrBmDUuOWg3LeVj1AmT8WPGKPXeF6LnKvXkTSiVDnRyqoCpcu94+cjempqBWN7pdtH4mvDwDMjcH1SABYHgYVqzQ8JhouKlSbyizM0I+r/z4Q+tZdtHER6UK166D51kqVE0Hmsfch4uXXFAxAE+n4PAn0NEBZ3+H69csmolxyBeUb76FW7ejiartxenKZbhzF7yMpU6AbNZS8dff9luzgLu6o2U8z4Tjqy9hYAB6ekyEjh2DUz+FYqQL85lWlJ4Hq3ph7VrwszA7A//egunpViWUri67dxNFbHI+b3RV5o3WpsolZJs2opQ23KYOtCr4mtR8oF6H2dmUfrDMkWQlDYTj3ZPUim/N74J3XE/Q5YNLvqdxJUyd0CbytOaYBiT5PZ7ippQDni4TuSSYkBRmFou6HVNecjFJoT154iTxLCnPizGRjMAjZeE0/xH3AbrcTZZgRxV8WcLwpLEhiejbzpPFVVPSijBOp7tPpmA5AS8XmK8JcyFEEopCUHtxuuMB+H7UJRcUJi4FErXcLZvh8GHYMWBtdWgIvj4OY2OtCrbUxq9tgi1bzZ6BSfDlK3B3NNHQnCfM+rB/Pxw/DpOTwvNp4yaXt1b68UHlwh9R8bTrAwK88zasW2eBxX1BUIPbt+HPi7F1OrtQz7PIz56FC+chXxD6+5Vs1qibmRF8XxkchPGJ9lIrAq+/ao2s3jA7lqwpVTh3Dsbuhe3YWfFDh+DBA3M9A4NKsSj4vlAoCKUOxc/AzsFWqpPeQAQ2b7XNq1XrKfU61EJfGARRx202PoBcDnbuhPH7sH4DZP3W8PJ5c8rbti1ejPm8PQ8Coz6o2uYNjcxJow6dnbG27XJRrUKuIDybShGNBgSBMjMblW9aE6tUIKjYWl7Y1t37Lm1eptXUeGCIT5+GNX3K2D2o1xXV6Jp8YsiHhlKakrbm99nzmMr5BsLLhJdnwCYnY4AEM5EnThhto6PCyDA8egSPH9tfs5s3hP/GYHik/dFzQC5dtGf5fLS5eHbEczkI6uY/m77BHUN3Ek6ehMnH8OSprd5TVrq7hb17jR0Xui6ioH198NabkZj52dDkzMH58zAxkbBkTgJFoLMD9nwA771rFJ45Az//Yv/p2nkDSfmHnMvChldg9SpjeGIC7t4xO95yehyApC+MU9sUDV4MxGKe0I3/AVEuaKY27mOEAAAAAElFTkSuQmCC"/>
+</head>
+
+<body class='fullscreen' ng-app='stSpots' ng-strict-di='true'>
+    <div class='fullscreen' ng-controller='MainController'>
+        <div viewer id='viewer' class='fullscreen' ng-show='visible.canvas'>
+            <div id='layers' class='fullscreen'></div>
+            <canvas id='fg' class='fullscreen'>
+                If you're seeing this message, then either HTML5 canvasses are not supported in your browser, or you have JavaScript disabled.
+            </canvas>
+        </div>
+        <div ng-show='visible.menuBar' class='menu-wrapper'>
+            <!-- Menu Bar -->
+            <div class='menu-bar btn-group btn-group-vertical' role='group'>
+                <!-- Uploader -->
+                <button ng-click='menuButtonClick("button_uploader", "state_start")'
+                        type='button'
+                        ng-class='{active: data.button=="button_uploader"}'
+                        class='btn btn-secondary'
+                        ng-style="{'border-top-right-radius': visible.menuBarPanel ? '0px' : '4px'}"
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Image upload'
+                        >
+                    <span class='fa fa-file-image-o'></span>
+                <!-- Aligner -->
+                <button ng-click='menuButtonClick("button_aligner", "state_alignment")'
+                        type='button'
+                        ng-class='{disabled: menuButtonDisabled.button_aligner, active: data.button=="button_aligner"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Image adjustment'
+                        >
+                    <span class='fa fa-adjust'></span>
+                </button>
+                <!-- Adjuster -->
+                <button ng-click='menuButtonClick("button_adjuster", "state_adjustment")'
+                        type='button'
+                        ng-class='{disabled: menuButtonDisabled.button_adjuster, active: data.button=="button_adjuster"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Spot adjustment'
+                        >
+                    <span class='fa fa-pencil-square-o'></span>
+                </button>
+                <!-- Exporter -->
+                <button ng-click='menuButtonClick("button_exporter")'
+                        type='button'
+                        ng-class='{disabled: menuButtonDisabled.button_exporter, active: data.button=="button_exporter"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Data export'
+                        >
+                    <span class='fa fa-floppy-o'></span>
+                </button>
+                <!-- Settings -->
+                <button ng-click='menuButtonClick("button_settings")'
+                        type='button'
+                        ng-class='{active: data.button=="button_settings"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Settings'
+                        >
+                    <span class='fa fa-cog'></span>
+                </button>
+                <!-- Help -->
+                <button ng-click='menuButtonClick("button_help")'
+                        type='button'
+                        ng-class='{active: data.button=="button_help"}'
+                        class='btn btn-secondary'
+                        data-toggle='tooltip'
+                        data-trigger='hover'
+                        data-placement='right'
+                        title='Help'
+                        >
+                    <span class='fa fa-question-circle'></span>
+                </button>
+            </div>
+            <!-- Menu Bar Panel -->
+            <div ng-show='visible.menuBarPanel' class='menu-bar-panel'>
+                <h1 class='menu-bar-panel-title'>{{ getPanelTitle(data.button) }}</h1>
+                <hr>
+                <!-- Menu Bar Panel Button-based HTMLs -->
+                <!-- Uploader Panel -->
+                <div class='panel-content-wrapper'>
+                    <div ng-show='visible.panel.button_uploader'>
+                        <form image-upload name='imageUploaderForm' ng-submit='uploadImage()'>
+                            <div class='card'>
+                                <div class='card-title grid2'>
+                                    <h2>Cy3 image:</h2>
+                                    <small class='upload-filename' id='cy3-upload-filename' ng-model='data.cy3Filename'>No file selected</small>
+                                </div>
+                                <div class='card-text'>
+                                    <label class='cy3-upload-button'>
+                                        <span class='btn btn-light btn-sm'>Choose File</span>
+                                        <input id='cy3-upload' type='file' accept='image/jpg, image/jpeg' style='display:none;' required>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class='card'>
+                                <div class='card-title grid2'>
+                                    <h2>HE image:</h2>
+                                    <small class='upload-filename small' id='he-upload-filename'>No file selected</small>
+                                </div>
+                                <div class='card-text'>
+                                    <label class='he-upload-button'>
+                                        <span class='btn btn-light btn-sm'>Choose File</span>
+                                        <input id='he-upload' type='file' accept='image/jpg, image/jpeg' style='display:none;'>
+                                    </label>
+                                </div>
+                            </div>
+                            <button class='btn btn-primary btn-sm submit-button' type='submit'>Upload Images</button>
+                        </form>
+                    </div>
+                    <!-- Aligner Panel -->
+                    <div ng-show='visible.panel.button_aligner'>
+                        <aligner layers="layerManager"
+                                 init="initAlignment"
+                                 exit="exitAlignment"
+                                 logic-handler="alignerLH"
+                                 camera="camera"
+                                 undo-stack="undoStack"
+                                 renderables="getAlignerRenderables"
+                                 />
+                    </div>
+                    <!-- Adjuster Panel -->
+                    <div ng-show='visible.panel.button_adjuster'>
+                        <div ng-show='visible.spotAdjuster == "default"'>
+                            <button ng-click='addSpots()' type='button' class='btn btn-sm btn-light btn-block'>Add spots</button>
+                            <button ng-click='editAssignments()' type='button' class='btn btn-sm btn-light btn-block'>Edit assignments</button>
+                            <button ng-click='selectInsideTissue()' ng-show='hasHE() && spotManager.selected.size == 0' type='button' class='btn btn-sm btn-primary btn-block'>Select spots inside tissue</button>
+                            <button ng-click='clearSelection()' ng-show='spotManager.selected.size > 0' type='button' class='btn btn-sm btn-secondary btn-block'>Clear selection</button>
+                            <button ng-click='deleteSpots()' type='button' class='btn btn-sm btn-danger btn-block'>Delete selection</button>
+                        </div>
+                        <div ng-show='visible.spotAdjuster == "adjust"' style='margin-top: 0'>
+                            <button ng-click='finishAddSpots()' type='button' class='btn btn-sm btn-secondary btn-block'>Go back</button>
+                        </div>
+                        <div ng-show='visible.spotAdjuster == "assign"' style='margin-top: 0'>
+                            <button ng-click='finishAssign()' type='button' class='btn btn-sm btn-secondary btn-block'>Go back</button>
+                            <button ng-click='clearAssign()' type='button' class='btn btn-sm btn-light btn-block'>Reset assignments</button>
+                        </div>
+                    </div>
+                    <!-- Exporter Panel -->
+                    <div ng-show='visible.panel.button_exporter'>
+                        <form class="card card-default" ng-submit='exportSpots(exportForm.selection, { selectionFlag: exportForm.selectionFlag() })'>
+                            <div class="card-title grid2">
+                                <h2>Spots</h2>
+                                <button class='btn btn-primary btn-sm submit-button' type='submit'>
+                                    <span class='fa fa-download'></span>
+                                </button>
+                            </div>
+                            <div class="card-text">
+                                <div class="btn-group">
+                                    <label ng-class="{active: exportForm.selection == 'all'}" class="btn btn-light btn-sm radio-button">
+                                        <input type="radio" value='all' ng-model='exportForm.selection'>All
+                                    </label>
+                                    <label ng-class="{active: exportForm.selection == 'selection'}" class="btn btn-light btn-sm radio-button">
+                                        <input type="radio" value='selection' ng-model='exportForm.selection'>Selected
+                                    </label>
+                                </div>
+                                <label>
+                                    <input ng-disabled='exportForm.selection != "all"'
+                                           ng-model='exportForm.selectionFlag'
+                                           ng-model-options='{ getterSetter: true }'
+                                           type="checkbox"
+                                           value="value"
+                                           />
+                                    Include selection flag
+                                </label>
+                            </div>
+                        </form>
+                        <form class="card card-default" ng-submit='exportTMat()'>
+                            <div class="card-title grid2">
+                                <h2>Transformation matrix</h2>
+                                <button class='btn btn-primary btn-sm submit-button' type='submit'>
+                                    <span class='fa fa-download'></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- Settings Panel -->
+                    <div ng-show='visible.panel.button_settings'>
+                        <div class='card'>
+                            <div class='card-title'><h2>Annotation settings</h2></div>
+                            <div class='card-text grid2'>
+                                <p>Opacity:</p>
+                                <div class='spot-color-bar clickable'>
+                                    <div class='spot-color'
+                                         ng-repeat='v in opacity.all'
+                                         ng-class='{selected: v == opacity.current()}'
+                                         ng-click='opacity.set(v)'
+                                         ng-style='{"background-color": "rgba(0, 0, 0," + v + ")"}'
+                                         >
+                                    </div>
+                                </div>
+                                <p>Color:</p>
+                                <div class='spot-color-bar clickable'>
+                                    <div class='spot-color'
+                                         ng-repeat='v in color.all'
+                                         ng-class='{selected: v == color.current()}'
+                                         ng-click='color.set(v)'
+                                         ng-style='{"background-color": v}'
+                                         >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Help Panel -->
+                    <div ng-show='visible.panel.button_help'>
+                        <div ng-bind-html='getHelpTexts(data.state)'></div>
+                        <p>For more in-depth help, refer to the <a href='https://github.com/SpatialTranscriptomicsResearch/st_spot_detector/wiki/ST-Spot-Detector-Usage-Guide' target='_blank'>usage guide</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div ng-show='visible.zoomBar' class='undo-wrapper'>
+            <!-- Undo/Redo -->
+            <div class='zoom-bar btn-group btn-group-vertical' role='group'>
+                <!-- Undo -->
+                <button ng-disabled='visible.undo.undo' ng-click='undoButtonClick("undo")' type='button' class='btn btn-light' id='button-undo'>
+                    <span class='fa fa-undo'></span>
+                </button>
+                <!-- Redo -->
+                <!--
+                <button ng-disabled='visible.undo.redo' ng-click='undoButtonClick("redo")' type='button' class='btn btn-light'>
+                    <span class='fa fa-repeat'></span>
+                </button>
+                -->
+            </div>
+        </div>
+        <div ng-show='visible.zoomBar' class='zoom-wrapper'>
+            <!-- Zoom Bar -->
+            <div class='zoom-bar btn-group btn-group-vertical' role='group'>
+                <!-- In -->
+                <button ng-click='zoomButtonClick("zin")' type='button' class='btn btn-light' id='button-zoom-in'>
+                    <span class='fa fa-search-plus'></span>
+                </button>
+                <!-- Out -->
+                <button ng-click='zoomButtonClick("zout")' type='button' class='btn btn-light'>
+                    <span class='fa fa-search-minus'></span>
+                </button>
+            </div>
+        </div>
+        <div ng-show='visible.imageToggleBar' class='image-toggle-bar clickable'>
+            <a ng-click='imageToggleButtonClick()'>
+                <img ng-src='{{getImageToggleImage()}}'/>
+                <p class='image-toggle-text'>
+                    Show {{ getImageToggleText() }} image
+                </p>
+            </a>
+        </div>
+        <div id='loading' ng-show='visible.loading'></div>
+    </div>
+</body>
+</html>
