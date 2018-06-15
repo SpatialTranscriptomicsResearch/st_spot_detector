@@ -1,0 +1,339 @@
+:root {
+    --panel-bg: var(--white);
+    --panel-fg: var(--dark);
+}
+
+html {
+    /*
+    height: 100%;
+    width: 100%;
+    */
+}
+
+body {
+    background-color: #eeeeee;
+    font-size: 0.875rem;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+p {
+    margin-bottom: 0;
+}
+
+p + p {
+    margin-top: 1rem;
+}
+
+input[type="radio"] {
+  display: none;
+}
+
+.spinner, .error-text {
+    width: 600px;
+    margin: 200px auto;
+    text-align: center;
+}
+
+#viewer {
+    background-color: black;
+}
+
+canvas:active {
+}
+
+.clickable {
+    cursor: -webkit-pointer;
+    cursor:    -moz-pointer;
+    cursor:         pointer;
+}
+
+.fullscreen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.menu-wrapper {
+    cursor: default;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    background-color: hsla(0, 0%, 100%, 1);
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.menu-bar {
+    background-color: hsla(0, 0%, 100%, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.menu-bar .btn.active {
+    color: var(--panel-fg)            !important;
+    background-color: var(--panel-bg) !important;
+    box-shadow: none                  !important;
+    border: none                      !important;
+}
+
+.menu-bar-panel {
+    padding: 0.5rem;
+    color: var(--panel-fg);
+    background-color: var(--panel-bg);
+    display: flex;
+    flex-direction: column;
+    width: 248px;
+}
+
+.menu-bar-panel h1 {
+    font-size: 20px;
+}
+
+.panel-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-top: 0.5rem;
+}
+
+.panel-content-wrapper label {
+    margin: 0;
+}
+
+.panel-content-wrapper div, .panel-content-wrapper form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.panel-content-wrapper div * + * {
+    margin-top: 0.5rem;
+}
+
+.panel-content-wrapper .card-text, .card-title {
+    margin: 0;
+}
+
+.panel-content-wrapper .grid2 {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-column-gap: 0.5rem;
+    grid-row-gap: 0.5rem;
+}
+
+.panel-content-wrapper .grid2 > * {
+    margin: auto 0;
+}
+
+.panel-content-wrapper .btn {
+    width: 100%;
+}
+
+.menu-bar-panel-title {
+    margin-bottom: 0.5rem;
+}
+
+.upload-filename {
+    display: inline-block;
+}
+
+.image-upload-title {
+    display: inline-block;
+}
+
+.menu-bar-panel h2 {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.menu-bar-panel h3 {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.menu-bar-panel .btn-group {
+    display: flex;
+    flex-direction: row;
+}
+
+.menu-bar-panel .btn-group * + * {
+    margin: 0;
+}
+
+.menu-bar-panel .card-title {
+    padding: 0.5rem;
+}
+
+.menu-bar-panel .card-title > * {
+    margin: auto 0;
+}
+
+.menu-bar-panel .card-text {
+    padding: 0.5rem;
+}
+
+.image-toggle-bar {
+    border: #ddd 2px solid ;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    -webkit-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+    -moz-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+    box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+}
+
+.image-toggle-text {
+    margin-bottom: 0px;
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    color: white;
+    text-shadow: 1px 1px 2px black;
+}
+
+.undo-wrapper {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+}
+.zoom-wrapper {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+.zoom-bar {
+    -webkit-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+    -moz-box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+    box-shadow: 2px 2px 5px 0px rgba(121, 121, 121, 0.5);
+}
+#button-zoom-in, #button-undo {
+    /* not sure why it isn't this already */
+    border-top-right-radius: 4px;
+}
+
+hr {
+    margin: 0px;
+}
+
+.clear {
+    clear: both;
+    height: 1em;
+}
+
+.panel-content-wrapper .spot-color-bar {
+    flex-direction: row;
+    width: 100%;
+    border: #000 1px solid;
+}
+
+.panel-content-wrapper .spot-color {
+    flex-grow: 1;
+    margin: 0;
+    height: 1.2rem;
+    width: 1.2rem;
+}
+
+.panel-content-wrapper .spot-color:hover {
+    border: 1px solid #fff;
+}
+
+.panel-content-wrapper .spot-color.selected {
+    border: 1px solid #fff;
+}
+
+#spot-color-1 {
+    /* red */
+    background-color: #E74C3C;
+}
+
+#spot-color-2 {
+    /* orange */
+    background-color: #E67E22;
+}
+
+#spot-color-3 {
+    /* yellow */
+    background-color: #F1C40F;
+}
+
+#spot-color-4 {
+    /* green */
+    background-color: #2ECC71;
+}
+
+#spot-color-5 {
+    /* blue */
+    background-color: #3498DB;
+}
+
+#spot-color-6 {
+    /* purple */
+    background-color: #9B59B6;
+}
+
+#spot-opacity-1 {
+    /* 100 */
+    background-color: #FFFFFF;
+}
+
+#spot-opacity-2 {
+    /* 80 */
+    background-color: #CCCCCC;
+}
+
+#spot-opacity-3 {
+    /* 60 */
+    background-color: #999999;
+}
+
+#spot-opacity-4 {
+    /* 40 */
+    background-color: #666666;
+}
+
+#spot-opacity-5 {
+    /* 20 */
+    background-color: #333333;
+}
+
+#spot-opacity-6 {
+    /* 0 */
+    background-color: #000000;
+}
+
+#loading {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    width: 50%;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+#loading > canvas {
+    width: 100%;
+    height: 2.5rem;
+    margin: 1rem 0;
+}
+
+#loading > p {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 10%;
+    padding: 1rem;
+    background: white;
+}
