@@ -4,9 +4,11 @@
 
 from abc import abstractmethod
 import asyncio
-from functools import wraps
+from functools import reduce, wraps
+from io import BytesIO
 import itertools as it
 import json
+from operator import add
 import warnings
 
 import numpy as np
@@ -119,8 +121,6 @@ def _async_request(route):
                         break
                     [type_, identifier, chunks] = header.split(':')
                     data = [await socket.recv() for _ in range(int(chunks))]
-                    from operator import add
-                    from functools import reduce
                     yield [type_, identifier, reduce(add, data)]
             async def _send(message):
                 for chunk in message.chunks():
@@ -206,7 +206,6 @@ async def run(packages, loop=None):
     async def _process_image(identifier, image_data):
         try:
             yield Status(f'Inflating {identifier} image data')
-            from io import BytesIO
             image = await execute(lambda: Image.open(BytesIO(image_data)))
         except:
             raise ClientError(

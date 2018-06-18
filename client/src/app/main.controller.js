@@ -25,17 +25,30 @@ const main = [
     '$q',
     function($scope, $http, $sce, $compile, $q) {
         // texts to display in the menu bar panel when clicking the help button
-        const helpTexts = {
-            state_start:         "Click on the top-most icon to select and upload image(s). The image(s) must be in .jpg format and rotated so that the frame cluster appears at the top left of the image.",
-            state_upload:        "",
-            state_adjustment:    "Left click or Ctrl+click to select spots. Hold in shift to add to a selection.\n" +
-            "Right click to move selected spots or navigate the canvas.\n" +
-            "Click 'Delete spots' to delete selected spots.\n" +
-            "Click 'Add spots' to change to spot addition mode, then right click or Ctrl+click to add spots.\n" +
-            "(HE only) Click 'Select spots within tissue' to automatically select spots within the tissue.\n" +
-            "Click 'Finish Adding Spots' to return to selection mode.\n",
-            state_error:         "An error occured. Please try again."
-        };
+        const helpTexts = _.mapValues({
+            state_start:      `<p>Select images to upload.
+                               The Cy3 image is required but the HE image is optional.
+                               If an HE image is uploaded, exported pixel coordinates will correspond to spot positions on the HE image.</p>
+
+                               <p>The uploaded image(s) must be in .jpg format.</p>`,
+
+            state_alignment:  `<p>This view can be used to make adjustments to the uploaded images.</p>
+
+                               <p>If you have uploaded an HE image, make sure that the Cy3 and HE images are correctly aligned.</p>`,
+
+            state_adjustment: `<p>Make sure that the spots and the frame of the array have been detected correctly.
+                               The frame can be adjusted by dragging the outermost lines.
+                               Similarly, misplaced spots can be dragged to their correct positions.
+                               Missing spots can be added back from the 'Add spots' menu.</p>
+
+                               <p>Each spot has a corresponding <i>assignment line</i>.
+                               The assignment line is displayed as a white line between the center of the spot and the array position that the spot has been mapped to.
+                               If multiple spots map to the same array position, the assignment lines of the affected spots turn red.
+                               To correct an assignment, click 'Edit assignments' and then click the spot and drag the mouse to the correct array position.</p>
+
+                               <p>Spots can be selected in order to adjust their positions simultaneously, to delete them, or to export them selectively.
+                               To add (remove) spots to the current selection, left (right) click and drag the mouse over them.</p>`,
+        }, $sce.trustAsHtml);
 
         // texts to display as a title on the menu bar panel
         const panelTitles = {
