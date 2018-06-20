@@ -224,7 +224,7 @@
                     </div>
                     <!-- Help Panel -->
                     <div ng-show='visible.panel.button_help'>
-                        <p>{{ getHelpTexts(data.state) }}</p>
+                        <div ng-bind-html='getHelpTexts(data.state)'></div>
                         <p>For more in-depth help, refer to the <a href='https://github.com/SpatialTranscriptomicsResearch/st_spot_detector/wiki/ST-Spot-Detector-Usage-Guide' target='_blank'>usage guide</a>.</p>
                     </div>
                 </div>

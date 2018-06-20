@@ -467,7 +467,10 @@ function viewer() {
                     selectedSpots,
                     (s) => {
                         const [[arrx, arry]] = px2arr(calibrator, [[s.x, s.y]]);
-                        const [[assx, assy]] = px2assignment(calibrator, [[s.x, s.y]]);
+                        const [[assx, assy]] = s.assignment.x && s.assignment.y
+                            ? [[s.assignment.x, s.assignment.y]]
+                            : px2assignment(calibrator, [[s.x, s.y]])
+                        ;
                         const { x: px_x, y: px_y } = mulVec2(canvas2image, s.position);
                         return {
                             x: assx,
