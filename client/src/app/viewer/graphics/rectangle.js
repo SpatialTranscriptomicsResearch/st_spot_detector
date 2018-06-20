@@ -61,6 +61,7 @@ renderAdd(
     (ctx, r) => {
         const [x0, y0] = r.topLeft;
         const [x1, y1] = r.bottomRight;
+        ctx.beginPath();
         ctx.rect(x0, y0, x1 - x0, y1 - y0);
     },
 );
