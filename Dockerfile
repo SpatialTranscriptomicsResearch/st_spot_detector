@@ -81,6 +81,7 @@ WORKDIR /opt/repos/st_spot_detector
 RUN git pull
 RUN git checkout docker
 RUN pip install -r server/requirements.txt
+RUN pip install websockets==5.0
 WORKDIR /opt/repos/st_spot_detector/client
 RUN npm install
 RUN make dist 
