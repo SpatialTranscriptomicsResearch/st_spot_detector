@@ -76,10 +76,8 @@ RUN echo "export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH" >> $HOME/.bash
 
 # setup the st spot detector
 WORKDIR /opt/repos
-RUN git clone https://github.com/elhb/st_spot_detector.git
+RUN git clone https://github.com/SpatialTranscriptomicsResearch/st_spot_detector.git
 WORKDIR /opt/repos/st_spot_detector
-RUN git pull
-RUN git checkout docker
 RUN pip install -r server/requirements.txt
 RUN pip install websockets==5.0
 WORKDIR /opt/repos/st_spot_detector/client
