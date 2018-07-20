@@ -40,13 +40,8 @@ RUN apt-get install -y python3-pip python3-dev python3-tk \
   && ln -s /usr/bin/python3 python \
   && pip3 install --upgrade pip
 RUN pip install --upgrade pip
-RUN pip install numpy \
-                opencv-python \
-                Pillow
-RUN pip install setuptools \
-               sanic \
-               scikit-learn \
-               scipy
+RUN pip install numpy
+RUN pip install setuptools
 
 # make a dir or the repos
 RUN mkdir /opt/repos
@@ -69,6 +64,7 @@ RUN git clone https://github.com/elhb/st_spot_detector.git
 WORKDIR /opt/repos/st_spot_detector
 RUN git pull
 RUN git checkout docker
+RUN pip install -r server/requirements.txt
 WORKDIR /opt/repos/st_spot_detector/client
 RUN npm install
 RUN make dist 
