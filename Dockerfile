@@ -1,3 +1,19 @@
+# HOW TO:
+#
+# First build this image with:
+#    docker build -t spot_detector:latest ./
+#
+# Then to start the container running the server run:
+#    docker run -d -p 8080:8080 --name spotdetector_deamon -i spot_detector:latest
+#
+# For an interactive session run:
+#    docker run -p 8080:8080 --name spotdetector -ti spot_detector:latest bash
+# Then within the container run:
+#     cd /opt/repos/st_spot_detector/server && python -m app
+#
+# FINALLY: use chrome/firefox or something to go to http://0.0.0.0:8080
+# also feel free to run with wsgi instead if you think thats fun
+
 FROM ubuntu:18.04
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -58,7 +74,7 @@ WORKDIR /opt/repos/st_tissue_recognition/python-module/
 RUN python setup.py install
 RUN echo "export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH" >> $HOME/.bashrc
 
-#### setup the st spot detector
+# setup the st spot detector
 WORKDIR /opt/repos
 RUN git clone https://github.com/elhb/st_spot_detector.git
 WORKDIR /opt/repos/st_spot_detector
@@ -74,16 +90,5 @@ ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
 EXPOSE 8080
 WORKDIR /opt/repos/st_spot_detector/server
 CMD ["python","-m","app"]
-
-# Now run:
-#    docker run -d -p 8080:8080 --name spotdetector_deamon -i spot_detector:latest
-
-# For an interactive session run:
-#    docker run -p 8080:8080 --name spotdetector -ti spot_detector:latest bash
-# Then in the container interactively run:
-#     cd /opt/repos/st_spot_detector/server && python -m app
-
-# FINALLY: use firefox or something to go to http://0.0.0.0:8080
-# also feel free to run with wsgi instead if you think thats fun
 
 COPY Dockerfile /opt
