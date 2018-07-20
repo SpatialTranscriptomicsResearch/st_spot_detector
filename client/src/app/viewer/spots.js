@@ -123,9 +123,8 @@ class SpotManager {
     }
 
     loadSpots(spots, tissueMask) {
-        this.avgDiameter = math.sum(
-            _.filter(_.map(spots, _.last), x => x > 0),
-        ) / spots.length;
+        const ds = _.filter(_.map(spots, _.last), x => x > 0);
+        this.avgDiameter = math.sum(ds) / ds.length;
         this.spots = _.map(spots, props => this.createSpot(...props));
         if (tissueMask) {
             this.loadMask(tissueMask);
