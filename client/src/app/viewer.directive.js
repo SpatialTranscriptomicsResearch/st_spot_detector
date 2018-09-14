@@ -95,10 +95,7 @@ function viewer() {
                 );
                 scope.undoStack.push(action);
                 spots.selectTissueSpots(
-                    math.multiply(
-                        math.inv(scope.layerManager.getLayer('HE').tmat),
-                        scope.layerManager.getLayer('Cy3').tmat,
-                    ),
+                    math.inv(scope.layerManager.getLayer('HE').tmat),
                     0.5,
                 );
                 refreshCanvas();

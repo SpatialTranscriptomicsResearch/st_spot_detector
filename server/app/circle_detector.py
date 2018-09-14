@@ -104,7 +104,10 @@ class CircleDetector:
         return pixels
 
     def __intensity_at(self, image_pixels, position):
-        r, g, b = image_pixels[position[0], position[1]]
+        try:
+            r, _g, _b = image_pixels[position[0], position[1]]
+        except IndexError as _:
+            return None
         return r
 
     def __bb_from_points(self, points):
@@ -121,7 +124,10 @@ class CircleDetector:
         which may be spot edge.
         """
         pixels = self.__get_pixel_pos_array(position, direction, search_radius)
-        intensities = [self.__intensity_at(image_pixels, pixel) for pixel in pixels]
+        intensities = list(filter(
+            lambda x: x is not None,
+            [self.__intensity_at(image_pixels, pixel) for pixel in pixels],
+        ))
         averages = []
         differences = []
         for i, intensity in enumerate(intensities):
@@ -229,7 +235,9 @@ class CircleDetector:
         whiteness = 0
         pixels = self.__get_surrounding_pixels(position, self.__white_search_radius)
         for pixel in pixels:
-            whiteness += self.__intensity_at(image_pixels, pixel)
+            intensity = self.__intensity_at(image_pixels, pixel)
+            if intensity is not None:
+                whiteness += intensity
 
         whiteness_avg = float(whiteness) / float(len(pixels))
         if(whiteness_avg < self.__whiteness_threshold):
