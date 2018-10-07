@@ -189,7 +189,10 @@ class AdjustmentLH extends LogicHandler {
                     this.spotManager.spotsMutable,
                     (s) => {
                         /* eslint-disable no-param-reassign */
-                        const v = eventData.button === Codes.mouseButton.left;
+                        const v = (
+                            eventData.button === Codes.mouseButton.left
+                            && !this.keystates.shift
+                        );
                         if (collides(s.x, s.y, this.selectionRectangle)) {
                             if (s.selected !== v) {
                                 s.selected = v;
