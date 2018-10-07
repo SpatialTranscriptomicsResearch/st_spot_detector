@@ -51,3 +51,10 @@ export const LOADING_FPS          = 60;
 export const LOADING_HIST_SIZE    = 1000;
 export const LOADING_MEASURE_TIME = 5000;
 export const LOADING_TWEEN_TIME   = 1000;
+
+
+// Array types
+export const ARRAY_TYPES = [
+    { name: '1st generation', size: [33, 35] },
+    { name: '2nd generation', size: [66, 63] },
+];

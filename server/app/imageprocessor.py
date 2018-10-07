@@ -6,7 +6,8 @@ from io import BytesIO
 import warnings
 
 import cv2
-from PIL import Image, ImageOps
+from PIL import Image
+from PIL.ImageOps import invert
 import numpy
 
 
@@ -54,41 +55,13 @@ def tile_image(image, tile_width, tile_height):
 
     return tiles
 
-def apply_bct(image, apply_thresholding=True):
-    """Performs colour invert on a PIL image, then converts it to an OpenCV
-    image and applies automatic brightness and contrast equalisation (CLAHE) and
-    thresholding, then converts it back and returns a processed PIL Image.
-    """
-    # the image is inverted to colour the features darkest
-    image = ImageOps.invert(image)
-
-    # convert the image into a grayscale
-    image = numpy.array(image.convert('L'))
-
-    # create a CLAHE object
-    clahe = cv2.createCLAHE(clipLimit=20.0, tileGridSize=(1, 1))
-
-    image = clahe.apply(image)
-
-    if apply_thresholding:
-        # Mean adaptive threshold has been chosen here because Gaussian
-        # adaptive thresholding is very slow, takes about 15 minutes for a
-        # 20k x 20k image and does not yield significantly better results
-        image = cv2.adaptiveThreshold(image, 255,
-                                      cv2.ADAPTIVE_THRESH_MEAN_C,
-                                      cv2.THRESH_BINARY,
-                                      103, 20)
-
-    return Image.fromarray(image).convert('RGB')
-
-
 def detect_keypoints(image):
     """This function uses OpenCV to threshold an image and do some simple,
     automatic blob detection and returns the keypoints generated.
     The parameters for min and max area are roughly based on an image
     of size 4k x 4k.
     """
-    image = numpy.array(image.convert('L'))
+    image = numpy.array(invert(image.convert('L')))
 
     params = cv2.SimpleBlobDetector_Params()
     params.thresholdStep = 5.0

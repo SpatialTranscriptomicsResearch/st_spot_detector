@@ -22,6 +22,7 @@ import Vec2 from './viewer/vec2';
 import UndoStack, { UndoAction } from './viewer/undo';
 
 import {
+    ARRAY_TYPES,
     MAX_THREADS,
     SPOT_COLS,
     SPOT_OPACITIES,
@@ -62,8 +63,6 @@ function viewer() {
             var camera = new Camera(fgCtx, scope.layerManager);
 
             const calibrator = new Calibrator();
-            calibrator.width = 33;
-            calibrator.height = 35;
 
             var spots = new SpotManager();
 
@@ -81,8 +80,10 @@ function viewer() {
             );
 
             scope.loadSpots = function(spotData, tissueMask) {
-                const { positions, tl, br } = spotData;
+                const { positions, tl, br, nx, ny } = spotData;
                 calibrator.points = [tl, br];
+                calibrator.width = nx;
+                calibrator.height = ny;
                 spots.loadSpots(positions, tissueMask);
                 collisionTracker.update();
             };
@@ -560,6 +561,61 @@ function viewer() {
                 current() { return scope.spotManager.color; },
                 set(v) { scope.spotManager.color = v; refreshCanvas(); },
             };
+
+            scope.arrayWidth = (v) => {
+                if (v && v !== calibrator.width) {
+                    calibrator.width = v;
+                    scope.clearAssign();
+                    collisionTracker.update();
+                    refreshCanvas();
+                    return v;
+                }
+                return calibrator.width;
+            };
+
+            scope.arrayHeight = (v) => {
+                if (v && v !== calibrator.height) {
+                    calibrator.height = v;
+                    scope.clearAssign();
+                    collisionTracker.update();
+                    refreshCanvas();
+                    return v;
+                }
+                return calibrator.height;
+            };
+
+            scope.arrayTypes = [
+                { name: 'Custom', size: null, id: -1 },
+                ..._.map(
+                    ARRAY_TYPES,
+                    (x, i) => _.assign(x, {
+                        name: `${x.name} (${x.size.join('x')})`,
+                        id: i,
+                    }),
+                ),
+            ];
+
+            scope.arrayType = (() => {
+                const id2size = _.assign(..._.map(scope.arrayTypes, x => ({ [x.id]: x.size })));
+                const size2id = _.invert(id2size);
+                return (v) => {
+                    if (v) {
+                        if (id2size[v] !== null) {
+                            scope.arrayWidth(id2size[v][0]);
+                            scope.arrayHeight(id2size[v][1]);
+                        }
+                        return v;
+                    }
+                    const selectedSize = [
+                        scope.arrayWidth(),
+                        scope.arrayHeight(),
+                    ];
+                    if (selectedSize in size2id) {
+                        return size2id[selectedSize];
+                    }
+                    return size2id.null;
+                };
+            })();
 
             scope.camera = camera;
             scope.calibrator = calibrator;

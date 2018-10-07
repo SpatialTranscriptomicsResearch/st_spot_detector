@@ -141,19 +141,37 @@
                     </div>
                     <!-- Adjuster Panel -->
                     <div ng-show='visible.panel.button_adjuster'>
-                        <div ng-show='visible.spotAdjuster == "default"'>
-                            <button ng-click='addSpots()' type='button' class='btn btn-sm btn-light btn-block'>Add spots</button>
-                            <button ng-click='editAssignments()' type='button' class='btn btn-sm btn-light btn-block'>Edit assignments</button>
-                            <button ng-click='selectInsideTissue()' ng-show='hasHE() && spotManager.selected.size == 0' type='button' class='btn btn-sm btn-primary btn-block'>Select spots inside tissue</button>
-                            <button ng-click='clearSelection()' ng-show='spotManager.selected.size > 0' type='button' class='btn btn-sm btn-secondary btn-block'>Clear selection</button>
-                            <button ng-click='deleteSpots()' type='button' class='btn btn-sm btn-danger btn-block'>Delete selection</button>
+                        <div class='card' ng-show='visible.spotAdjuster == "default"'>
+                            <div class='card-text grid2'>
+                                <p>Type:</p>
+                                <select class='custom-select custom-select-sm' ng-model='arrayType' ng-model-options='{ getterSetter: true }'>
+                                  <option ng-repeat='type in arrayTypes' value='{{type.id}}'>{{type.name}}</option>
+                                </select>
+                                <p>Size:</p>
+                                <div style='display:flex;flex-direction:row'>
+                                    <input style='margin:0; width:100%; height:100%' type='number' min='1' step='1' ng-model='arrayWidth' ng-model-options='{ getterSetter: true }' />
+                                    <p style='margin:0 .5em'>x</p>
+                                    <input style='margin:0; width:100%; height:100%' type='number' min='1' step='1' ng-model='arrayHeight' ng-model-options='{ getterSetter: true }' />
+                                </div>
+                            </div>
                         </div>
-                        <div ng-show='visible.spotAdjuster == "adjust"' style='margin-top: 0'>
-                            <button ng-click='finishAddSpots()' type='button' class='btn btn-sm btn-secondary btn-block'>Go back</button>
-                        </div>
-                        <div ng-show='visible.spotAdjuster == "assign"' style='margin-top: 0'>
-                            <button ng-click='finishAssign()' type='button' class='btn btn-sm btn-secondary btn-block'>Go back</button>
-                            <button ng-click='clearAssign()' type='button' class='btn btn-sm btn-light btn-block'>Reset assignments</button>
+                        <div class='card'>
+                            <div class='card-text'>
+                                <div ng-show='visible.spotAdjuster == "default"'>
+                                    <button ng-click='addSpots()' type='button' class='btn btn-sm btn-light btn-block'>Add spots</button>
+                                    <button ng-click='editAssignments()' type='button' class='btn btn-sm btn-light btn-block'>Edit assignments</button>
+                                    <button ng-click='selectInsideTissue()' ng-show='hasHE() && spotManager.selected.size == 0' type='button' class='btn btn-sm btn-primary btn-block'>Select spots inside tissue</button>
+                                    <button ng-click='clearSelection()' ng-show='spotManager.selected.size > 0' type='button' class='btn btn-sm btn-secondary btn-block'>Clear selection</button>
+                                    <button ng-click='deleteSpots()' type='button' class='btn btn-sm btn-danger btn-block'>Delete selection</button>
+                                </div>
+                                <div ng-show='visible.spotAdjuster == "adjust"'>
+                                    <button ng-click='finishAddSpots()' type='button' class='btn btn-sm btn-secondary btn-block'>Go back</button>
+                                </div>
+                                <div ng-show='visible.spotAdjuster == "assign"'>
+                                    <button ng-click='finishAssign()' type='button' class='btn btn-sm btn-secondary btn-block'>Go back</button>
+                                    <button ng-click='clearAssign()' type='button' class='btn btn-sm btn-light btn-block'>Reset assignments</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <!-- Exporter Panel -->

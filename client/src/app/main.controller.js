@@ -361,14 +361,6 @@ const main = [
                     send(
                         `${window.location.origin.replace(/^http/, 'ws')}/run`,
                         [
-                            {
-                                type: 'json_string',
-                                identifier: 'array_size',
-                                data: JSON.stringify([
-                                    $scope.calibrator.width,
-                                    $scope.calibrator.height,
-                                ]),
-                            },
                             ..._.filter(
                                 _.map(
                                     [
@@ -390,22 +382,20 @@ const main = [
                                 removeStatusMessages();
                             }
                             switch (status) {
-                            case SOCKET_STATUS.SENDING:
-                                if (data.identifier !== 'array_size') {
-                                    const state = data.loaded === data.total
-                                        ? {
-                                            stage: LOAD_STAGE.WAIT,
-                                            message: 'Waiting',
-                                        }
-                                        : {
-                                            stage: LOAD_STAGE.UPLOAD,
-                                            loaded: data.loaded,
-                                            total: data.total,
-                                        }
-                                    ;
-                                    update(data.identifier, state);
-                                }
-                                break;
+                            case SOCKET_STATUS.SENDING: {
+                                const state = data.loaded === data.total
+                                    ? {
+                                        stage: LOAD_STAGE.WAIT,
+                                        message: 'Waiting',
+                                    }
+                                    : {
+                                        stage: LOAD_STAGE.UPLOAD,
+                                        loaded: data.loaded,
+                                        total: data.total,
+                                    }
+                                ;
+                                update(data.identifier, state);
+                            } break;
                             case SOCKET_STATUS.RECEIVING:
                                 update(
                                     data.identifier,

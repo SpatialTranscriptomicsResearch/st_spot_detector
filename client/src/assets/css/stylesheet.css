@@ -117,8 +117,12 @@ canvas:active {
     justify-content: space-between;
 }
 
-.panel-content-wrapper div * + * {
+.panel-content-wrapper :not(.ng-hide) + * {
     margin-top: 0.5rem;
+}
+
+.panel-content-wrapper grid2 > * {
+    margin: 0;
 }
 
 .panel-content-wrapper .card-text, .card-title {
