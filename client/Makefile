@@ -1,17 +1,17 @@
 SRC_DIR = src
 NODE_DIR = ./node_modules/.bin
 
+WATCH ?= 0
+
 .PHONY: all clean
 
 all: dist devel docs
 
-devel: $(shell find $(SRC_DIR)) config-builder.js webpack.config.devel.js
-	@echo "Compiling development build..."
-	@$(NODE_DIR)/webpack --config ./webpack.config.devel.js && touch -cm ./devel
-
-dist: $(shell find $(SRC_DIR)) config-builder.js webpack.config.dist.js
-	@echo "Compiling release build..."
-	@$(NODE_DIR)/webpack --config ./webpack.config.dist.js && touch -cm ./dist
+devel dist: %: $(shell find $(SRC_DIR)) config-builder.js webpack.config.%.js
+	@echo "Compiling $@ build..."
+	@cmd="${NODE_DIR}/webpack --config webpack.config.$@.js" ;\
+	if [ ${WATCH} -eq 1 ]; then cmd="$$cmd --watch"; fi      ;\
+	$${cmd} && touch -cm $@
 
 docs: $(shell find $(SRC_DIR) | grep \.js$)
 	@echo "Compiling docs..."
