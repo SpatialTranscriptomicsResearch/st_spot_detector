@@ -19,7 +19,7 @@ from sanic.config import Config
 from tissue_recognition import recognize_tissue, get_binary_mask, free
 
 from . import imageprocessor as ip
-from .spots import Spots
+from .spots import keypoints2spots
 from .utils import bits_to_ascii, chunks_of
 
 
@@ -129,15 +129,17 @@ def _async_request(route):
     return _decorator
 
 
-def _get_spots(img, scale_factor, array_size):
-    bct_image = ip.apply_bct(img)
-    keypoints = ip.detect_keypoints(bct_image)
-    spots = Spots(array_size, scale_factor)
+def _get_spots(img, scale_factor):
+    keypoints = ip.detect_keypoints(img)
     try:
-        spots.create_spots_from_keypoints(keypoints, bct_image)
+        spots = keypoints2spots(keypoints)
     except RuntimeError:
-        raise ClientError('Spot detection failed.')
-    return spots.wrap_spots()
+        raise ClientError('Spot detection failed')
+    spots.update({
+        k: (spots[k] * scale_factor).tolist()
+        for k in ('positions', 'tl', 'br')
+    })
+    return spots
 
 
 def _get_tissue_mask(image):
@@ -159,8 +161,6 @@ async def run(packages, loop=None):
     execute = lambda f, *args: \
         loop.run_in_executor(None, f, *args)
 
-    array_size = []
-
     async def _do_image_tiling(image):
         tilemap = dict()
         tilemap_sizes = list(it.takewhile(
@@ -181,12 +181,8 @@ async def run(packages, loop=None):
         ))
 
     async def _do_spot_detection(image):
-        if not (isinstance(array_size, list)
-                and len(array_size) == 2
-                and all([x > 0 for x in array_size])):
-            raise ClientError('Invalid array size')
         image, scale = await execute(ip.resize_image, image, [4000, 4000])
-        return await execute(_get_spots, image, scale, array_size)
+        return await execute(_get_spots, image, scale)
 
     async def _do_mask_detection(image):
         image, scale = await execute(ip.resize_image, image, [500, 500])
@@ -222,5 +218,3 @@ async def run(packages, loop=None):
         if type_ == 'image':
             async for response in _process_image(identifier, data):
                 yield response
-        elif type_ == 'json_string' and identifier == 'array_size':
-            array_size = json.JSONDecoder().decode(data)
