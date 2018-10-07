@@ -54,7 +54,7 @@ const main = [
         const panelTitles = {
             button_uploader: 'Image upload',
             button_aligner: 'Image adjustment',
-            button_adjuster: 'Spot adjustment',
+            button_adjuster: 'Array editor',
             button_exporter: 'Data export',
             button_help: 'Help',
             button_settings: 'Settings',
