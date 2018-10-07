@@ -64,9 +64,9 @@ def detect_keypoints(image):
     image = numpy.array(invert(image.convert('L')))
 
     params = cv2.SimpleBlobDetector_Params()
-    params.thresholdStep = 5.0
-    params.minThreshold = 170.0
-    params.maxThreshold = params.minThreshold + 50.0
+    params.thresholdStep = 1.0
+    params.minThreshold = 1.
+    params.maxThreshold = 256.
     params.filterByArea = True
     params.minArea = 800
     params.maxArea = 5000
