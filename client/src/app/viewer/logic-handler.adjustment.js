@@ -220,6 +220,7 @@ class AdjustmentLH extends LogicHandler {
                 }
                 this.collisionTracker.update();
             } break;
+            case STATES.ADDING | STATES.ASSIGNING:
             case STATES.EDITING | STATES.ASSIGNING: {
                 const [[ax, ay]] = px2assignment(this.calibrator, [[x, y]]);
                 this.editing.assignment = { x: ax, y: ay };
@@ -271,9 +272,8 @@ class AdjustmentLH extends LogicHandler {
                     'spotAdjustment',
                     _.initial(this.spotManager.spots),
                 ));
-                this.spotManager.spotsMutable.push(
-                    this.spotManager.createSpot(x, y));
-                this.collisionTracker.update();
+                this.editing = _.last(this.spotManager.spotsMutable);
+                this.state |= STATES.ASSIGNING;
                 break;
             }
             if (this.state & STATES.EDITING) {
@@ -322,6 +322,10 @@ class AdjustmentLH extends LogicHandler {
         case Codes.mouseEvent.up:
             if (this.undoStack.temp) {
                 this.undoStack.pushTemp();
+            }
+            if (this.state & STATES.ADDING) {
+                this.spotManager.spotsMutable.push(
+                    this.spotManager.createSpot(x, y));
             }
             this.selectionRectangle = undefined;
             this.refreshCanvas();
