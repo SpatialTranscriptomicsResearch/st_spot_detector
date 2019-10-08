@@ -68,8 +68,9 @@ def detect_keypoints(image):
     params.minThreshold = 1
     params.maxThreshold = 256
     params.filterByArea = True
-    params.minArea = 800
+    params.minArea = 400
     params.maxArea = 5000
+    params.filterByConvexity = False
 
     detector = cv2.SimpleBlobDetector_create(params)
     keypoints = detector.detect(image)
