@@ -28,7 +28,7 @@
     "font-awesome": "^4.7.0",
     "jquery": "^3.2.1",
     "lodash": "^4.17.10",
-    "mathjs": "^3.17.0",
+    "mathjs": "^7.5.1",
     "popper.js": "^1.12.9",
     "sortablejs": "^1.7.0",
     "spinkit": "^1.2.5"
