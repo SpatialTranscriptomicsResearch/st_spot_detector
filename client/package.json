@@ -23,7 +23,7 @@
     "webpack": "^3.9.0"
   },
   "dependencies": {
-    "angular": "^1.6.7",
+    "angular": "^1.8.3",
     "bootstrap": "^4.0.0-beta.2",
     "font-awesome": "^4.7.0",
     "jquery": "^3.2.1",
